@@ -1,0 +1,166 @@
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import './app.css';
+
+const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
+
+async function request(url) {
+  const r = await fetch(url);
+  if (r.status === 401) {
+    location.href = '/login';
+    throw Error('Sesión finalizada');
+  }
+  if (!r.ok) throw Error(r.status === 404 ? 'Actividad no disponible.' : 'No pudimos cargar la información. Intenta nuevamente.');
+  return r.json();
+}
+
+function ActivityCard({ activity: a }) {
+  return (
+    <article className="activity-card">
+      <span className="activity-icon">↗</span>
+      <div className="activity-body">
+        <span className="course-label">{a.curso}</span>
+        <h3>{a.titulo}</h3>
+        <p className="deadline">Fecha límite: {date(a.fechaLimite)}</p>
+      </div>
+      <div className="activity-side">
+        <span className={'badge' + (a.vencida ? ' late' : '')}>{a.vencida ? 'Vencida' : 'Pendiente'}</span>
+        <button
+          className="detail-button"
+          aria-label={'Ver detalle de ' + a.titulo}
+          onClick={() => { location.hash = 'actividad/' + a.id }}
+        >
+          Ver detalle →
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function ActivityDetail({ id }) {
+  const [activity, setActivity] = useState(null), [error, setError] = useState('');
+  useEffect(() => {
+    let current = true;
+    setActivity(null);
+    setError('');
+    request('/api/actividades/' + id).then(a => { if (current) setActivity(a) }).catch(e => { if (current) setError(e.message) });
+    return () => { current = false };
+  }, [id]);
+
+  const back = () => { location.hash = '' };
+  if (error) return <section className="detail-panel" aria-label="Detalle de actividad"><h2>No pudimos abrir esta actividad</h2><p>{error}</p><button className="back-button" onClick={back}>Volver a mis actividades</button></section>;
+  if (!activity) return <section className="detail-panel"><p role="status">Cargando detalle…</p></section>;
+
+  const a = activity;
+  return (
+    <section className="detail-panel" aria-label="Detalle de actividad">
+      <button className="back-button" onClick={back}>← Volver a mis actividades</button>
+      <span className="eyebrow">{a.curso}</span>
+      <h2>{a.titulo}</h2>
+      <span className={'badge' + (a.vencida ? ' late' : '')}>{a.completada ? 'Completada' : a.vencida ? 'Vencida' : 'Pendiente'}</span>
+      <div className="metadata">
+        <p>Docente: {a.docente}</p>
+        <p>Fecha límite: {date(a.fechaLimite)}</p>
+      </div>
+      <h3>Indicaciones</h3>
+      <p className="instructions">{a.descripcion}</p>
+      <p className="detail-note">Consulta las instrucciones antes de preparar tu entrega.</p>
+    </section>
+  );
+}
+
+function App() {
+  const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [csrf, setCsrf] = useState(null), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
+
+  const load = () => {
+    setLoading(true);
+    setError('');
+    request('/api/actividades/pendientes').then(setItems).catch(e => setError(e.message)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+    request('/api/perfil').then(setProfile).catch(() => {});
+    request('/api/csrf').then(setCsrf).catch(() => {});
+    const change = () => setHash(location.hash);
+    window.addEventListener('hashchange', change);
+    return () => window.removeEventListener('hashchange', change);
+  }, []);
+
+  const match = hash.match(/^#actividad\/(\d+)$/);
+  const shown = items.filter(a => (filter === 'all' || (filter === 'late' ? a.vencida : !a.vencida)) && (a.titulo + ' ' + a.curso).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es').trim()));
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
+        <span className="workspace-label">ESPACIO DEL ALUMNO</span>
+        <a className="nav-item active" href="/">▦ <span>Mis actividades</span></a>
+        <div className="sidebar-bottom">
+          <span className="sprint-badge">Sprint 1 · Avance</span>
+          <p>Un paso a la vez.<br />Tu aprendizaje, organizado.</p>
+        </div>
+      </aside>
+      <div className="main-area">
+        <header className="topbar">
+          <span className="breadcrumb">Mi espacio <span>/</span> Actividades</span>
+          <div className="user-area">
+            <span>{profile?.nombre || 'Alumno'}</span>
+            <form method="post" action="/logout">
+              {csrf && <input type="hidden" name={csrf.parameterName} value={csrf.token} />}
+              <button className="text-button" type="submit" disabled={!csrf}>Salir ↗</button>
+            </form>
+          </div>
+        </header>
+        <main className="content">
+          <div className="page-heading">
+            <div>
+              <span className="eyebrow">TU AGENDA ACADÉMICA</span>
+              <h1>Mis actividades</h1>
+              <p>Encuentra lo pendiente y prepara tu siguiente paso.</p>
+            </div>
+            <span className="date-tag">Datos de demostración</span>
+          </div>
+          <section className="summary-grid" aria-label="Resumen">
+            <article><span>Pendientes</span><strong>{loading ? '—' : items.length}</strong><small>Actividades por completar</small></article>
+            <article><span>Vencidas</span><strong>{loading ? '—' : items.filter(a => a.vencida).length}</strong><small>Revisa sus indicaciones</small></article>
+            <article><span>Cursos con pendientes</span><strong>{loading ? '—' : new Set(items.map(a => a.curso)).size}</strong><small>Solo tus cursos</small></article>
+          </section>
+          {match ? <ActivityDetail id={match[1]} /> : (
+            <section className="list-panel">
+              <div className="list-heading">
+                <div>
+                  <h2>Lo que tienes por hacer</h2>
+                  <p>Ordenado por fecha límite</p>
+                </div>
+                <label className="search-label">
+                  <span className="sr-only">Buscar actividades</span>
+                  <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título o curso" />
+                </label>
+              </div>
+              <div className="filter-row">
+                {[['all', 'Todas'], ['late', 'Vencidas'], ['next', 'Próximas']].map(([value, text]) => (
+                  <button key={value} className={'chip' + (filter === value ? ' selected' : '')} aria-pressed={filter === value} onClick={() => setFilter(value)}>{text}</button>
+                ))}
+              </div>
+              {loading ? <p role="status">Cargando tus actividades…</p> : error ? (
+                <div role="alert">
+                  <p>{error}</p>
+                  <button className="back-button" onClick={load}>Reintentar</button>
+                </div>
+              ) : (
+                <>
+                  <p role="status">{shown.length ? '' : items.length ? 'No hay actividades que coincidan con tu búsqueda o filtro.' : 'No tienes actividades pendientes. ¡Estás al día!'}</p>
+                  <div className="activity-list">{shown.map(a => <ActivityCard key={a.id} activity={a} />)}</div>
+                </>
+              )}
+            </section>
+          )}
+          <footer>MAIN · Primer incremento de HU06 y HU07 · Información sintética para la demostración</footer>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+createRoot(document.getElementById('root')).render(<App />);
