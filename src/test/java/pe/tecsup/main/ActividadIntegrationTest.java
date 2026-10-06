@@ -28,7 +28,7 @@ class ActividadIntegrationTest {
  mvc.perform(get("/api/actividades/pendientes")).andExpect(jsonPath("$",hasSize(1))).andExpect(jsonPath("$[0].id").value(5));
  mvc.perform(get("/api/actividades/1")).andExpect(status().isNotFound());
  }
- @Test void correctCredentialsLogin()throws Exception{mvc.perform(formLogin("/login").user("alumno").password("MainDemo2026!")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/api/perfil"));}
- @Test void wrongPasswordRejected()throws Exception{mvc.perform(formLogin("/login").user("alumno").password("wrong")).andExpect(redirectedUrl("/login?error"));}
+ @Test void correctCredentialsLogin()throws Exception{mvc.perform(formLogin("/login").user("alumno").password("MainDemo2026!")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/"));}
+ @Test void wrongPasswordRejected()throws Exception{mvc.perform(formLogin("/login").user("alumno").password("wrong")).andExpect(redirectedUrl("/login.html?error"));}
  @Test @WithMockUser(username="alumno",roles="ALUMNO") void logoutRequiresCsrf()throws Exception{mvc.perform(post("/logout")).andExpect(status().isForbidden());}
 }

@@ -4,3 +4,12 @@ target/
 .env
 *.log
 *.jar
+
+frontend/node_modules/
+frontend/dist/
+
+frontend/node_modules/
+frontend/dist/
+
+frontend/node_modules/
+frontend/dist/

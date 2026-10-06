@@ -18,8 +18,8 @@ public class SecurityConfig {
  }
  @Bean SecurityFilterChain security(HttpSecurity http) throws Exception {
   http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/error").permitAll().anyRequest().hasRole("ALUMNO"))
-   .formLogin(f->f.loginProcessingUrl("/login").defaultSuccessUrl("/api/perfil",true).failureUrl("/login?error"))
-   .logout(l->l.logoutUrl("/logout").logoutSuccessUrl("/login?logout"))
+   .formLogin(f->f.loginPage("/login.html").loginProcessingUrl("/login").defaultSuccessUrl("/",true).failureUrl("/login.html?error"))
+   .logout(l->l.logoutUrl("/logout").logoutSuccessUrl("/login.html?salida"))
    .exceptionHandling(e->e.defaultAuthenticationEntryPointFor((req,res,ex)->res.sendError(401),new AntPathRequestMatcher("/api/**")));
   return http.build();
  }

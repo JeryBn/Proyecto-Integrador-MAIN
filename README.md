@@ -1,44 +1,30 @@
-# Proyecto Integrador MAIN — avance de Jery, sección A
+# Proyecto Integrador MAIN - seccion A
 
-Primer incremento de backend para HU06 (actividades pendientes) y HU07 (detalle autorizado). Este repositorio publica exclusivamente arquitectura, modelo de datos y backend. La interfaz React de Pamela y nuevas pruebas de Michael están pendientes de sus aportes e integración. No representa el proyecto final terminado.
+Base ejecutable HU06/HU07: interfaz React, backend Spring Boot y datos sinteticos H2. Integra la interfaz de referencia para facilitar el trabajo local; las modificaciones propias de Pamela y las nuevas pruebas de Michael siguen pendientes de sus aportes. No es el proyecto final terminado.
 
-## Ejecutar en IntelliJ IDEA
-Abrir esta carpeta como proyecto Maven y seleccionar JDK 21. Ejecutar MainApplication. Perfil predeterminado: H2 en memoria para pruebas y demostración; puerto 8088. Si la demo completa anterior sigue usando 8088, usar `--server.port=8089`.
+## Descargar el paquete completo
+[Descargar MAIN_LOCAL_PAMELA.zip](entregables/MAIN_LOCAL_PAMELA.zip?raw=true). Abre el archivo y pulsa Download raw file si GitHub muestra su pagina. Extrae todo y ejecuta INICIAR-MAIN.cmd. Necesita Java JDK 21 o superior. No requiere Node, Maven o MySQL para esta demostracion.
 
-Para la base persistente local, ejecutar primero database/01_CREAR_BASE.sql una sola vez en una base nueva, luego activar el perfil `mysql`. No volver a ejecutar el script de creación en una base ya creada; no incluye borrados ni reemplazos. Configurar MAIN_DB_URL, MAIN_DB_USER y MAIN_DB_PASSWORD mediante variables de entorno. Los valores predeterminados son exclusivamente para el XAMPP local de esta PC; no usar root sin contraseña en un servidor compartido.
+Lee [LEEME-LOCAL.md](LEEME-LOCAL.md) para ejecutar, modificar y resolver errores. Abre http://127.0.0.1:8088/login.html cuando el servidor indique Started MainApplication. Cuentas sinteticas: alumno, otro y vacio; contraseña MainDemo2026!. Login en /login.html, POST /login, redireccion a /; cierre de sesion POST /logout con CSRF.
 
-```text
-mvn test
-mvn package
-java -jar target/main-sprint1-0.1.0.jar --spring.profiles.active=mysql --server.port=8089
-```
+## Desarrollo
+Abre el proyecto Maven en IntelliJ con JDK 21. Desde frontend: npm ci y npm run build. Desde la raiz: mvn clean package. Para usar el iniciador copia target/main-sprint1-0.1.0.jar a la raiz y reinicia. El ZIP contiene ese JAR ya compilado y todo el codigo fuente. El build de React genera index.html y copia los assets al backend.
 
-El backend aislado utiliza el formulario de login generado por Spring Security en /login y redirige a /api/perfil. Las cuentas sintéticas alumno, otro y vacio usan MainDemo2026!. La interfaz de Pamela deberá integrar el contrato de login y CSRF al añadir su parte.
+Para persistencia ejecuta database/01_CREAR_BASE.sql una sola vez en una base nueva y activa el perfil mysql. Configura MAIN_DB_URL, MAIN_DB_USER y MAIN_DB_PASSWORD. Los valores por defecto son para XAMPP local; no usar root sin contraseña en servidor compartido. El motor XAMPP es MariaDB; Workbench es el cliente.
 
-## Implementado y comprobable
-- Identidad tomada del Principal del servidor; consultas SQL parametrizadas.
-- Pendientes limitados a los cursos de matrícula, excluyendo entregas existentes.
-- Detalle ajeno o inexistente responde 404; solicitud API sin sesión responde 401.
-- Modelo de alumno, docente, curso, matrícula, actividad y entrega.
-- Sesión, rol ALUMNO, contraseñas BCrypt y CSRF.
-- Clock inyectable con zona America/Lima. Al instante exacto del límite la actividad aún no está vencida; después sí, si no tiene entrega. Esta regla técnica queda propuesta para validación del equipo.
-- Perfil H2 de pruebas y perfil JDBC MySQL para demostración persistente.
+## Implementado
+Principal del servidor, SQL parametrizado, pendientes limitados a matriculas sin entregas, detalle ajeno o inexistente 404, API sin sesion 401, rol ALUMNO, BCrypt, sesion y CSRF. Clock America/Lima: al limite exacto aun no vence; despues si, salvo actividad entregada. Esta regla queda propuesta para validacion del equipo.
 
-## API
-GET /api/perfil; GET /api/actividades/pendientes; GET /api/actividades/{id}; GET /api/csrf. POST /login y /logout con CSRF. Endpoints de lectura no reciben una identidad de alumno elegida por el cliente.
+API GET /api/perfil, /api/actividades/pendientes, /api/actividades/{id}, /api/csrf. Modelo: alumno, docente, curso, matricula, actividad y entrega.
 
-## Arquitectura y límites
-Bases del profesor: administración React + Django; usuario React/Kotlin + Spring Boot; base compartida. Este avance cubre Spring Boot y el modelo relacional. La conexión con Django y Kotlin, usuarios persistidos, administración, roles adicionales, IA y despliegue están pendientes. XAMPP incluye MariaDB, compatible con el perfil JDBC usado, y MySQL Workbench actúa como cliente; no confundir el cliente con el motor del servidor.
+## Arquitectura y alcance pendiente
+Bases del profesor: administracion React + Django; usuario React/Kotlin + Spring Boot y base compartida. Este avance incorpora React + Spring Boot; Django, Kotlin, usuarios persistidos, administracion, roles adicionales, IA y despliegue siguen pendientes. Las estimaciones 40/49,5/56 no prueban acuerdo del equipo; validar alcance y aceptacion con profesor e integrantes.
 
-Las estimaciones 40/49,5/56 corresponden a registros distintos y no prueban un acuerdo del equipo. Se mantiene el alcance técnico HU06/HU07 para este avance, pendiente de validar capacidad y aceptación con los integrantes y el profesor. No se simula esa aceptación.
-
-## Colaboración y procedencia
-La base fue preparada por solicitud de Jery con asistencia registrada en PROMPTS.md. Las pruebas incluidas son validación de esta base, no una contribución ya realizada por Michael. Cada integrante añadirá cambios reales en su rama mediante Pull Request; no volver a subir la base como si fuera una nueva autoría.
-
-Pamela: rama pamela/interfaz-criterios. Michael: michael/pruebas-seguridad. Jery: jery/backend-arquitectura. Ver CONTRIBUTING.md. El repositorio es privado: se requieren invitaciones a las cuentas exactas de los compañeros antes de que puedan subir cambios.
+## Colaboracion
+Repositorio publico. Para subir cambios se debe aceptar la invitacion. Ramas: jery/backend-arquitectura, pamela/interfaz-criterios, michael/pruebas-seguridad. Ver CONTRIBUTING.md. La base se preparo por solicitud de Jery con asistencia registrada en PROMPTS.md; no atribuye trabajo a integrantes ausentes. Cada integrante registra modificaciones reales y abre PR.
 
 ## Fuentes
-- Bases del curso: https://docs.google.com/presentation/d/1LU-aAC9IeDRlVXaWTJFTgHlsXwUBkYal/edit
+- Bases: https://docs.google.com/presentation/d/1LU-aAC9IeDRlVXaWTJFTgHlsXwUBkYal/edit
 - Canvas: https://tecsup.instructure.com/courses/74457/modules
 - Spring Boot: https://docs.spring.io/spring-boot/3.4/reference/testing/spring-boot-applications.html
 - Spring Security: https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html

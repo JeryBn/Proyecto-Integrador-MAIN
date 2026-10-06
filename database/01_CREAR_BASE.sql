@@ -1,4 +1,4 @@
--- Base nueva exclusiva de la demostraciÃ³n; no elimina tablas ni otras bases.
+-- Base nueva exclusiva de la demostración; no elimina tablas ni otras bases.
 CREATE DATABASE IF NOT EXISTS main_s08_jery CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE main_s08_jery;
 CREATE TABLE alumno (id BIGINT PRIMARY KEY, usuario VARCHAR(60) UNIQUE NOT NULL, nombre VARCHAR(100) NOT NULL);

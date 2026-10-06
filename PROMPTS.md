@@ -23,3 +23,7 @@ Esta respuesta es un material para revisiÃ³n y no certifica una reuniÃ³n rea
 
 ## Publicación del avance de Jery
 Se publica únicamente backend, datos y arquitectura. Se añadieron Clock inyectable, pruebas del límite de fechas y perfil JDBC MySQL. La base previa y su validación no se atribuyen a compañeros. React se integra cuando Pamela presente su contribución.
+
+Actualizacion: por solicitud de Jery se integro la interfaz de referencia y un paquete ejecutable local para Pamela. No constituye una contribucion atribuida a Pamela.
+
+Actualizacion: por solicitud de Jery se integro la interfaz de referencia y un paquete ejecutable local para Pamela. No constituye una contribucion atribuida a Pamela.
