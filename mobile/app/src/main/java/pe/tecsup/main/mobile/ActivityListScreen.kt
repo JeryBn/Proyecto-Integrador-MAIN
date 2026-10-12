@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import pe.tecsup.main.mobile.data.Activity
@@ -26,6 +30,8 @@ internal fun activityDate(value: String): String = try {
 }
 
 @Composable internal fun ActivityListScreen(model: MainViewModel) {
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     val shown = model.items.filter {
         (model.filter == "all" || if (model.filter == "late") it.vencida else !it.vencida) &&
             (it.titulo + " " + it.curso).lowercase(Locale.forLanguageTag("es")).contains(model.search.trim().lowercase(Locale.forLanguageTag("es")))
@@ -89,12 +95,16 @@ internal fun activityDate(value: String): String = try {
                 }
                 shown.isEmpty() -> item { Text("No hay actividades que coincidan con tu búsqueda o filtro.") }
                 else -> items(shown, key = { it.id }) { activity ->
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(activity.curso, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                             Text(activity.titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text("Fecha límite: ${activityDate(activity.fechaLimite)}", style = MaterialTheme.typography.bodySmall)
                             ActivityStatus(activity)
+                            TextButton(onClick = { focus.clearFocus(); keyboard?.hide(); model.openDetail(activity.id) },
+                                modifier = Modifier.semantics { contentDescription = "Ver detalle de ${activity.titulo}" }) {
+                                Text("Ver detalle")
+                            }
                         }
                     }
                 }

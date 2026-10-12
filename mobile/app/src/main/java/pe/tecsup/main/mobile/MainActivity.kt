@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -32,18 +35,24 @@ class MainActivity : ComponentActivity() {
 @Composable fun MainTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = lightColorScheme(
         primary = Color(0xFF244C78), secondary = Color(0xFF406D65),
+        primaryContainer = Color(0xFFE0EDF7), onPrimaryContainer = Color(0xFF173A60),
+        secondaryContainer = Color(0xFFE0EEE9), onSecondaryContainer = Color(0xFF24483E),
         background = Color(0xFFF5F7FA), surface = Color.White
     ), content = content)
 }
 
 @Composable fun MainApp(model: MainViewModel = viewModel()) {
+    BackHandler(enabled = model.profile != null && model.selectedId != null) { model.backToList() }
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (model.profile == null) LoginScreen(model)
+        else if (model.selectedId != null) ActivityDetailScreen(model)
         else ActivityListScreen(model)
     }
 }
 
 @Composable private fun LoginScreen(model: MainViewModel) {
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     var endpoint by rememberSaveable { mutableStateOf(if (BuildConfig.DEBUG) "http://127.0.0.1:8088" else "") }
     var username by rememberSaveable { mutableStateOf("") }
     // Password is deliberately neither saved across process recreation nor persisted.
@@ -63,7 +72,7 @@ class MainActivity : ComponentActivity() {
             visualTransformation = PasswordVisualTransformation(), singleLine = true,
             enabled = !model.busy, modifier = Modifier.fillMaxWidth())
         if (model.message.isNotBlank()) Text(model.message, color = MaterialTheme.colorScheme.error)
-        Button(onClick = { model.login(endpoint, username, password); password = "" },
+        Button(onClick = { focus.clearFocus(); keyboard?.hide(); model.login(endpoint, username, password); password = "" },
             enabled = !model.busy && username.isNotBlank() && password.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Text(if (model.busy) "Conectando…" else "Ingresar")
         }

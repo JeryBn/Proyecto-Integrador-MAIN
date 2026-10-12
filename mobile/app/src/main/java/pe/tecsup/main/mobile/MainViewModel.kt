@@ -26,6 +26,15 @@ class MainViewModel : ViewModel() {
         private set
     var search by mutableStateOf("")
     var filter by mutableStateOf("all")
+    var selectedId by mutableStateOf<Long?>(null)
+        private set
+    var detail by mutableStateOf<Activity?>(null)
+        private set
+    var loadingDetail by mutableStateOf(false)
+        private set
+    var detailError by mutableStateOf("")
+        private set
+    private var detailRequest = 0L
     private var api: MainApi? = null
 
     fun login(endpoint: String, username: String, password: String) {
@@ -70,6 +79,37 @@ class MainViewModel : ViewModel() {
         filter = "all"
         listError = ""
         loadingList = false
+        backToList()
+    }
+
+    fun openDetail(id: Long) {
+        val client = api ?: return
+        val request = ++detailRequest
+        selectedId = id
+        detail = null
+        detailError = ""
+        loadingDetail = true
+        viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) { client.detail(id) }
+                if (api === client && detailRequest == request) detail = result
+            } catch (error: Exception) {
+                if (api === client && detailRequest == request) {
+                    if (error is SessionExpired) expireSession()
+                    else detailError = friendly(error)
+                }
+            } finally {
+                if (api === client && detailRequest == request) loadingDetail = false
+            }
+        }
+    }
+
+    fun backToList() {
+        detailRequest++
+        selectedId = null
+        detail = null
+        detailError = ""
+        loadingDetail = false
     }
 
     private fun expireSession() {

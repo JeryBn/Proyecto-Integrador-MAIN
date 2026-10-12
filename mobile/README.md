@@ -6,7 +6,7 @@ Cliente nativo Kotlin y Jetpack Compose para HU06/HU07. Consume Spring Boot; no 
 
 - Preparación Kotlin: proyecto reproducible, conexión documentada, sesión real y CSRF. Revisión de alcance por equipo/profesor pendiente; implementar por solicitud de Jery no implica aprobación de terceros.
 - T07: listado de pendientes con título, curso, fecha y estado recibidos del servidor; carga, reintento y vacío; comprobar alumno y vacio.
-- T08: detalle autorizado, campos completos, 404 y sesión finalizada; volver preserva contexto. Se incorpora en su commit separado.
+- T08: detalle autorizado, campos completos, 404 y sesión finalizada; volver preserva contexto. Incluye botón Atrás de Android y conservación de sesión/contexto al recrear la pantalla.
 - Dependencias: backend T01/T02. Cada tarea se valida antes de registrar su commit y checklist.
 
 ## Entorno
@@ -23,6 +23,10 @@ Android Studio, JDK 21, SDK Android 36, Gradle 8.13 (wrapper incluido), Android 
 6. Demo: cuentas alumno, otro y vacio, contraseña sintética `MainDemo2026!`.
 7. Con backend iniciado y puente USB: `gradlew.bat connectedDebugAndroidTest`.
 
+Opcional: en PowerShell `& .\INSTALAR-APP.ps1` instala el APK compilado y configura el puente para un único dispositivo. Si hay varios, indicar `-Device emulator-5554` o el identificador correspondiente. El script no inicia ni modifica otros servidores.
+
+En Android Studio seleccionar Gradle JDK 21. Si se ejecuta desde una terminal, configurar JAVA_HOME hacia el JDK 21 instalado antes de usar el wrapper. No subir local.properties: cada instalación de Android Studio genera su ruta al SDK.
+
 La variante debug admite HTTP únicamente en localhost, 127.0.0.1 y 10.0.2.2. La variante release exige HTTPS. Para servidor real indicar un origen HTTPS sin rutas ni credenciales. No se abre el servidor a la red ni se desactiva la verificación TLS.
 
 ## Contrato
@@ -34,3 +38,5 @@ No se persisten contraseña ni cookies. Rotación conserva la sesión en ViewMod
 ## Ruta de trabajo
 
 Preparación y acceso → T07 listado → T08 detalle → validación y entrega. El esquema compartido y Django permanecen a cargo del trabajo conjunto T10. La app reutiliza el contrato del backend disponible.
+
+El flujo Android de GitHub compila, ejecuta pruebas unitarias y analiza lint; adjunta una APK debug por ejecución. Las pruebas instrumentadas contra Spring Boot se ejecutan localmente y se documentan en docs/mobile/. No se afirma que el flujo de CI haya pasado hasta comprobar su ejecución.

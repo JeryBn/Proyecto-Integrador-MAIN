@@ -1,0 +1,38 @@
+name: Android de Jery
+
+on:
+  push:
+    branches: [main, 'jery/**']
+    paths: ['mobile/**', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['mobile/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar, probar y analizar Android
+        working-directory: mobile
+        run: bash ./gradlew assembleDebug testDebugUnitTest lintDebug --console=plain
+      - name: Guardar APK y resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAIN-Android-debug
+          path: |
+            mobile/app/build/outputs/apk/debug/app-debug.apk
+            mobile/app/build/reports/tests/testDebugUnitTest
+            mobile/app/build/reports/lint-results-debug.html
+          if-no-files-found: warn

@@ -18,7 +18,13 @@ Principal del servidor, SQL parametrizado, pendientes limitados a matriculas sin
 API GET /api/perfil, /api/actividades/pendientes, /api/actividades/{id}, /api/csrf. Modelo: alumno, docente, curso, matricula, actividad y entrega.
 
 ## Arquitectura y alcance pendiente
-Bases del profesor: administracion React + Django; usuario React/Kotlin + Spring Boot y base compartida. Este avance incorpora React + Spring Boot; Django, Kotlin, usuarios persistidos, administracion, roles adicionales, IA y despliegue siguen pendientes. Las estimaciones 40/49,5/56 no prueban acuerdo del equipo; validar alcance y aceptacion con profesor e integrantes.
+Bases del profesor: administracion React + Django; usuario React/Kotlin + Spring Boot y base compartida. Este avance incorpora React + Spring Boot y el cliente Kotlin de HU06/HU07 en mobile/. Django, usuarios persistidos, administracion, roles adicionales, IA y despliegue siguen pendientes. La validacion en telefono fisico y la aceptacion del equipo continuan pendientes. Las estimaciones 40/49,5/56 no prueban acuerdo del equipo; validar alcance y aceptacion con profesor e integrantes.
+
+## Aplicación Android de Jery
+
+Abrir [mobile/](mobile/README.md) en Android Studio con Gradle JDK 21. Incluye acceso por sesión/CSRF, listado autorizado, búsqueda/filtros, detalle, regreso con contexto, estados de error/vacío y cierre de sesión. Conexión al backend local mediante `adb reverse tcp:8088 tcp:8088`; no necesita modificar su dirección de escucha.
+
+Plan y responsabilidades: [docs/mobile/PLAN_Y_CRITERIOS.md](docs/mobile/PLAN_Y_CRITERIOS.md). Resultados por tarea y capturas en [docs/mobile/](docs/mobile/). Desarrollo asistido de Jery en la rama `jery/app-kotlin-hu06-hu07`, conservando la autoría de React y el ámbito de Django. Las tareas compartidas requieren revisión del equipo; la evidencia Android corresponde al emulador.
 
 ## Colaboracion
 Repositorio publico. Para subir cambios se debe aceptar la invitacion. Ramas: jery/backend-arquitectura, pamela/interfaz-criterios, michael/pruebas-seguridad. Ver CONTRIBUTING.md. La base se preparo por solicitud de Jery con asistencia registrada en PROMPTS.md; no atribuye trabajo a integrantes ausentes. Cada integrante registra modificaciones reales y abre PR.
