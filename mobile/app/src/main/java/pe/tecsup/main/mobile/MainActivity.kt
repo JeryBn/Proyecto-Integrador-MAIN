@@ -2,6 +2,8 @@ package pe.tecsup.main.mobile
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +21,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+        )
         setContent { MainTheme { MainApp() } }
     }
 }
@@ -33,12 +39,7 @@ class MainActivity : ComponentActivity() {
 @Composable fun MainApp(model: MainViewModel = viewModel()) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (model.profile == null) LoginScreen(model)
-        else Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("MAIN", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Text("Hola, ${model.profile?.nombre}")
-            Text("Conexión al espacio del alumno verificada.")
-            Button(onClick = model::logout, enabled = !model.busy) { Text("Cerrar sesión") }
-        }
+        else ActivityListScreen(model)
     }
 }
 
