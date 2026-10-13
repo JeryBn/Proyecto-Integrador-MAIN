@@ -9,7 +9,7 @@ Android HU06/HU07 está integrado en main bajo mobile/. Chats, grupos, multimedi
 ## Fuente de coordinación
 
 Tablero: https://trello.com/b/vrcqu5di/2026-2-c24-a-sprint-1
-Lista BACKLOG MAIN COMPLETO: 24 tarjetas. M01–M18: producto y entrega; M19–M20: moderación; M21–M24: web y coordinación. Responsabilidades compartidas propuestas, sujetas al acuerdo del equipo; se preservan T09/T10/T11.
+Lista BACKLOG MAIN COMPLETO: 24 tarjetas con miembros asignados y vencimiento 20/10/2026 23:59. M01–M18: producto y entrega; M19–M20: moderación; M21–M24: web y coordinación. Responsabilidades asignadas por Jery para el 20/10/2026; ver ASIGNACION_SEMANA_20_OCT.md; se preservan T09/T10/T11.
 
 ## Reglas comunes obligatorias
 
@@ -30,7 +30,7 @@ Lista BACKLOG MAIN COMPLETO: 24 tarjetas. M01–M18: producto y entrega; M19–M
 5. M11/M12: asistente IA; M10/M14: notificaciones/ajustes.
 6. M13/M15/M16/M17/M18: integración, calidad, despliegue y aceptación. Documentación/pruebas se actualizan en cada avance.
 
-Propuesta de coordinación: Jery app y traspaso; Pamela interfaz web; Michael administración/backend/pruebas según reparto acordado. Pueden avanzar en contratos, persistencia y componentes web antes de terminar toda la app. No esperar al final para integrar.
+Asignación de Jery: Jery app y traspaso; Pamela interfaz web; Michael administración/backend/pruebas. Pueden avanzar en contratos, persistencia y componentes web antes de terminar toda la app. No esperar al final para integrar.
 
 ## Matriz de seguimiento
 
@@ -56,7 +56,7 @@ Prueba cruzada mínima: enviar Android→web y web→Android, usar mismas cuenta
 
 https://trello.com/c/nWNxf793/39-m21-web-equipo-paridad-funcional-web-con-la-app-main
 
-Propuesta de coordinación: Pamela interfaz web; Michael administración/backend/pruebas según acuerdo del equipo. Jery mantiene app. Fuente funcional: app MAIN y contratos compartidos; no copiar implementación Android. Depende de cada incremento móvil aceptado y M02/M03/M19/M20.
+Coordinación: Pamela interfaz web; Michael administración/backend/pruebas según acuerdo del equipo. Jery mantiene app. Fuente funcional: app MAIN y contratos compartidos; no copiar implementación Android. Depende de cada incremento móvil aceptado y M02/M03/M19/M20.
 
 Criterios:
 - Matriz por módulo APP/WEB/API: acceso/perfil, actividades/agenda, mensajes individuales, grupos, medios, estados, IA, notificaciones y ajustes. Registrar pendiente/en desarrollo/probado por plataforma.

@@ -1,30 +1,18 @@
-# MAIN — alcance completo y ruta de desarrollo
+# MAIN — backlog completo y asignaciones
 
-Fecha: 12/10/2026.
-
-El 90/100 anterior aplicaba solo a HU06/HU07 y no describe el producto completo. El avance global no tiene todavía una medición por esfuerzo estimado/aceptado; 15–20% es únicamente una apreciación provisional.
-
-Fuente de IA, Material 3, comunicación entre alumnos/docentes/familiares, grupos privados y estados multimedia: solicitud explícita de Jery. El contenido visible del enlace compartido corresponde a planificación HU06/HU07 y no permite certificar otros requisitos históricos.
-
-Tablero: https://trello.com/b/vrcqu5di/2026-2-c24-a-sprint-1
-Lista: BACKLOG MAIN COMPLETO. Nuevas tarjetas pendientes, sin plazos inventados ni aceptación de terceros.
-
-## Orden de ejecución
-
-1. M01/M02: alcance, criterios, contratos y acuerdo de persistencia con T10.
-2. M03: identidad y relaciones. En paralelo M04: diseño Material 3.
-3. M05/M06: navegación académica y conversación real entre dos cuentas.
-4. M07/M08/M09: grupos privados, medios y estados.
-5. M11/M12: asistente IA con proveedor real; M10/M14: notificaciones y ajustes.
-6. M13/M15/M16/M17/M18: integración administrativa, pruebas, despliegue, aceptación y entrega. Pruebas y documentos también se actualizan en cada incremento.
-
-Trabajo móvil: Jery. Colaboración de backend/datos/administración: propuestas que requieren acuerdo del equipo; se conserva T09/T10/T11 sin duplicar implementación.
-
-Cada tarea implementada se verifica, se registra con un commit en main y se enlaza en Trello. Planificada no equivale a implementada.
+Fecha objetivo solicitada por Jery: martes 20/10/2026 23:59. La asignación siguiente reemplaza las propuestas anteriores de reparto. Historial de fuentes: HU06/HU07 visibles en enlace compartido; nuevos módulos y normas vienen de solicitudes explícitas de Jery. Funciones futuras pendientes, no declarar implementadas por estar en Trello.
 
 ## M01 [Equipo] Consolidar alcance, historias y plan de entregas
 
 https://trello.com/c/eqleey71/19-m01-equipo-consolidar-alcance-historias-y-plan-de-entregas
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de: ninguna. Coordina Jery; validación conjunta pendiente. Separar visión completa de Sprint 1. Fuente: requisitos explícitos de Jery del 12/10/2026; enlace compartido visible solo confirma planificación HU06/HU07.
 
@@ -37,6 +25,13 @@ Criterios:
 
 https://trello.com/c/RnkwF0eI/20-m02-equipo-arquitectura-contratos-y-persistencia-compartida
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M01; coordinar con T10 existente, sin duplicar su implementación. Propuesta conjunta Jery + Michael.
 
 Criterios:
@@ -47,6 +42,13 @@ Criterios:
 ## M03 [App/API] Usuarios reales, roles y parentescos verificados
 
 https://trello.com/c/T7k14Jij/21-m03-app-api-usuarios-reales-roles-y-parentescos-verificados
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M02. Jery: app; servidor y administración: acuerdo del equipo. Parentescos se interpreta como familiares/tutores vinculados al alumno.
 
@@ -59,6 +61,13 @@ Criterios:
 
 https://trello.com/c/PQFqc1Dh/22-m04-jery-app-sistema-visual-profesional-con-material-3
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M01; puede avanzar mientras se acuerda M02.
 
 Criterios:
@@ -70,6 +79,12 @@ Criterios:
 
 https://trello.com/c/naY89EwE/23-m05-jery-app-navegaci%C3%B3n-principal-y-panel-acad%C3%A9mico
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M03/M04; reutiliza T07/T08.
 
 Criterios:
@@ -80,6 +95,13 @@ Criterios:
 ## M06 [App/API] Conversaciones privadas y mensajes en tiempo real
 
 https://trello.com/c/ayO8UuLc/24-m06-app-api-conversaciones-privadas-y-mensajes-en-tiempo-real
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M02/M03/M04/M19/M20. Jery: app; coordinación de contrato/servidor con equipo.
 
@@ -94,6 +116,13 @@ Criterios:
 
 https://trello.com/c/C01A7tfK/25-m07-app-api-grupos-privados-miembros-y-administraci%C3%B3n
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M06 y matriz M03.
 
 Criterios:
@@ -105,6 +134,13 @@ Criterios:
 
 https://trello.com/c/bO7wJrgY/26-m08-app-api-im%C3%A1genes-videos-con-audio-y-archivos-en-mensajes
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M06/M07; almacenamiento acordado en M02.
 
 Criterios:
@@ -115,6 +151,13 @@ Criterios:
 ## M09 [App/API] Estados multimedia y privacidad de audiencia
 
 https://trello.com/c/SFeqNex6/27-m09-app-api-estados-multimedia-y-privacidad-de-audiencia
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M03/M08/M19/M20. Requisito explícito de Jery, 12/10/2026.
 
@@ -129,6 +172,13 @@ Criterios:
 
 https://trello.com/c/Sp0H59Ki/28-m10-app-api-notificaciones-y-sincronizaci%C3%B3n-fiable
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M05/M06/M07/M09. Complemento propuesto, no requisito confirmado en enlace.
 
 Criterios:
@@ -139,6 +189,13 @@ Criterios:
 ## M11 [Equipo/IA] Definir asistente académico y proveedor
 
 https://trello.com/c/NdK02gB6/29-m11-equipo-ia-definir-asistente-acad%C3%A9mico-y-proveedor
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M01/M02/M03/M20. Dos funciones separadas: asistente académico y moderación obligatoria previa a publicación/envío (M19).
 
@@ -153,6 +210,12 @@ Criterios:
 
 https://trello.com/c/7Qn9shZI/30-m12-jery-app-api-integrar-asistente-ia-funcional
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M11/M05. Moderación previa se implementa en M19, con permisos y contrato propios.
 
 Criterios:
@@ -165,6 +228,13 @@ Criterios:
 
 https://trello.com/c/OaZqYFzL/31-m13-equipo-administraci%C3%B3n-e-integraci%C3%B3n-web-con-app
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M02/M03/M07/M09; vincular T09/T11 existentes. Trabajo de Michael/Pamela sujeto a acuerdo.
 
 Criterios:
@@ -175,6 +245,13 @@ Criterios:
 ## M14 [App/API] Perfil, ajustes y controles de privacidad
 
 https://trello.com/c/VI8J36fp/32-m14-app-api-perfil-ajustes-y-controles-de-privacidad
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M03/M04/M06/M09.
 
@@ -187,6 +264,12 @@ Criterios:
 
 https://trello.com/c/JjlG2EqD/33-m15-equipo-pruebas-completas-seguridad-y-rendimiento
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de incrementos M03–M14; probar también durante cada tarea. Vincular revisión T05/T06.
 
 Criterios:
@@ -197,6 +280,13 @@ Criterios:
 ## M16 [Equipo] Servidor compartido, despliegue y operación
 
 https://trello.com/c/tWfZ3s43/34-m16-equipo-servidor-compartido-despliegue-y-operaci%C3%B3n
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Michael Julian Fernandez Camarena, Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M02 y servicios implementados; decisiones de infraestructura del equipo.
 
@@ -209,6 +299,12 @@ Criterios:
 
 https://trello.com/c/OipuXCub/35-m17-jery-app-apk-de-entrega-tel%C3%A9fono-f%C3%ADsico-y-aceptaci%C3%B3n
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Depende de M15/M16 y alcance acordado.
 
 Criterios:
@@ -220,6 +316,14 @@ Criterios:
 
 https://trello.com/c/8EMiZ9A7/36-m18-equipo-documentaci%C3%B3n-evidencias-y-cierre-del-proyecto
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Se actualiza por incremento; cierre tras M17.
 
 Criterios:
@@ -227,14 +331,16 @@ Criterios:
 - [ ] Commit separado por tarea terminada en main, pruebas/capturas y enlace en Trello; conservar autoría.
 - [ ] Entrega reproducible, inventario de alcance y limitaciones, revisión final de rúbrica y demostración del equipo.
 
-
-## Ampliación del 12/10/2026: moderación obligatoria
-
-Estados: publicar solo alumnos y docentes; familiares/tutores no publican. Mensajes: revisión de todos los emisores antes de entregar. Medios: texto, imagen, video y audio. Si falla o es incierta la revisión, el contenido sigue pendiente. IA moderadora y asistente académico son funciones distintas. M20 define política; M19 la implementa antes de cerrar M06/M08/M09.
-
 ## M19 [App/API/IA] Moderación previa de mensajes y estados
 
 https://trello.com/c/qeft1Wx1/37-m19-app-api-ia-moderaci%C3%B3n-previa-de-mensajes-y-estados
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Depende de M02/M03/M08/M11/M20. Requisito de Jery, 12/10/2026.
 
@@ -253,6 +359,14 @@ Criterios:
 
 https://trello.com/c/gF9ubXm5/38-m20-equipo-normas-de-contenido-y-evaluaci%C3%B3n-de-moderaci%C3%B3n
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Precede configuración de M19. Requisitos de Jery: sin contenido sexual ni conductas inadecuadas para estudiantes.
 
 Criterios:
@@ -263,12 +377,17 @@ Criterios:
 - Publicar estados solo alumno/docente; familiares NO publican. Lectura según audiencia. Moderación de mensajes aplica a TODOS los emisores.
 - Aprobar reglas del producto y registrar limitaciones; no prometer contenido seguro al 100%.
 
-
 ## M21 [Web/Equipo] Paridad funcional web con la app MAIN
 
 https://trello.com/c/nWNxf793/39-m21-web-equipo-paridad-funcional-web-con-la-app-main
 
-Propuesta de coordinación: Pamela interfaz web; Michael administración/backend/pruebas según acuerdo del equipo. Jery mantiene app. Fuente funcional: app MAIN y contratos compartidos; no copiar implementación Android. Depende de cada incremento móvil aceptado y M02/M03/M19/M20.
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
+Coordinación: Pamela interfaz web; Michael administración/backend/pruebas según la asignación de Jery. Jery mantiene app. Fuente funcional: app MAIN y contratos compartidos; no copiar implementación Android. Depende de cada incremento móvil aceptado y M02/M03/M19/M20.
 
 Criterios:
 - Matriz por módulo APP/WEB/API: acceso/perfil, actividades/agenda, mensajes individuales, grupos, medios, estados, IA, notificaciones y ajustes. Registrar pendiente/en desarrollo/probado por plataforma.
@@ -280,6 +399,13 @@ Criterios:
 ## M22 [Backend/Equipo] API compartida para Android y web
 
 https://trello.com/c/q2Ewnesn/40-m22-backend-equipo-api-compartida-para-android-y-web
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Michael Julian Fernandez Camarena, Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Coordinar M02 con T09/T10/T11 existentes. Responsables del servidor y migraciones se acuerdan con equipo; no se modifica su autoría.
 
@@ -293,6 +419,14 @@ Criterios:
 ## M23 [Jery + Equipo] Guía de traspaso app a web por incremento
 
 https://trello.com/c/pE3vpWEA/41-m23-jery-equipo-gu%C3%ADa-de-traspaso-app-a-web-por-incremento
+
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
 
 Jery publica referencia móvil; compañeros implementan web según reparto acordado. Depende del incremento real de cada módulo.
 
@@ -313,6 +447,14 @@ Criterios:
 
 https://trello.com/c/TiQ3ZIys/42-m24-pruebas-equipo-validar-sincronizaci%C3%B3n-y-paridad-android-web
 
+ASIGNACIÓN PARA LA PRÓXIMA SEMANA — dispuesta por Jery como encargado del grupo.
+Responsables: Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua, Jery Becerra Ninaquispe.
+Vencimiento: martes 20/10/2026, 23:59 (hora de planificación).
+Michael: servidor/datos/administración y pruebas de integración según el módulo; contrato documentado para clientes.
+Pamela: implementación o referencia web del módulo, integración React, estados de pantalla y evidencia de funcionamiento.
+Jery: implementación Android, recorrido visible, pruebas móviles y contrato necesario para integrar.
+Entrega: commit propio, resultado de pruebas y captura/demostración; registrar avances y dependencias en esta tarjeta. Los miembros asignados coordinan sus partes; aceptación del profesor/equipo no se presume.
+
 Propuesta: Michael coordina pruebas independientes; Jery/Pamela apoyan sus plataformas. Validación conjunta pendiente. Depende de M21/M22 y módulos implementados.
 
 Criterios:
@@ -321,3 +463,4 @@ Criterios:
 - Contenido rechazado/pending no llega a otra plataforma ni sus notificaciones; edición aprobada muestra la misma marca.
 - Membresía revocada, usuario ajeno, cambio de cuenta, reconexión y proveedor IA caído dan resultados coherentes.
 - Registrar versiones, cuentas sintéticas, resultados y defectos; adjuntar evidencia y aceptación separada del equipo.
+
