@@ -1,0 +1,108 @@
+Acceso denegado.
+[INFO] Scanning for projects...
+[INFO]
+[INFO] -----------------------< pe.tecsup:main-sprint1 >-----------------------
+[INFO] Building MAIN Sprint 1 0.1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- clean:3.4.0:clean (default-clean) @ main-sprint1 ---
+[INFO] Deleting C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN\target
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ main-sprint1 ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ main-sprint1 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 10 source files with javac [debug parameters release 21] to target\classes
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ main-sprint1 ---
+[INFO] skip non existing resourceDirectory C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN\src\test\resources
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ main-sprint1 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target\test-classes
+[INFO]
+[INFO] --- surefire:3.5.2:test (default-test) @ main-sprint1 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running pe.tecsup.main.ActividadFechaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.135 s -- in pe.tecsup.main.ActividadFechaTest
+[INFO] Running pe.tecsup.main.ActividadIntegrationTest
+09:34:29.945 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [pe.tecsup.main.ActividadIntegrationTest]: ActividadIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+09:34:30.103 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.ActividadIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-13T09:34:30.678-05:00  INFO 14020 --- [           main] p.tecsup.main.ActividadIntegrationTest   : Starting ActividadIntegrationTest using Java 22.0.2 with PID 14020 (started by USER in C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN)
+2026-10-13T09:34:30.679-05:00  INFO 14020 --- [           main] p.tecsup.main.ActividadIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-10-13T09:34:31.734-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-13T09:34:31.985-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:main user=SA
+2026-10-13T09:34:31.987-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-13T09:34:32.358-05:00  INFO 14020 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name users
+2026-10-13T09:34:32.452-05:00  INFO 14020 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-13T09:34:33.089-05:00  INFO 14020 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-13T09:34:33.089-05:00  INFO 14020 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-13T09:34:33.090-05:00  INFO 14020 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-13T09:34:33.114-05:00  INFO 14020 --- [           main] p.tecsup.main.ActividadIntegrationTest   : Started ActividadIntegrationTest in 2.822 seconds (process running for 4.017)
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-13T09:34:33.734-05:00  WARN 14020 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/actividades/1' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.400 s -- in pe.tecsup.main.ActividadIntegrationTest
+[INFO] Running pe.tecsup.main.AdminCredentialsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.937 s -- in pe.tecsup.main.AdminCredentialsTest
+[INFO] Running pe.tecsup.main.administracion.AdminIntegrationTest
+2026-10-13T09:34:35.192-05:00  INFO 14020 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.administracion.AdminIntegrationTest]: AdminIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-13T09:34:35.210-05:00  INFO 14020 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.administracion.AdminIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-13T09:34:35.316-05:00  INFO 14020 --- [           main] p.t.m.a.AdminIntegrationTest             : Starting AdminIntegrationTest using Java 22.0.2 with PID 14020 (started by USER in C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN)
+2026-10-13T09:34:35.316-05:00  INFO 14020 --- [           main] p.t.m.a.AdminIntegrationTest             : No active profile set, falling back to 1 default profile: "default"
+2026-10-13T09:34:35.566-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-13T09:34:35.568-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:admin_tests user=SA
+2026-10-13T09:34:35.568-05:00  INFO 14020 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-13T09:34:35.788-05:00  INFO 14020 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name users
+2026-10-13T09:34:35.792-05:00  INFO 14020 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-13T09:34:35.899-05:00  INFO 14020 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-13T09:34:35.900-05:00  INFO 14020 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-13T09:34:35.900-05:00  INFO 14020 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-13T09:34:35.906-05:00  INFO 14020 --- [           main] p.t.m.a.AdminIntegrationTest             : Started AdminIntegrationTest in 0.629 seconds (process running for 6.809)
+2026-10-13T09:34:35.922-05:00  WARN 14020 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/admin/actividades' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-10-13T09:34:36.365-05:00  WARN 14020 --- [           main] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.224 s -- in pe.tecsup.main.administracion.AdminIntegrationTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- jar:3.4.2:jar (default-jar) @ main-sprint1 ---
+[INFO] Building jar: C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN\target\main-sprint1-0.1.0.jar
+[INFO]
+[INFO] --- spring-boot:3.4.1:repackage (repackage) @ main-sprint1 ---
+[INFO] Replacing main artifact C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN\target\main-sprint1-0.1.0.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to C:\Users\USER\Desktop\4� Ciclo\Proyecto-Integrador-MAIN\target\main-sprint1-0.1.0.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.965 s
+[INFO] Finished at: 2026-10-13T09:34:37-05:00
+[INFO] ------------------------------------------------------------------------

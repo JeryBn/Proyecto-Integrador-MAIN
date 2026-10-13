@@ -34,3 +34,7 @@ Repositorio publico. Para subir cambios se debe aceptar la invitacion. Ramas: je
 - Canvas: https://tecsup.instructure.com/courses/74457/modules
 - Spring Boot: https://docs.spring.io/spring-boot/3.4/reference/testing/spring-boot-applications.html
 - Spring Security: https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html
+
+## Backend administrativo Spring Boot
+
+Administración Java en el mismo servidor: crear actividades, consultar cursos/listado/detalle y acceso por rol ADMIN. Instalación y contrato para React: [docs/revision/michael/ADMINISTRACION_SPRING.md](docs/revision/michael/ADMINISTRACION_SPRING.md). Configurar credenciales administrativas por entorno. H2 permite probar el flujo administración→alumno; persistencia MySQL sigue pendiente de T10. Spring sustituye la propuesta Django por instrucción de Michael; actualizar el acuerdo tecnológico en Trello con el equipo. HU10 permanece propuesta para aceptación.
