@@ -463,4 +463,3 @@ Criterios:
 - Contenido rechazado/pending no llega a otra plataforma ni sus notificaciones; edición aprobada muestra la misma marca.
 - Membresía revocada, usuario ajeno, cambio de cuenta, reconexión y proveedor IA caído dan resultados coherentes.
 - Registrar versiones, cuentas sintéticas, resultados y defectos; adjuntar evidencia y aceptación separada del equipo.
-
