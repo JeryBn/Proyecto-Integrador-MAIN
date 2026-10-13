@@ -4,6 +4,11 @@ target/
 .env
 *.log
 *.jar
+!mobile/gradle/wrapper/gradle-wrapper.jar
+mobile/.gradle/
+mobile/.kotlin/
+mobile/**/build/
+mobile/local.properties
 
 frontend/node_modules/
 frontend/dist/

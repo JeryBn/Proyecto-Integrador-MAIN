@@ -26,4 +26,10 @@ Se publica únicamente backend, datos y arquitectura. Se añadieron Clock inyect
 
 Actualizacion: por solicitud de Jery se integro la interfaz de referencia y un paquete ejecutable local para Pamela. No constituye una contribucion atribuida a Pamela.
 
+## Aplicación Android de Jery — 12 de octubre de 2026
+
+Solicitud: conectar con GitHub como JeryBn, consultar las asignaciones actuales de Trello, implementar tareas con commits separados y actualizar su avance. Aclaración posterior: desarrollar solo la aplicación de Jery y sus complementos.
+
+Codex inspeccionó el tablero y el backend actual. Preparación Kotlin, T07 y T08 se implementan en mobile/ con Compose y el contrato existente de sesión/CSRF. Pruebas contra el backend local con datos sintéticos y evidencia del emulador. No se atribuye a Pamela o Michael el desarrollo asistido, ni se declara aprobación del equipo/profesor. T10 y las tareas de Django/React permanecen en su ámbito original.
+
 Actualizacion: por solicitud de Jery se integro la interfaz de referencia y un paquete ejecutable local para Pamela. No constituye una contribucion atribuida a Pamela.
