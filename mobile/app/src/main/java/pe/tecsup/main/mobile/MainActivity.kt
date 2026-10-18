@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,34 +18,73 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
-        )
-        setContent { MainTheme { MainApp() } }
+        setContent {
+            val model: MainViewModel = viewModel()
+            SideEffect {
+                val bars = if (model.darkTheme) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                    else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+                enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+            }
+            MainTheme(darkTheme = model.darkTheme) { MainApp(model) }
+        }
     }
 }
 
-@Composable fun MainTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = lightColorScheme(
-        primary = Color(0xFF244C78), secondary = Color(0xFF406D65),
+@Composable fun MainTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+    val colors = if (darkTheme) darkColorScheme(
+        primary = Color(0xFFB5D4F4), onPrimary = Color(0xFF0B3154),
+        primaryContainer = Color(0xFF16466F), onPrimaryContainer = Color(0xFFD8E9FA),
+        secondary = Color(0xFFB7D9CE), onSecondary = Color(0xFF203A33),
+        secondaryContainer = Color(0xFF304D44), onSecondaryContainer = Color(0xFFD3EAE1),
+        tertiary = Color(0xFFF0C77B), onTertiary = Color(0xFF422C00),
+        background = Color(0xFF101820), onBackground = Color(0xFFE2E8EF),
+        surface = Color(0xFF151F28), onSurface = Color(0xFFE2E8EF),
+        surfaceVariant = Color(0xFF303B45), onSurfaceVariant = Color(0xFFC2CBD4),
+        errorContainer = Color(0xFF5A2424), onErrorContainer = Color(0xFFFFDAD6)
+    ) else lightColorScheme(
+        primary = Color(0xFF244C78), onPrimary = Color.White,
         primaryContainer = Color(0xFFE0EDF7), onPrimaryContainer = Color(0xFF173A60),
+        secondary = Color(0xFF406D65), onSecondary = Color.White,
         secondaryContainer = Color(0xFFE0EEE9), onSecondaryContainer = Color(0xFF24483E),
-        background = Color(0xFFF5F7FA), surface = Color.White
-    ), content = content)
+        tertiary = Color(0xFF805A14), onTertiary = Color.White,
+        background = Color(0xFFF5F7FA), onBackground = Color(0xFF171C22),
+        surface = Color.White, onSurface = Color(0xFF171C22),
+        surfaceVariant = Color(0xFFE8EDF2), onSurfaceVariant = Color(0xFF46515B),
+        errorContainer = Color(0xFFFFDAD6), onErrorContainer = Color(0xFF410002)
+    )
+    MaterialTheme(
+        colorScheme = colors,
+        typography = Typography().copy(
+            displaySmall = TextStyle(fontSize = 36.sp, lineHeight = 42.sp, fontWeight = FontWeight.Bold),
+            headlineMedium = TextStyle(fontSize = 27.sp, lineHeight = 33.sp, fontWeight = FontWeight.Bold),
+            titleLarge = TextStyle(fontSize = 20.sp, lineHeight = 26.sp, fontWeight = FontWeight.SemiBold),
+            bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
+            bodySmall = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+            labelMedium = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
+        ),
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(8.dp),
+            small = RoundedCornerShape(12.dp),
+            medium = RoundedCornerShape(18.dp),
+            large = RoundedCornerShape(24.dp),
+            extraLarge = RoundedCornerShape(32.dp)
+        ),
+        content = content
+    )
 }
 
 @Composable fun MainApp(model: MainViewModel = viewModel()) {
-    BackHandler(enabled = model.profile != null && model.selectedId != null) { model.backToList() }
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (model.profile == null) LoginScreen(model)
-        else if (model.selectedId != null) ActivityDetailScreen(model)
-        else ActivityListScreen(model)
+        else MainNavigationScreen(model)
     }
 }
 

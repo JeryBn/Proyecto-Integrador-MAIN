@@ -14,18 +14,25 @@ class DetailUiTest {
         ui.onNodeWithText("Usuario").performTextReplacement(user)
         ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
         ui.onNodeWithText("Ingresar").performClick()
+        waitFor("Tu espacio académico")
+        ui.onNodeWithContentDescription("Actividades").performClick()
     }
     private fun waitFor(text: String) {
         ui.waitUntil(20_000) { ui.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
     }
     private fun capture(name: String) { ui.waitForIdle(); Evidence.capture(name) }
+    private fun openDetail(title: String) {
+        val target = hasContentDescription("Ver detalle de $title")
+        ui.onNode(hasScrollAction()).performScrollToNode(target)
+        ui.onNode(target).performClick()
+    }
 
     @Test fun openDetailRotateAndReturnPreservesSearchAndFilter() {
         login()
         waitFor("Revisión de criterios de aceptación")
         ui.onNodeWithText("Buscar por título o curso").performTextInput("Primer")
         ui.onNode(hasText("Vencidas") and hasClickAction()).performClick()
-        ui.onNodeWithContentDescription("Ver detalle de Primer avance de MAIN").performScrollTo().performClick()
+        openDetail("Primer avance de MAIN")
         waitFor("Docente de demostración")
         ui.onNodeWithText("Indicaciones").assertIsDisplayed()
         capture("07_detalle_autorizado.png")
@@ -35,7 +42,7 @@ class DetailUiTest {
         ui.onNodeWithText("Primer").assertIsDisplayed()
         ui.onNode(hasText("Vencidas") and hasClickAction()).assertIsSelected()
         capture("08_regreso_con_contexto.png")
-        ui.onNodeWithContentDescription("Ver detalle de Primer avance de MAIN").performScrollTo().performClick()
+        openDetail("Primer avance de MAIN")
         waitFor("Docente de demostración")
         Espresso.pressBack()
         ui.onNodeWithText("Primer").assertIsDisplayed()
@@ -59,7 +66,7 @@ class DetailUiTest {
             waitFor("Revisión de criterios de aceptación")
             // Omit cookie for this one request: the REAL backend returns 401.
             bridge.expireNextApi.set(true)
-            ui.onNodeWithContentDescription("Ver detalle de Revisión de criterios de aceptación").performScrollTo().performClick()
+            openDetail("Revisión de criterios de aceptación")
             waitFor("Tu sesión finalizó. Ingresa nuevamente.")
             ui.onNodeWithText("Alex Demo").assertDoesNotExist()
             capture("10_sesion_finalizada.png")

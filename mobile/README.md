@@ -1,6 +1,8 @@
 # MAIN Android — parte de Jery
 
-Cliente nativo Kotlin y Jetpack Compose para HU06/HU07. Consume Spring Boot; no modifica React, Django ni las reglas de autorización del servidor.
+Cliente Kotlin y Jetpack Compose para actividades, agenda autorizada, perfiles, mensajes de texto revisados, grupos, avisos y asistente académico. Consume Spring Boot. Estados y adjuntos multimedia siguen pendientes.
+
+Estado actual: [implementación y pendientes](../docs/ESTADO_IMPLEMENTACION_2026_10_18.md), [IA y despliegue](../docs/IA_Y_DESPLIEGUE.md). Las evidencias anteriores de HU06/HU07 se conservan como historial.
 
 ## Alcance y aceptación
 
@@ -40,3 +42,5 @@ No se persisten contraseña ni cookies. Rotación conserva la sesión en ViewMod
 Preparación y acceso → T07 listado → T08 detalle → validación y entrega. El esquema compartido y Django permanecen a cargo del trabajo conjunto T10. La app reutiliza el contrato del backend disponible.
 
 El flujo Android de GitHub compila, ejecuta pruebas unitarias y analiza lint; adjunta una APK debug por ejecución. Las pruebas instrumentadas contra Spring Boot se ejecutan localmente y se documentan en docs/mobile/. No se afirma que el flujo de CI haya pasado hasta comprobar su ejecución.
+
+El procedimiento de arranque del emulador, conexión al servidor y ejecución completa está en [Verificación local](../docs/mobile/VERIFICACION_LOCAL.md). Los cambios y resultados de la navegación Material 3 se registran en [M04/M05](../docs/mobile/M04_M05_RESULTADOS.md).
