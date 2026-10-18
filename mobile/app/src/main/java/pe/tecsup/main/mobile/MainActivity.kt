@@ -40,8 +40,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable fun MainTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
     val colors = if (darkTheme) darkColorScheme(
-        primary = Color(0xFFB5D4F4), onPrimary = Color(0xFF0B3154),
-        primaryContainer = Color(0xFF16466F), onPrimaryContainer = Color(0xFFD8E9FA),
+        primary = Color(0xFF80D5BB), onPrimary = Color(0xFF0B3154),
+        primaryContainer = Color(0xFF145244), onPrimaryContainer = Color(0xFFCCF7E8),
         secondary = Color(0xFFB7D9CE), onSecondary = Color(0xFF203A33),
         secondaryContainer = Color(0xFF304D44), onSecondaryContainer = Color(0xFFD3EAE1),
         tertiary = Color(0xFFF0C77B), onTertiary = Color(0xFF422C00),
@@ -50,12 +50,12 @@ class MainActivity : ComponentActivity() {
         surfaceVariant = Color(0xFF303B45), onSurfaceVariant = Color(0xFFC2CBD4),
         errorContainer = Color(0xFF5A2424), onErrorContainer = Color(0xFFFFDAD6)
     ) else lightColorScheme(
-        primary = Color(0xFF244C78), onPrimary = Color.White,
-        primaryContainer = Color(0xFFE0EDF7), onPrimaryContainer = Color(0xFF173A60),
+        primary = Color(0xFF087F68), onPrimary = Color.White,
+        primaryContainer = Color(0xFFD9F3E9), onPrimaryContainer = Color(0xFF123D31),
         secondary = Color(0xFF406D65), onSecondary = Color.White,
         secondaryContainer = Color(0xFFE0EEE9), onSecondaryContainer = Color(0xFF24483E),
         tertiary = Color(0xFF805A14), onTertiary = Color.White,
-        background = Color(0xFFF5F7FA), onBackground = Color(0xFF171C22),
+        background = Color(0xFFF7F9F8), onBackground = Color(0xFF171C22),
         surface = Color.White, onSurface = Color(0xFF171C22),
         surfaceVariant = Color(0xFFE8EDF2), onSurfaceVariant = Color(0xFF46515B),
         errorContainer = Color(0xFFFFDAD6), onErrorContainer = Color(0xFF410002)

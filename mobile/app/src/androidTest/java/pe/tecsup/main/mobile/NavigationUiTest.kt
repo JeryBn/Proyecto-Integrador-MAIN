@@ -45,8 +45,9 @@ class NavigationUiTest {
         Evidence.capture("11_inicio.png")
 
         ui.onNodeWithContentDescription("Mensajes").performClick()
-        ui.onNode(hasScrollAction()).performScrollToNode(hasText("Contactos autorizados"))
-        ui.onNodeWithText("Contactos autorizados").assertIsDisplayed()
+        ui.onNodeWithContentDescription("Nuevo chat").performClick()
+        ui.onNodeWithText("Contactos de MAIN").assertIsDisplayed()
+        androidx.test.espresso.Espresso.pressBack()
         ui.onNodeWithContentDescription("Estados").performClick()
         ui.onNodeWithText("Módulo en preparación").assertIsDisplayed()
         ui.onNodeWithContentDescription("Asistente").performClick()
@@ -68,6 +69,7 @@ class NavigationUiTest {
         ui.onNodeWithContentDescription("Tema oscuro").assertIsOn()
         Evidence.capture("12_perfil_oscuro.png")
 
+        ui.onNodeWithContentDescription("Inicio").performClick()
         ui.onNodeWithContentDescription("Actividades").performClick()
         ui.waitUntil(20_000) {
             ui.onAllNodesWithText("Revisión de criterios de aceptación").fetchSemanticsNodes().isNotEmpty()

@@ -15,7 +15,9 @@ import java.io.IOException
 
 class MainViewModel : ViewModel() {
     private data class AccountBundle(val profile: Profile, val preferences: UserPreferences,
-                                     val agenda: AcademicAgenda, val contacts: List<ContactUser>)
+                                     val agenda: AcademicAgenda, val contacts: List<ContactUser>,val grades:List<CourseGrades>)
+    var grades by mutableStateOf<List<CourseGrades>>(emptyList())
+        private set
     var darkTheme by mutableStateOf(false)
     var preferences by mutableStateOf(UserPreferences())
         private set
@@ -31,6 +33,9 @@ class MainViewModel : ViewModel() {
         private set
     internal var selectedSection by mutableStateOf(MainSection.HOME)
         private set
+    var showChatPicker by mutableStateOf(false)
+    var contactProfile by mutableStateOf<String?>(null)
+    var settingsPage by mutableStateOf("MAIN")
     var profile by mutableStateOf<Profile?>(null)
         private set
     var busy by mutableStateOf(false)
@@ -127,6 +132,7 @@ class MainViewModel : ViewModel() {
         if (selectedId == null) selectedSection = section
         if (section == MainSection.MESSAGES) loadConversations()
     }
+    fun selectedSectionForChat() { selectedSection=MainSection.MESSAGES; settingsPage="MAIN" }
 
     fun login(endpoint: String, username: String, password: String) {
         if (busy) return
@@ -140,7 +146,8 @@ class MainViewModel : ViewModel() {
                     val settings = client.preferences()
                     val calendar = client.agenda()
                     val connections = client.contacts()
-                    AccountBundle(account, settings, calendar, connections)
+                    val marks=if(account.rol=="Alumno") client.grades() else emptyList()
+                    AccountBundle(account, settings, calendar, connections,marks)
                 }
                 api = client
                 profile = result.profile
@@ -148,6 +155,7 @@ class MainViewModel : ViewModel() {
                 darkTheme = preferences.darkTheme
                 agenda = result.agenda
                 contacts = result.contacts
+                grades = result.grades
                 loadPending()
             } catch (error: Exception) {
                 message = friendly(error)
@@ -175,6 +183,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun clearAccount() {
+        showChatPicker=false;contactProfile=null;settingsPage="MAIN"
+        grades=emptyList()
         notices=emptyList();noticePage=0
         cancelAssistant()
         assistantQuestion=""; assistantAnswer=""; assistantError=""
@@ -248,7 +258,8 @@ class MainViewModel : ViewModel() {
         val settings = withContext(Dispatchers.IO) { client.preferences() }
         val calendar = withContext(Dispatchers.IO) { client.agenda() }
         val connections = withContext(Dispatchers.IO) { client.contacts() }
-        if (api === client) { preferences = settings; darkTheme = settings.darkTheme; agenda = calendar; contacts = connections }
+        val marks = withContext(Dispatchers.IO) { if(profile?.rol=="Alumno")client.grades() else emptyList() }
+        if (api === client) { preferences = settings; darkTheme = settings.darkTheme; agenda = calendar; contacts = connections; grades=marks }
     }
 
     fun savePreferences(value: UserPreferences) = accountOperation("Preferencias guardadas.") { client ->

@@ -40,26 +40,33 @@ import androidx.compose.ui.unit.dp
 internal enum class MainSection(val label: String, val icon: ImageVector, val navigationLabel: String = label) {
     HOME("Inicio", Icons.Outlined.Home),
     ACTIVITIES("Actividades", Icons.AutoMirrored.Outlined.Assignment, "Tareas"),
-    MESSAGES("Mensajes", Icons.Outlined.Forum),
+    MESSAGES("Mensajes", Icons.Outlined.Forum, "Chats"),
     STATUSES("Estados", Icons.Outlined.RadioButtonChecked),
     ASSISTANT("Asistente", Icons.Outlined.AutoAwesome, "IA"),
-    PROFILE("Perfil", Icons.Outlined.PersonOutline)
+    PROFILE("Perfil", Icons.Outlined.PersonOutline, "Ajustes")
 }
 
 @Composable
 internal fun MainNavigationScreen(model: MainViewModel) {
-    BackHandler(enabled = model.selectedId != null || model.selectedConversation != null) {
-        if(model.selectedId!=null)model.backToList() else model.closeConversation()
+    BackHandler(enabled = model.selectedId != null || model.selectedConversation != null || model.showChatPicker || model.contactProfile!=null || model.settingsPage!="MAIN" || model.selectedSection==MainSection.ACTIVITIES) {
+        when {
+            model.contactProfile!=null -> model.contactProfile=null
+            model.showChatPicker -> model.showChatPicker=false
+            model.settingsPage!="MAIN" -> model.settingsPage=if(model.settingsPage=="BLOCKED")"PRIVACY" else "MAIN"
+            model.selectedId!=null -> model.backToList()
+            model.selectedSection==MainSection.ACTIVITIES && model.selectedConversation==null -> model.selectSection(MainSection.HOME)
+            else -> model.closeConversation()
+        }
     }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (model.selectedId == null && model.selectedConversation == null) {
+            if (model.selectedId == null && model.selectedConversation == null && !model.showChatPicker && model.contactProfile==null && model.settingsPage=="MAIN") {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    MainSection.entries.forEach { section ->
+                    MainSection.entries.filter { it!=MainSection.ACTIVITIES }.forEach { section ->
                         NavigationBarItem(
                             modifier = Modifier.semantics { contentDescription = section.label },
-                            selected = model.selectedSection == section,
+                            selected = model.selectedSection == section || section==MainSection.HOME && model.selectedSection==MainSection.ACTIVITIES,
                             onClick = { model.selectSection(section) },
                             icon = { Icon(section.icon, contentDescription = null) },
                             label = { Text(section.navigationLabel, maxLines = 1, style = MaterialTheme.typography.labelSmall) }
@@ -74,6 +81,8 @@ internal fun MainNavigationScreen(model: MainViewModel) {
             color = MaterialTheme.colorScheme.background
         ) {
             when {
+                model.contactProfile!=null -> ContactInfoScreen(model)
+                model.showChatPicker -> NewChatScreen(model)
                 model.selectedId != null -> ActivityDetailScreen(model)
                 model.selectedConversation != null -> ConversationScreen(model)
                 model.selectedSection == MainSection.HOME -> HomeSection(model)
@@ -122,7 +131,7 @@ private fun HomeSection(model: MainViewModel) {
                     )
                 }
                 Text("Información recibida de tu cuenta en MAIN.", style = MaterialTheme.typography.bodySmall)
-                Button(onClick = { model.selectSection(MainSection.ACTIVITIES) }) {
+                Button(modifier=Modifier.semantics{contentDescription="Actividades"},onClick = { model.selectSection(MainSection.ACTIVITIES) }) {
                     Text("Ver actividades")
                 }
             }
@@ -150,6 +159,7 @@ private fun HomeSection(model: MainViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         }
+        if(model.profile?.rol=="Alumno") CourseGradesContent(model)
         AgendaContent(model)
         Text(
             "Consulta tus cursos y horarios en el asistente académico.",

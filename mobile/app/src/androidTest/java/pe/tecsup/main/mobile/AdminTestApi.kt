@@ -32,8 +32,12 @@ internal class AdminTestApi {
  fun get(path:String):JSONObject=JSONObject(exchange(path))
  fun list(path:String):JSONArray=JSONArray(exchange(path))
  fun post(path:String,body:JSONObject):JSONObject{
+  return mutate(path,body,"POST")
+ }
+ fun put(path:String,body:JSONObject):JSONObject=mutate(path,body,"PUT")
+ private fun mutate(path:String,body:JSONObject,method:String):JSONObject{
   val csrf=get("/api/admin/csrf")
-  val result=exchange(path,"POST",body.toString(),headers=mapOf(csrf.getString("headerName") to csrf.getString("token")))
+  val result=exchange(path,method,body.toString(),headers=mapOf(csrf.getString("headerName") to csrf.getString("token")))
   return if(result.isBlank())JSONObject() else JSONObject(result)
  }
  fun review(id:String,approved:Boolean,reason:String="Regla sintética de prueba"){

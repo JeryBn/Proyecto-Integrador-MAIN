@@ -12,6 +12,9 @@ internal object Evidence {
     fun capture(name: String) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
+        instrumentation.waitForIdleSync()
+        // Accessibility state may advance before the emulator presents the rendered frame.
+        android.os.SystemClock.sleep(350)
         val bitmap = instrumentation.uiAutomation.takeScreenshot()
         if (Build.VERSION.SDK_INT >= 29) {
             val resolver = context.contentResolver

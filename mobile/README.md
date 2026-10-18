@@ -1,5 +1,7 @@
 # MAIN Android — parte de Jery
 
+Revisión de interfaz y notas: [Chats, privados y calificaciones por curso](../docs/CHATS_Y_NOTAS_2026_10_18.md). Inicio mantiene el centro académico. Chats → Nuevo chat permite iniciar privados con estudiantes o profesores; la privacidad se gestiona desde la información de cada contacto.
+
 Cliente Kotlin y Jetpack Compose para actividades, agenda autorizada, perfiles, mensajes de texto revisados, grupos, avisos y asistente académico. Consume Spring Boot. Estados y adjuntos multimedia siguen pendientes.
 
 Estado actual: [implementación y pendientes](../docs/ESTADO_IMPLEMENTACION_2026_10_18.md), [IA y despliegue](../docs/IA_Y_DESPLIEGUE.md). Las evidencias anteriores de HU06/HU07 se conservan como historial.

@@ -165,6 +165,11 @@ class MainApi(val endpoint: String) {
     fun contacts(): List<ContactUser> = rows(JSONArray(checked(request("/api/v1/contacts")))) {
         ContactUser(it.getString("username"),it.getString("name"),it.getString("role"),it.getBoolean("muted"),it.getBoolean("blocked"))
     }
+    fun grades():List<CourseGrades> = rows(JSONArray(checked(request("/api/v1/grades")))) { course ->
+        CourseGrades(course.getLong("courseId"),course.getString("course"),course.getString("teacher"),rows(course.getJSONArray("grades")) {
+            Grade(it.getString("assessment"),it.get("score").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.get("maximum").toString().toBigDecimal().stripTrailingZeros().toPlainString())
+        })
+    }
     fun saveContact(value: ContactUser) {
         mutate("/api/v1/contacts/"+URLEncoder.encode(value.username,"UTF-8")+"/preferences",
             JSONObject().put("muted",value.muted).put("blocked",value.blocked))

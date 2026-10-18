@@ -42,7 +42,9 @@ public class CommunicationService {
  public List<Conversation> conversations(String actor,int offset,int limit){
   users.active(actor);IdentityService.page(offset,limit);
   return db.query("""
-   SELECT c.id,c.kind,c.title,m.administrator,m.state FROM conversation c JOIN conversation_member m ON m.conversation_id=c.id
+   SELECT c.id,c.kind,CASE WHEN c.kind='DIRECT' THEN
+    (SELECT u.display_name FROM conversation_member other JOIN main_user u ON u.username=other.username WHERE other.conversation_id=c.id AND other.username<>m.username)
+    ELSE c.title END AS title,m.administrator,m.state FROM conversation c JOIN conversation_member m ON m.conversation_id=c.id
    WHERE m.username=? AND m.state IN ('ACTIVE','INVITED') ORDER BY c.created_at DESC,c.id LIMIT ? OFFSET ?
    """,(r,n)->new Conversation(r.getString(1),r.getString(2),r.getString(3),r.getBoolean(4),r.getString(5)),actor,limit,offset);
  }
