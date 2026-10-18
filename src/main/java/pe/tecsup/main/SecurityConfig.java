@@ -13,7 +13,7 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 @Configuration
 public class SecurityConfig {
     @Bean PasswordEncoder encoder(){return new BCryptPasswordEncoder();}
-    @Bean InMemoryUserDetailsManager users(PasswordEncoder encoder,
+    public InMemoryUserDetailsManager users(PasswordEncoder encoder,
                                            @Value("${main.admin.username:admin}") String adminUsername,
                                            @Value("${main.admin.password-hash:}") String adminHash,
                                            @Value("${main.admin.password:}") String adminPassword){
@@ -34,8 +34,10 @@ public class SecurityConfig {
         return users;
     }
     @Bean HttpSessionCsrfTokenRepository csrfRepository(){ return new HttpSessionCsrfTokenRepository(); }
+    @Bean org.springframework.security.core.session.SessionRegistry sessionRegistry(){return new org.springframework.security.core.session.SessionRegistryImpl();}
+    @Bean org.springframework.security.web.session.HttpSessionEventPublisher sessionEvents(){return new org.springframework.security.web.session.HttpSessionEventPublisher();}
     @Bean @Order(1) SecurityFilterChain administrativeSecurity(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository) throws Exception {
-        http.securityMatcher("/api/admin/**")
+        http.securityMatcher("/api/admin/**","/moderation.html","/moderation.js","/moderation.css")
                 .csrf(c -> c.csrfTokenRepository(csrfRepository))
                 .authorizeHttpRequests(a -> a.requestMatchers("/api/admin/csrf", "/api/admin/login").permitAll().anyRequest().hasRole("ADMIN"))
                 .formLogin(f -> f.loginProcessingUrl("/api/admin/login")
@@ -55,6 +57,8 @@ public class SecurityConfig {
                 }))
                 .exceptionHandling(e -> e.authenticationEntryPoint((req,res,ex) -> adminError(res,401,"UNAUTHENTICATED"))
                         .accessDeniedHandler((req,res,ex) -> adminError(res,403,"FORBIDDEN")));
+        http.sessionManagement(s -> s.maximumSessions(-1).sessionRegistry(sessionRegistry())
+                .expiredSessionStrategy(event -> adminError(event.getResponse(),401,"SESSION_EXPIRED")));
         return http.build();
     }
     private static void adminError(jakarta.servlet.http.HttpServletResponse res,int status,String code) throws java.io.IOException {
@@ -64,10 +68,14 @@ public class SecurityConfig {
     @Bean @Order(2) SecurityFilterChain security(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository) throws Exception {
         http.csrf(c -> c.csrfTokenRepository(csrfRepository));
         http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/error",
-                        "/admin.html","/assets/admin.js","/assets/admin.css").permitAll().anyRequest().hasRole("ALUMNO"))
+                        "/admin.html","/assets/admin.js","/assets/admin.css").permitAll()
+                        .requestMatchers("/api/actividades/**").hasRole("ALUMNO")
+                        .anyRequest().hasAnyRole("ALUMNO","DOCENTE","FAMILIAR"))
                 .formLogin(f->f.loginPage("/login.html").loginProcessingUrl("/login").defaultSuccessUrl("/",true).failureUrl("/login.html?error"))
                 .logout(l->l.logoutUrl("/logout").logoutSuccessUrl("/login.html?salida"))
                 .exceptionHandling(e->e.defaultAuthenticationEntryPointFor((req,res,ex)->res.sendError(401),new AntPathRequestMatcher("/api/**")));
+        http.sessionManagement(s -> s.maximumSessions(-1).sessionRegistry(sessionRegistry())
+                .expiredSessionStrategy(event -> adminError(event.getResponse(),401,"SESSION_EXPIRED")));
         return http.build();
     }
 }

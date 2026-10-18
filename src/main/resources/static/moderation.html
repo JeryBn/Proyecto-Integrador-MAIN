@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; frame-ancestors 'none'">
+<title>MAIN · Revisión de mensajes</title><link rel="stylesheet" href="/moderation.css"></head>
+<body><main><header><p>MAIN · Administración</p><h1>Revisión de mensajes</h1><a href="/admin.html">Volver a Administración</a></header>
+<p>Solo la versión que revisas puede ser aprobada. Los borradores pendientes o rechazados permanecen privados.</p>
+<p id="notice" role="status"></p><button id="refresh">Actualizar cola</button>
+<section id="queue" aria-label="Mensajes pendientes"></section>
+<nav><button id="previous">Página anterior</button><button id="next">Página siguiente</button></nav>
+</main><script src="/moderation.js"></script></body></html>

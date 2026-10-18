@@ -1,7 +1,11 @@
 target/
+var/
 .idea/
 *.iml
 .env
+.env.local
+*.jks
+*.keystore
 *.log
 *.jar
 !mobile/gradle/wrapper/gradle-wrapper.jar
