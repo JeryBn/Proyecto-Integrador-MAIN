@@ -131,6 +131,7 @@ class MainViewModel : ViewModel() {
     internal fun selectSection(section: MainSection) {
         if (selectedId == null) selectedSection = section
         if (section == MainSection.MESSAGES) loadConversations()
+        if (section == MainSection.STATUSES) loadStatuses()
     }
     fun selectedSectionForChat() { selectedSection=MainSection.MESSAGES; settingsPage="MAIN" }
 
@@ -184,7 +185,7 @@ class MainViewModel : ViewModel() {
 
     private fun clearAccount() {
         showChatPicker=false;contactProfile=null;settingsPage="MAIN"
-        grades=emptyList()
+        grades=emptyList(); teachingCourse=null; teachingGrades=emptyList(); statuses=emptyList(); statusViewer=null; statusBytes=null; statusComposer=false; statusBusy=false; statusError=""
         notices=emptyList();noticePage=0
         cancelAssistant()
         assistantQuestion=""; assistantAnswer=""; assistantError=""
@@ -252,6 +253,56 @@ class MainViewModel : ViewModel() {
                 }
             } finally { if (api === client) accountBusy = false }
         }
+    }
+
+    var statuses by mutableStateOf<List<StatusUpdate>>(emptyList())
+        private set
+    var statusBusy by mutableStateOf(false)
+        private set
+    var statusError by mutableStateOf("")
+        private set
+    var statusViewer by mutableStateOf<StatusUpdate?>(null)
+        private set
+    var statusBytes by mutableStateOf<ByteArray?>(null)
+        private set
+    var statusComposer by mutableStateOf(false)
+    private fun statusOperation(operation:suspend(MainApi)->Unit){
+        val client=api?:return;if(statusBusy)return;statusBusy=true;statusError=""
+        viewModelScope.launch{try{operation(client)}catch(error:Exception){if(api===client){if(error is SessionExpired)expireSession() else statusError=friendly(error)}}finally{if(api===client)statusBusy=false}}
+    }
+    fun loadStatuses()=statusOperation { client -> val rows=withContext(Dispatchers.IO){client.statuses()};if(api===client){statuses=rows;if(statusViewer!=null && rows.none{it.id==statusViewer?.id})closeStatus()} }
+    fun createStatus(key:String,text:String,color:String,audience:String,attachment:StatusAttachment?)=statusOperation { client ->
+        val rows=withContext(Dispatchers.IO){client.createStatus(key,text,color,audience,attachment);client.statuses()}
+        if(api===client){statuses=rows;statusComposer=false}
+    }
+    fun openStatus(value:StatusUpdate){
+        if(statusBusy)return;statusViewer=value;statusBytes=null
+        statusOperation { client -> val bytes=withContext(Dispatchers.IO){val data=if(value.kind!="TEXT")client.statusMedia(value.id) else null;client.seenStatus(value.id);data}
+            if(api===client && statusViewer?.id==value.id){statusBytes=bytes;statuses=statuses.map{if(it.id==value.id)it.copy(seen=true) else it}}
+        }
+    }
+    fun closeStatus(){statusViewer=null;statusBytes=null}
+    fun deleteStatus()=statusOperation { client -> val value=statusViewer?:return@statusOperation
+        val rows=withContext(Dispatchers.IO){client.deleteStatus(value.id);client.statuses()};if(api===client){closeStatus();statuses=rows}
+    }
+
+    var teachingCourse by mutableStateOf<Course?>(null)
+    var teachingGrades by mutableStateOf<List<StudentGrades>>(emptyList())
+        private set
+    fun openTeaching(course:Course) {
+        if(accountBusy)return
+        teachingGrades=emptyList(); teachingCourse=course
+        loadTeaching()
+    }
+    fun loadTeaching() = accountOperation { client ->
+        val course=teachingCourse ?: return@accountOperation
+        val result=withContext(Dispatchers.IO){client.teachingGrades(course.id)}
+        if(api===client && teachingCourse==course)teachingGrades=result
+    }
+    fun saveGrade(student:Long,assessment:String,score:String,maximum:String,expected:String,onSaved:()->Unit) = accountOperation("Nota guardada.") { client ->
+        val course=teachingCourse ?: return@accountOperation
+        val result=withContext(Dispatchers.IO){client.saveGrade(course.id,student,assessment,score,maximum,expected);client.teachingGrades(course.id)}
+        if(api===client && teachingCourse==course){teachingGrades=result;onSaved()}
     }
 
     fun refreshAccount() = accountOperation { client ->

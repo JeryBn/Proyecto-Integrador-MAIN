@@ -36,6 +36,22 @@ class GradeIntegrationTest{
   for(String score:new String[]{"-1","21","1.234"})assertThrows(DomainException.class,()->grades.save("teacher_grades",1,input(1,"Error",score,"20")));
   assertThrows(DomainException.class,()->grades.save("teacher_grades",1,input(1,"Error","0","0")));
  }
+ @Test void rosterIsRestrictedToAssignedTeacherAndIncludesSavedCorrections(){
+  assertEquals(1,grades.roster("teacher_grades",1).size());
+  assertEquals(1,grades.roster("teacher_grades",1).getFirst().studentId());
+  assertThrows(DomainException.class,()->grades.roster("alumno",1));
+  assertThrows(DomainException.class,()->grades.roster("teacher_grades",3));
+  grades.save("teacher_grades",1,input(1,"Control docente","15.5","20"));
+  assertEquals("15.50",grades.roster("teacher_grades",1).getFirst().grades().getFirst().score().toPlainString());
+ }
+ @Test void staleAndroidEditsAndDuplicateCreationAreRejected(){
+  grades.save("teacher_grades",1,new GradeService.Input(1,"Control simultáneo",new BigDecimal("10"),new BigDecimal("20"),"NEW"));
+  assertThrows(DomainException.class,()->grades.save("teacher_grades",1,new GradeService.Input(1,"Control simultáneo",new BigDecimal("11"),new BigDecimal("20"),"NEW")));
+  var old=grades.roster("teacher_grades",1).getFirst().grades().getFirst();
+  grades.save("teacher_grades",1,new GradeService.Input(1,"Control simultáneo",new BigDecimal("12"),new BigDecimal("20"),old.recordedAt()));
+  assertThrows(DomainException.class,()->grades.save("teacher_grades",1,new GradeService.Input(1,"Control simultáneo",new BigDecimal("13"),new BigDecimal("20"),old.recordedAt())));
+  assertEquals(new BigDecimal("12.00"),grades.roster("teacher_grades",1).getFirst().grades().getFirst().score());
+ }
  @Test void csrfAndAnonymousAccessAreDenied()throws Exception{
   mvc.perform(get("/api/v1/grades")).andExpect(status().isUnauthorized());
   mvc.perform(put("/api/v1/teaching/courses/1/grades").with(user("teacher_grades").roles("DOCENTE")).contentType("application/json").content("{}")).andExpect(status().isForbidden());

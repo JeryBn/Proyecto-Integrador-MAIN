@@ -165,9 +165,50 @@ class MainApi(val endpoint: String) {
     fun contacts(): List<ContactUser> = rows(JSONArray(checked(request("/api/v1/contacts")))) {
         ContactUser(it.getString("username"),it.getString("name"),it.getString("role"),it.getBoolean("muted"),it.getBoolean("blocked"))
     }
+    private fun statusValue(it:JSONObject)=StatusUpdate(it.getString("id"),it.getString("owner"),it.getString("name"),it.getString("text"),it.getString("background"),it.getString("audience"),it.getString("kind"),it.getString("state"),it.getString("createdAt"),it.getString("expiresAt"),it.getString("reason"),it.getBoolean("seen"),it.getInt("views"))
+    fun statuses():List<StatusUpdate> = rows(JSONArray(checked(request("/api/v1/statuses")))){statusValue(it)}
+    fun seenStatus(id:String){mutate("/api/v1/statuses/$id/seen",JSONObject(),"POST")}
+    fun deleteStatus(id:String){mutate("/api/v1/statuses/$id/delete",JSONObject(),"POST")}
+    fun statusMedia(id:String):ByteArray {
+        val uri=URI(endpoint+"/api/v1/statuses/$id/media");val connection=uri.toURL().openConnection() as HttpURLConnection
+        try {
+            connection.connectTimeout=8_000;connection.readTimeout=30_000;connection.instanceFollowRedirects=false;connection.useCaches=false
+            cookies.get(uri,emptyMap()).forEach{(name,values)->connection.setRequestProperty(name,values.joinToString("; "))}
+            if(connection.responseCode!=200){checked(Response(connection.responseCode,"",null,uri.path));throw ResourceUnavailable()}
+            return connection.inputStream.use{input->val output=java.io.ByteArrayOutputStream();val buffer=ByteArray(8192);var total=0
+                while(true){val count=input.read(buffer);if(count<0)break;total+=count;if(total>16*1024*1024)throw ApiFailure("Archivo demasiado grande.");output.write(buffer,0,count)};output.toByteArray()}
+        }finally{connection.disconnect()}
+    }
+    fun createStatus(key:String,text:String,background:String,audience:String,attachment:StatusAttachment?) {
+        if(attachment!=null && !attachment.mime.matches(Regex("[a-z]+/[A-Za-z0-9.+-]+")))throw ApiFailure("Tipo de archivo inválido.")
+        val csrf=json("/api/csrf");val uri=URI(endpoint+"/api/v1/statuses");val connection=uri.toURL().openConnection() as HttpURLConnection
+        val boundary="MAIN"+java.util.UUID.randomUUID().toString()
+        try {
+            connection.requestMethod="POST";connection.connectTimeout=8_000;connection.readTimeout=100_000;connection.instanceFollowRedirects=false;connection.doOutput=true;connection.setChunkedStreamingMode(8192)
+            connection.setRequestProperty(csrf.getString("headerName"),csrf.getString("token"));connection.setRequestProperty("Content-Type","multipart/form-data; boundary=$boundary")
+            cookies.get(uri,emptyMap()).forEach{(name,values)->connection.setRequestProperty(name,values.joinToString("; "))}
+            connection.outputStream.use { output ->
+                fun line(value:String){output.write(value.toByteArray(Charsets.UTF_8))}
+                mapOf("clientKey" to key,"text" to text,"background" to background,"audience" to audience).forEach{(name,value)->line("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"\r\n\r\n$value\r\n")}
+                if(attachment!=null){line("--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"status\"\r\nContent-Type: "+attachment.mime+"\r\n\r\n");output.write(attachment.bytes);line("\r\n")}
+                line("--$boundary--\r\n")
+            }
+            val status=connection.responseCode;val body=(if(status>=400)connection.errorStream else connection.inputStream)?.bufferedReader()?.use{it.readText()}.orEmpty()
+            checked(Response(status,body,null,uri.path))
+        }finally{connection.disconnect()}
+    }
+    fun teachingGrades(course:Long):List<StudentGrades> = rows(JSONArray(checked(request("/api/v1/teaching/courses/$course/grades")))) { student ->
+        StudentGrades(student.getLong("studentId"),student.getString("name"),rows(student.getJSONArray("grades")) {
+            Grade(it.getString("assessment"),it.get("score").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.get("maximum").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.getString("recordedAt"))
+        })
+    }
+    fun saveGrade(course:Long,student:Long,assessment:String,score:String,maximum:String,expected:String) {
+        mutate("/api/v1/teaching/courses/$course/grades",JSONObject().put("studentId",student).put("assessment",assessment)
+            .put("score",score.replace(',','.').toBigDecimal()).put("maximum",maximum.replace(',','.').toBigDecimal()).put("expectedRecordedAt",expected))
+    }
     fun grades():List<CourseGrades> = rows(JSONArray(checked(request("/api/v1/grades")))) { course ->
         CourseGrades(course.getLong("courseId"),course.getString("course"),course.getString("teacher"),rows(course.getJSONArray("grades")) {
-            Grade(it.getString("assessment"),it.get("score").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.get("maximum").toString().toBigDecimal().stripTrailingZeros().toPlainString())
+            Grade(it.getString("assessment"),it.get("score").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.get("maximum").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.getString("recordedAt"))
         })
     }
     fun saveContact(value: ContactUser) {

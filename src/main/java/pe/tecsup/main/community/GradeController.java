@@ -7,6 +7,7 @@ public class GradeController {
  private final GradeService grades;
  public GradeController(GradeService grades){this.grades=grades;}
  @GetMapping("/api/v1/grades") public List<GradeService.CourseGrades> own(Principal p){return grades.own(p.getName());}
+ @GetMapping("/api/v1/teaching/courses/{courseId}/grades") public List<GradeService.StudentGrades> roster(Principal p,@PathVariable long courseId){return grades.roster(p.getName(),courseId);}
  @PutMapping({"/api/v1/teaching/courses/{courseId}/grades","/api/admin/v1/courses/{courseId}/grades"})
  public GradeService.Grade save(Principal p,@PathVariable long courseId,@RequestBody GradeService.Input input){return grades.save(p.getName(),courseId,input);}
 }

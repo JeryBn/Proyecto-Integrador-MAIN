@@ -31,7 +31,7 @@ import pe.tecsup.main.mobile.data.ContactUser
     SettingsRow(Icons.Outlined.Block,"Contactos bloqueados",model.contacts.count{it.blocked}.toString(),onClick={model.settingsPage="BLOCKED"})
     HorizontalDivider()
     if(model.profile?.rol!="Familiar")Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-     Text("Audiencia de nuevos estados",style=MaterialTheme.typography.titleMedium)
+     Text("Privacidad de estados",style=MaterialTheme.typography.titleMedium)
      Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
       FilterChip(selected=model.preferences.statusAudience=="CONTACTS",enabled=!model.accountBusy,onClick={model.savePreferences(model.preferences.copy(statusAudience="CONTACTS"))},label={Text("Mis contactos")})
       FilterChip(selected=model.preferences.statusAudience=="PRIVATE",enabled=!model.accountBusy,onClick={model.savePreferences(model.preferences.copy(statusAudience="PRIVATE"))},label={Text("Solo yo")})

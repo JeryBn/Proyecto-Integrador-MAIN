@@ -49,7 +49,7 @@ class NavigationUiTest {
         ui.onNodeWithText("Contactos de MAIN").assertIsDisplayed()
         androidx.test.espresso.Espresso.pressBack()
         ui.onNodeWithContentDescription("Estados").performClick()
-        ui.onNodeWithText("Módulo en preparación").assertIsDisplayed()
+        ui.onNodeWithContentDescription("Actualizar estados").assertIsDisplayed()
         ui.onNodeWithContentDescription("Asistente").performClick()
         ui.onNodeWithText("Asistente académico").assertIsDisplayed()
 

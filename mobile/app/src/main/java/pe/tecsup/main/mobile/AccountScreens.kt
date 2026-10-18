@@ -35,7 +35,15 @@ import androidx.compose.ui.unit.dp
   }
   Text("Mis cursos",style=MaterialTheme.typography.titleLarge)
   if(model.agenda.courses.isEmpty())Text("No hay cursos vinculados a tu cuenta.")
-  model.agenda.courses.forEach{course->Card(Modifier.fillMaxWidth()){Column(Modifier.padding(16.dp)){Text(course.name,style=MaterialTheme.typography.titleMedium);Text(course.teacher)}}}
+  model.agenda.courses.forEach { course ->
+   Card(Modifier.fillMaxWidth()) {
+    Column(Modifier.padding(16.dp)) {
+     Text(course.name,style=MaterialTheme.typography.titleMedium)
+     Text(course.teacher)
+     if(model.profile?.rol=="Docente") TextButton(onClick={model.openTeaching(course)},enabled=!model.accountBusy){Text("Registrar y editar notas")}
+    }
+   }
+  }
   AccountFeedback(model)
   TextButton(onClick=model::refreshAccount,enabled=!model.accountBusy){Text("Actualizar agenda")}
  }

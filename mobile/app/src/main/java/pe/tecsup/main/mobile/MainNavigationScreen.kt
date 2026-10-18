@@ -2,6 +2,8 @@ package pe.tecsup.main.mobile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +31,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,8 +55,15 @@ internal enum class MainSection(val label: String, val icon: ImageVector, val na
 
 @Composable
 internal fun MainNavigationScreen(model: MainViewModel) {
-    BackHandler(enabled = model.selectedId != null || model.selectedConversation != null || model.showChatPicker || model.contactProfile!=null || model.settingsPage!="MAIN" || model.selectedSection==MainSection.ACTIVITIES) {
+    val lifecycleOwner=LocalLifecycleOwner.current
+    LaunchedEffect(model.selectedSection,lifecycleOwner) {
+        if(model.selectedSection==MainSection.STATUSES)lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){while(true){delay(5000);if(!model.statusBusy && !model.statusComposer)model.loadStatuses()}}
+    }
+    BackHandler(enabled = model.statusViewer!=null || model.statusComposer || model.teachingCourse!=null || model.selectedId != null || model.selectedConversation != null || model.showChatPicker || model.contactProfile!=null || model.settingsPage!="MAIN" || model.selectedSection==MainSection.ACTIVITIES) {
         when {
+            model.statusViewer!=null -> model.closeStatus()
+            model.statusComposer -> model.statusComposer=false
+            model.teachingCourse!=null -> model.teachingCourse=null
             model.contactProfile!=null -> model.contactProfile=null
             model.showChatPicker -> model.showChatPicker=false
             model.settingsPage!="MAIN" -> model.settingsPage=if(model.settingsPage=="BLOCKED")"PRIVACY" else "MAIN"
@@ -59,9 +73,10 @@ internal fun MainNavigationScreen(model: MainViewModel) {
         }
     }
     Scaffold(
+        contentWindowInsets=if(model.statusViewer!=null)WindowInsets(0,0,0,0) else ScaffoldDefaults.contentWindowInsets,
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (model.selectedId == null && model.selectedConversation == null && !model.showChatPicker && model.contactProfile==null && model.settingsPage=="MAIN") {
+            if (model.statusViewer==null && !model.statusComposer && model.teachingCourse==null && model.selectedId == null && model.selectedConversation == null && !model.showChatPicker && model.contactProfile==null && model.settingsPage=="MAIN") {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     MainSection.entries.filter { it!=MainSection.ACTIVITIES }.forEach { section ->
                         NavigationBarItem(
@@ -81,6 +96,9 @@ internal fun MainNavigationScreen(model: MainViewModel) {
             color = MaterialTheme.colorScheme.background
         ) {
             when {
+                model.statusViewer!=null -> StatusViewerScreen(model)
+                model.statusComposer -> StatusComposerScreen(model)
+                model.teachingCourse!=null -> TeacherGradesScreen(model)
                 model.contactProfile!=null -> ContactInfoScreen(model)
                 model.showChatPicker -> NewChatScreen(model)
                 model.selectedId != null -> ActivityDetailScreen(model)
@@ -88,10 +106,7 @@ internal fun MainNavigationScreen(model: MainViewModel) {
                 model.selectedSection == MainSection.HOME -> HomeSection(model)
                 model.selectedSection == MainSection.ACTIVITIES -> if(model.profile?.rol=="Alumno") ActivityListScreen(model) else AcademicAgendaScreen(model)
                 model.selectedSection == MainSection.MESSAGES -> ConversationsScreen(model)
-                model.selectedSection == MainSection.STATUSES -> PlannedSection(
-                    title = "Estados",
-                    message = "Los estados aparecerán aquí cuando estén definidos sus permisos y su conexión al servidor."
-                )
+                model.selectedSection == MainSection.STATUSES -> StatusListScreen(model)
                 model.selectedSection == MainSection.ASSISTANT -> AssistantScreen(model)
                 else -> AccountProfileScreen(model)
             }

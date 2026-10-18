@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val model: MainViewModel = viewModel()
             SideEffect {
-                val bars = if (model.darkTheme) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                val bars = if (model.darkTheme || model.statusViewer!=null) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
                     else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
                 enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
             }
@@ -47,6 +47,8 @@ class MainActivity : ComponentActivity() {
         tertiary = Color(0xFFF0C77B), onTertiary = Color(0xFF422C00),
         background = Color(0xFF101820), onBackground = Color(0xFFE2E8EF),
         surface = Color(0xFF151F28), onSurface = Color(0xFFE2E8EF),
+        surfaceContainer = Color(0xFF192722), surfaceContainerHigh = Color(0xFF23362E), surfaceContainerHighest = Color(0xFF30433A),
+        surfaceTint = Color(0xFF80D5BB),
         surfaceVariant = Color(0xFF303B45), onSurfaceVariant = Color(0xFFC2CBD4),
         errorContainer = Color(0xFF5A2424), onErrorContainer = Color(0xFFFFDAD6)
     ) else lightColorScheme(
@@ -57,6 +59,8 @@ class MainActivity : ComponentActivity() {
         tertiary = Color(0xFF805A14), onTertiary = Color.White,
         background = Color(0xFFF7F9F8), onBackground = Color(0xFF171C22),
         surface = Color.White, onSurface = Color(0xFF171C22),
+        surfaceContainer = Color(0xFFF1F6F3), surfaceContainerHigh = Color(0xFFEDF3EF), surfaceContainerHighest = Color(0xFFE6EEE9),
+        surfaceTint = Color(0xFF087F68),
         surfaceVariant = Color(0xFFE8EDF2), onSurfaceVariant = Color(0xFF46515B),
         errorContainer = Color(0xFFFFDAD6), onErrorContainer = Color(0xFF410002)
     )
