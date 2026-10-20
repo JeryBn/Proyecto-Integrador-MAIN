@@ -40,10 +40,20 @@ internal class AdminTestApi {
   val result=exchange(path,method,body.toString(),headers=mapOf(csrf.getString("headerName") to csrf.getString("token")))
   return if(result.isBlank())JSONObject() else JSONObject(result)
  }
- fun review(id:String,approved:Boolean,reason:String="Regla sintética de prueba"){
+ fun attachmentBytes(id:String,revision:Int):ByteArray{
+  val uri=URI(origin+"/api/admin/v1/moderation/messages/$id/attachment?revision=$revision")
+  val connection=uri.toURL().openConnection() as HttpURLConnection
+  try{
+   connection.connectTimeout=8000;connection.readTimeout=30000
+   cookies.get(uri,emptyMap()).forEach{(key,values)->connection.setRequestProperty(key,values.joinToString("; "))}
+   check(connection.responseCode==200)
+   return connection.inputStream.use{it.readBytes()}
+  }finally{connection.disconnect()}
+ }
+ fun review(id:String,approved:Boolean,reason:String="Regla sintética de prueba",attachmentReviewed:Boolean=false){
   val queue=list("/api/admin/v1/moderation/messages?limit=100")
   val message=(0 until queue.length()).map{queue.getJSONObject(it)}.first{it.getString("id")==id}
   post("/api/admin/v1/moderation/messages/"+id+"/review",JSONObject().put("revision",message.getInt("revision"))
-   .put("contentHash",message.getString("contentHash")).put("approved",approved).put("reason",reason))
+   .put("contentHash",message.getString("contentHash")).put("approved",approved).put("reason",reason).put("attachmentReviewed",attachmentReviewed))
  }
 }

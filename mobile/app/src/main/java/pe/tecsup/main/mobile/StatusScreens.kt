@@ -153,7 +153,7 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
  }
  if(confirmDelete)AlertDialog(onDismissRequest={confirmDelete=false},title={Text("¿Eliminar estado?")},text={Text("Dejará de estar disponible para tus contactos.")},confirmButton={TextButton(onClick={confirmDelete=false;model.deleteStatus()}){Text("Eliminar")}},dismissButton={TextButton(onClick={confirmDelete=false}){Text("Cancelar")}})
 }
-@Composable private fun StatusPlayback(id:String,kind:String,bytes:ByteArray?,paused:Boolean,onProgress:(Float)->Unit,onComplete:()->Unit){
+@Composable internal fun StatusPlayback(id:String,kind:String,bytes:ByteArray?,paused:Boolean,onProgress:(Float)->Unit,onComplete:()->Unit,label:String="estado"){
  val context=LocalContext.current;val completed by rememberUpdatedState(onComplete)
  var failure by remember(id){mutableStateOf("")}
  val file by produceState<File?>(null,id,bytes){
@@ -166,7 +166,7 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
  if(ready!=null){
   if(kind=="VIDEO"){
    var view by remember(id){mutableStateOf<VideoView?>(null)};var prepared by remember(id){mutableStateOf(false)};var rendered by remember(id){mutableStateOf(false)}
-   AndroidView(factory={VideoView(it).apply{setVideoPath(ready.absolutePath);setOnPreparedListener{prepared=true};setOnInfoListener{_,what,_->if(what==MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)rendered=true;false};setOnCompletionListener{completed()};setOnErrorListener{_,_,_->failure="No se pudo reproducir el video.";true};start();view=this}},modifier=Modifier.fillMaxSize().semantics{if(prepared && rendered && failure.isBlank())contentDescription="Video del estado"},update={if(paused)it.pause() else it.start()})
+   AndroidView(factory={VideoView(it).apply{setVideoPath(ready.absolutePath);setOnPreparedListener{prepared=true};setOnInfoListener{_,what,_->if(what==MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)rendered=true;false};setOnCompletionListener{completed()};setOnErrorListener{_,_,_->failure="No se pudo reproducir el video.";true};start();view=this}},modifier=Modifier.fillMaxSize().semantics{if(prepared && rendered && failure.isBlank())contentDescription="Video del $label"},update={if(paused)it.pause() else it.start()})
    LaunchedEffect(view){while(true){delay(100);view?.let{video->runCatching{if(video.duration>0)onProgress(video.currentPosition.toFloat()/video.duration)}}}}
    DisposableEffect(id){onDispose{view?.stopPlayback()}}
   }else{
@@ -184,13 +184,13 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
  if(failure.isNotBlank())Text(failure,color=Color.White)
 }
 
-private fun statusBitmap(bytes:ByteArray):android.graphics.Bitmap? {
+internal fun statusBitmap(bytes:ByteArray):android.graphics.Bitmap? {
  val bounds=BitmapFactory.Options().apply{inJustDecodeBounds=true};BitmapFactory.decodeByteArray(bytes,0,bytes.size,bounds)
  var sample=1;while(bounds.outWidth/sample>1600||bounds.outHeight/sample>1600)sample*=2
  return BitmapFactory.decodeByteArray(bytes,0,bytes.size,BitmapFactory.Options().apply{inSampleSize=sample})
 }
 
-private fun readStatusBytes(input:java.io.InputStream):ByteArray {
+internal fun readStatusBytes(input:java.io.InputStream):ByteArray {
  val output=java.io.ByteArrayOutputStream();val buffer=ByteArray(8192);var total=0
  while(true){val count=input.read(buffer);if(count<0)break;total+=count;if(total>12*1024*1024)throw java.io.IOException("El archivo debe pesar hasta 12 MB.");output.write(buffer,0,count)}
  return output.toByteArray()

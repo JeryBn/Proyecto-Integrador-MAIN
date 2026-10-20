@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,6 +124,11 @@ class MainViewModel : ViewModel() {
         private set
     var editingMessage by mutableStateOf<ChatMessage?>(null)
         private set
+    var messageAttachment by mutableStateOf<StatusAttachment?>(null)
+        private set
+    var messageUploadProgress by mutableStateOf(0)
+        private set
+    private var uploadJob:Job?=null
     var chatPage by mutableStateOf(0)
         private set
     private var draftKey = java.util.UUID.randomUUID().toString()
@@ -184,6 +190,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun clearAccount() {
+        uploadJob?.cancel();uploadJob=null
         showChatPicker=false;contactProfile=null;settingsPage="MAIN"
         grades=emptyList(); teachingCourse=null; teachingGrades=emptyList(); statuses=emptyList(); statusViewer=null; statusBytes=null; statusComposer=false; statusBusy=false; statusError=""
         notices=emptyList();noticePage=0
@@ -328,13 +335,17 @@ class MainViewModel : ViewModel() {
         withContext(Dispatchers.IO) { client.reportContact(username, reason) }
     }
 
-    private fun chatOperation(operation: suspend (MainApi) -> Unit) {
+    private fun chatOperation(trackUpload:Boolean=false,operation: suspend (MainApi) -> Unit) {
         val client = api ?: return
         if (chatBusy) return
         chatBusy = true; chatError = ""
-        viewModelScope.launch {
+        val job=viewModelScope.launch {
             try { operation(client) }
             catch (error: Exception) {
+                if(error is CancellationException){
+                    if(api===client)chatError="Se canceló la espera. Si el servidor recibió el archivo, seguirá pendiente. Actualiza antes de reintentar; la misma clave evita duplicados."
+                    throw error
+                }
                 if (api === client) {
                     if (error is SessionExpired) expireSession()
                     else {
@@ -346,6 +357,7 @@ class MainViewModel : ViewModel() {
                 }
             } finally { if (api === client) { chatBusy = false; sendingMessage = false } }
         }
+        if(trackUpload)uploadJob=job
     }
     fun loadConversations() = chatOperation { client ->
         val result = withContext(Dispatchers.IO) { client.conversations(conversationPage*30) }
@@ -372,6 +384,7 @@ class MainViewModel : ViewModel() {
         refreshMessages()
     }
     fun closeConversation() {
+        if(sendingMessage&&messageAttachment!=null)cancelMessageUpload()
         selectedConversation = null; stopMessageUpdates(); chatMessages = emptyList(); chatMembers = emptyList(); cancelEdit()
         loadConversations()
     }
@@ -387,19 +400,30 @@ class MainViewModel : ViewModel() {
     }
     fun messagePage(delta: Int) { if(!chatBusy) { chatPage=(chatPage+delta).coerceAtLeast(0); refreshMessages() } }
     fun editDraft(value: String) { messageDraft=value.take(4000); draftKey=java.util.UUID.randomUUID().toString() }
-    fun editMessage(message: ChatMessage) { editingMessage=message; editDraft(message.text) }
-    fun cancelEdit() { editingMessage=null; editDraft("") }
+    fun editMessage(message: ChatMessage) { messageAttachment=null; editingMessage=message; editDraft(message.text) }
+    fun updateMessageAttachment(value:StatusAttachment?){if(!chatBusy&&editingMessage==null){messageAttachment=value;draftKey=java.util.UUID.randomUUID().toString()}}
+    fun cancelEdit() { editingMessage=null;messageAttachment=null;messageUploadProgress=0;editDraft("") }
+    fun cancelMessageUpload(){api?.cancelAttachmentUpload();uploadJob?.cancel()}
+    internal suspend fun messageMedia(message:ChatMessage):ByteArray {
+        val client=api?:throw SessionExpired();val conversation=selectedConversation
+        val bytes=try{withContext(Dispatchers.IO){client.messageAttachment(message.id,message.revision)}}
+        catch(error:SessionExpired){if(api===client)expireSession();throw error}
+        if(api!==client||selectedConversation!=conversation)throw ResourceUnavailable()
+        return bytes
+    }
     fun sendMessage() {
         if(chatBusy)return
         val id=selectedConversation ?: return
-        val text=messageDraft; val key=draftKey; val editing=editingMessage
-        if(text.isBlank())return
-        sendingMessage=true
-        chatOperation { client ->
+        val text=messageDraft; val key=draftKey; val editing=editingMessage;val attachment=messageAttachment
+        if(text.isBlank()&&attachment==null&&(editing==null||editing.attachmentKind=="NONE"))return
+        sendingMessage=true;messageUploadProgress=0
+        chatOperation(trackUpload=attachment!=null) { client ->
             withContext(Dispatchers.IO) {
-                if(editing==null) client.sendMessage(id,key,text) else client.editMessage(editing.id,editing.revision,text)
+                if(editing!=null)client.editMessage(editing.id,editing.revision,text)
+                else if(attachment!=null)client.sendAttachment(id,key,text,attachment){progress->viewModelScope.launch{if(api===client&&selectedConversation==id&&sendingMessage)messageUploadProgress=progress}}
+                else client.sendMessage(id,key,text)
             }
-            if(api===client && selectedConversation==id) { editingMessage=null; editDraft(""); chatPage=0; fetchChat(client,id) }
+            if(api===client && selectedConversation==id) { cancelEdit();chatPage=0;fetchChat(client,id) }
         }
     }
     fun cancelMessage(message: ChatMessage) {
@@ -452,6 +476,11 @@ class MainViewModel : ViewModel() {
             catch (_: Exception) { message = "Saliste de la app. No se pudo confirmar el cierre en el servidor." }
             finally { api = null; clearAccount(); busy = false }
         }
+    }
+
+    override fun onCleared() {
+        api?.cancelAttachmentUpload()
+        super.onCleared()
     }
 
     private fun friendly(error: Exception): String = when (error) {

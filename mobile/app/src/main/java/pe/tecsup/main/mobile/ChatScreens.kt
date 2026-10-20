@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import pe.tecsup.main.mobile.data.ChatMessage
 
 @Composable internal fun ConversationsScreen(model:MainViewModel){
  var search by rememberSaveable{mutableStateOf("")}
@@ -122,6 +123,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 }
 @Composable internal fun ConversationScreen(model:MainViewModel){
  val id=model.selectedConversation
+ var mediaViewer by remember(id,model.profile?.usuario){mutableStateOf<ChatMessage?>(null)}
  val owner=LocalLifecycleOwner.current
  DisposableEffect(owner,id){
   val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_START)model.startMessageUpdates();if(event==Lifecycle.Event.ON_STOP)model.stopMessageUpdates()}
@@ -170,6 +172,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
       Column(Modifier.padding(horizontal=12.dp,vertical=8.dp),verticalArrangement=Arrangement.spacedBy(5.dp)){
        if(!mine&&conversation?.kind=="GROUP")Text(message.senderName,style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.primary)
        Text(message.text)
+       if(message.attachmentKind!="NONE"){
+        TextButton(enabled=message.state!="CANCELLED"&&!model.chatBusy,onClick={mediaViewer=message}){Text(attachmentLabel(message.attachmentKind))}
+        Text((message.attachmentSize/1024).toString()+" KB",style=MaterialTheme.typography.labelSmall)
+       }
        Row(verticalAlignment=Alignment.CenterVertically){
         Text(when(message.state){"PENDING"->"Pendiente de revisión";"REJECTED"->"No enviado · revisar";"CANCELLED"->"Cancelado";else->"Entregado"},style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         if(mine&&message.state!="CANCELLED")Box{
@@ -182,6 +188,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
        }
        if(message.reason.isNotBlank())Text(message.reason,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodySmall)
        if(mine&&message.state=="REJECTED")TextButton(onClick={model.editMessage(message)},enabled=!model.chatBusy){Text("Corregir mensaje")}
+       if(mine&&message.state=="REJECTED"&&message.attachmentKind!="NONE")Text("Para sustituir el archivo, cancela este envío y adjunta uno nuevo.",style=MaterialTheme.typography.bodySmall)
        if(message.correctedBeforeDelivery)Text("Editado antes del envío para cumplir las normas de MAIN",style=MaterialTheme.typography.labelSmall)
        if(message.editedAfterDelivery)Text("Editado después del envío",style=MaterialTheme.typography.labelSmall)
       }
@@ -191,14 +198,20 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
   }
   if(contact?.blocked==true)Text("Has bloqueado este contacto. Toca su nombre para desbloquearlo.",Modifier.padding(16.dp),color=MaterialTheme.colorScheme.error)
   if(model.editingMessage!=null)Row(verticalAlignment=Alignment.CenterVertically){Text("Editando mensaje",Modifier.weight(1f).padding(start=16.dp));TextButton(onClick=model::cancelEdit){Text("Descartar edición")}}
+  if(model.editingMessage==null)MessageAttachmentPicker(model,!model.chatBusy&&contact?.blocked!=true)
+  if(model.sendingMessage&&model.messageAttachment!=null){
+   LinearProgressIndicator(progress={model.messageUploadProgress/100f},modifier=Modifier.fillMaxWidth())
+   Row(verticalAlignment=Alignment.CenterVertically){Text(if(model.messageUploadProgress<100)"Subiendo archivo: ${model.messageUploadProgress}%" else "Esperando confirmación del servidor…",Modifier.weight(1f).padding(start=12.dp));TextButton(onClick=model::cancelMessageUpload){Text("Cancelar espera")}}
+  }
   Row(Modifier.fillMaxWidth().padding(8.dp),verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(8.dp)){
    OutlinedTextField(value=model.messageDraft,onValueChange=model::editDraft,placeholder={Text("Escribe un mensaje")},shape=RoundedCornerShape(26.dp),
     enabled=!model.sendingMessage&&contact?.blocked!=true,modifier=Modifier.weight(1f).semantics{contentDescription="Escribe un mensaje"},maxLines=4)
-   FilledIconButton(onClick=model::sendMessage,enabled=model.messageDraft.isNotBlank()&&!model.chatBusy&&contact?.blocked!=true,modifier=Modifier.size(56.dp)){
-    Icon(Icons.AutoMirrored.Outlined.Send,if(model.editingMessage!=null)"Enviar corrección a revisión" else "Enviar a revisión")
+   FilledIconButton(onClick=model::sendMessage,enabled=(model.messageDraft.isNotBlank()||model.messageAttachment!=null||model.editingMessage?.let{it.attachmentKind!="NONE"}==true)&&!model.chatBusy&&contact?.blocked!=true,modifier=Modifier.size(56.dp)){
+    Icon(Icons.AutoMirrored.Outlined.Send,if(model.editingMessage!=null)"Enviar corrección a revisión" else if(model.messageAttachment!=null)"Enviar archivo a revisión" else "Enviar a revisión")
    }
   }
  }
+ mediaViewer?.let{message->key(message.id,message.revision){MessageAttachmentViewer(model,message){mediaViewer=null}}}
  if(manage)AlertDialog(onDismissRequest={manage=false},title={Text("Miembros del grupo")},confirmButton={TextButton(onClick={manage=false}){Text("Cerrar")}},
   text={LazyColumn(Modifier.heightIn(max=420.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
    item{ChatFeedback(model)}

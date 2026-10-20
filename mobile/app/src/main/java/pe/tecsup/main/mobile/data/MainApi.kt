@@ -24,6 +24,7 @@ class ResourceUnavailable : IOException("El recurso ya no está disponible para 
 /** One cookie jar per login. No cookies or passwords are written to storage. */
 class MainApi(val endpoint: String) {
     private val cookies = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
+    private val attachmentUpload=java.util.concurrent.atomic.AtomicReference<HttpURLConnection?>(null)
     private data class Response(val status: Int, val body: String, val location: String?, val path: String)
 
     private fun request(path: String, form: Map<String, String>? = null, payload: JSONObject? = null,
@@ -118,7 +119,8 @@ class MainApi(val endpoint: String) {
         }
     }
 
-    fun clearSession() { cookies.cookieStore.removeAll() }
+    fun clearSession() { cancelAttachmentUpload(); cookies.cookieStore.removeAll() }
+    fun cancelAttachmentUpload(){attachmentUpload.getAndSet(null)?.disconnect()}
 
     fun askAssistant(key:String,question:String):String = mutate("/api/v1/assistant",
         JSONObject().put("clientKey",key).put("question",question),"POST").getString("answer")
@@ -143,11 +145,16 @@ class MainApi(val endpoint: String) {
     }
     fun messages(conversation:String,offset:Int=0): List<ChatMessage> = rows(JSONArray(checked(request("/api/v1/conversations/"+conversation+"/messages?offset="+offset+"&limit=30")))) {
         ChatMessage(it.getString("id"),it.getString("sender"),it.getString("senderName"),it.getInt("revision"),it.getString("text"),it.getString("state"),
-            it.optString("reason",""),it.getBoolean("correctedBeforeDelivery"),it.getBoolean("editedAfterDelivery"))
+            it.optString("reason",""),it.getBoolean("correctedBeforeDelivery"),it.getBoolean("editedAfterDelivery"),
+            it.optString("attachmentKind","NONE"),it.optString("attachmentMime",""),it.optString("attachmentName",""),it.optInt("attachmentSize",0))
     }
     fun sendMessage(conversation:String,key:String,text:String) {
         mutate("/api/v1/conversations/"+conversation+"/messages",JSONObject().put("clientKey",key).put("text",text),"POST")
     }
+    fun sendAttachment(conversation:String,key:String,text:String,attachment:StatusAttachment,onProgress:(Int)->Unit={}) {
+        postAttachment("/api/v1/conversations/$conversation/messages",mapOf("clientKey" to key,"text" to text),attachment,onProgress)
+    }
+    fun messageAttachment(id:String,revision:Int):ByteArray=privateMedia("/api/v1/messages/$id/attachment?revision=$revision")
     fun editMessage(id:String,revision:Int,text:String) { mutate("/api/v1/messages/"+id,JSONObject().put("expectedRevision",revision).put("text",text)) }
     fun cancelMessage(id:String,revision:Int) { mutate("/api/v1/messages/"+id+"/cancel",JSONObject().put("expectedRevision",revision),"POST") }
 
@@ -169,8 +176,9 @@ class MainApi(val endpoint: String) {
     fun statuses():List<StatusUpdate> = rows(JSONArray(checked(request("/api/v1/statuses")))){statusValue(it)}
     fun seenStatus(id:String){mutate("/api/v1/statuses/$id/seen",JSONObject(),"POST")}
     fun deleteStatus(id:String){mutate("/api/v1/statuses/$id/delete",JSONObject(),"POST")}
-    fun statusMedia(id:String):ByteArray {
-        val uri=URI(endpoint+"/api/v1/statuses/$id/media");val connection=uri.toURL().openConnection() as HttpURLConnection
+    fun statusMedia(id:String):ByteArray=privateMedia("/api/v1/statuses/$id/media")
+    private fun privateMedia(path:String):ByteArray {
+        val uri=URI(endpoint+path);val connection=uri.toURL().openConnection() as HttpURLConnection
         try {
             connection.connectTimeout=8_000;connection.readTimeout=30_000;connection.instanceFollowRedirects=false;connection.useCaches=false
             cookies.get(uri,emptyMap()).forEach{(name,values)->connection.setRequestProperty(name,values.joinToString("; "))}
@@ -180,22 +188,35 @@ class MainApi(val endpoint: String) {
         }finally{connection.disconnect()}
     }
     fun createStatus(key:String,text:String,background:String,audience:String,attachment:StatusAttachment?) {
+        postAttachment("/api/v1/statuses",mapOf("clientKey" to key,"text" to text,"background" to background,"audience" to audience),attachment)
+    }
+    private fun postAttachment(path:String,fields:Map<String,String>,attachment:StatusAttachment?,onProgress:(Int)->Unit={}) {
         if(attachment!=null && !attachment.mime.matches(Regex("[a-z]+/[A-Za-z0-9.+-]+")))throw ApiFailure("Tipo de archivo inválido.")
-        val csrf=json("/api/csrf");val uri=URI(endpoint+"/api/v1/statuses");val connection=uri.toURL().openConnection() as HttpURLConnection
+        val csrf=json("/api/csrf");val uri=URI(endpoint+path);val connection=uri.toURL().openConnection() as HttpURLConnection
         val boundary="MAIN"+java.util.UUID.randomUUID().toString()
+        if(!attachmentUpload.compareAndSet(null,connection)){connection.disconnect();throw ApiFailure("Ya hay un archivo en proceso.")}
         try {
             connection.requestMethod="POST";connection.connectTimeout=8_000;connection.readTimeout=100_000;connection.instanceFollowRedirects=false;connection.doOutput=true;connection.setChunkedStreamingMode(8192)
             connection.setRequestProperty(csrf.getString("headerName"),csrf.getString("token"));connection.setRequestProperty("Content-Type","multipart/form-data; boundary=$boundary")
             cookies.get(uri,emptyMap()).forEach{(name,values)->connection.setRequestProperty(name,values.joinToString("; "))}
             connection.outputStream.use { output ->
                 fun line(value:String){output.write(value.toByteArray(Charsets.UTF_8))}
-                mapOf("clientKey" to key,"text" to text,"background" to background,"audience" to audience).forEach{(name,value)->line("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"\r\n\r\n$value\r\n")}
-                if(attachment!=null){line("--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"status\"\r\nContent-Type: "+attachment.mime+"\r\n\r\n");output.write(attachment.bytes);line("\r\n")}
+                fields.forEach{(name,value)->line("--$boundary\r\nContent-Disposition: form-data; name=\"$name\"\r\n\r\n$value\r\n")}
+                if(attachment!=null){
+                    line("--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"attachment\"\r\nContent-Type: "+attachment.mime+"\r\n\r\n")
+                    var sent=0;var progress=-1
+                    while(sent<attachment.bytes.size){
+                        if(attachmentUpload.get()!==connection)throw ApiFailure("Se canceló la espera del envío.")
+                        val count=minOf(8192,attachment.bytes.size-sent);output.write(attachment.bytes,sent,count);sent+=count
+                        val percent=if(attachment.bytes.isEmpty())100 else (sent*100L/attachment.bytes.size).toInt()
+                        if(percent!=progress){progress=percent;onProgress(percent)}
+                    };line("\r\n")
+                }
                 line("--$boundary--\r\n")
             }
             val status=connection.responseCode;val body=(if(status>=400)connection.errorStream else connection.inputStream)?.bufferedReader()?.use{it.readText()}.orEmpty()
             checked(Response(status,body,null,uri.path))
-        }finally{connection.disconnect()}
+        }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
     fun teachingGrades(course:Long):List<StudentGrades> = rows(JSONArray(checked(request("/api/v1/teaching/courses/$course/grades")))) { student ->
         StudentGrades(student.getLong("studentId"),student.getString("name"),rows(student.getJSONArray("grades")) {
