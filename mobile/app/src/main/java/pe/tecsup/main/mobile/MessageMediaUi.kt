@@ -52,7 +52,11 @@ internal fun attachmentLabel(kind:String)=when(kind){"IMAGE"->"Ver foto";"VIDEO"
  }
  Column(Modifier.fillMaxWidth().padding(horizontal=12.dp)){
   Row(verticalAlignment=Alignment.CenterVertically){
-   TextButton(enabled=enabled&&!reading,onClick={account=model.profile?.usuario;conversation=model.selectedConversation;picker.launch(arrayOf("image/jpeg","image/png","video/*","audio/*","text/plain"))}){
+   TextButton(enabled=enabled&&!reading,onClick={
+    account=model.profile?.usuario;conversation=model.selectedConversation
+    if(BuildConfig.DEBUG)android.util.Log.d("MAIN_MEDIA","Opening Android document picker")
+    picker.launch(arrayOf("image/jpeg","image/png","video/*","audio/*","text/plain"))
+   }){
     Icon(Icons.Outlined.AttachFile,null);Text("Adjuntar archivo")
    }
    val attachment=model.messageAttachment
