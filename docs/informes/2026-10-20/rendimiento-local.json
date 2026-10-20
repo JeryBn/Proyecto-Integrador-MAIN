@@ -1,0 +1,15 @@
+{
+  "measuredAtUtc": "2026-10-20T06:52:11.952426+00:00",
+  "environment": "Isolated synthetic H2 server on Windows loopback; Android Studio and emulator running",
+  "endpoint": "GET /api/actividades/pendientes",
+  "workers": 8,
+  "requests": 160,
+  "http200": 160,
+  "errors": 0,
+  "medianMs": 9.29,
+  "p95Ms": 14.54,
+  "maximumMs": 20.54,
+  "wallSecondsIncludingLoginAndLogout": 0.54,
+  "latencyScope": "Authenticated read latency excludes login and logout. Wall time includes both.",
+  "limitations": "Local baseline only. No production capacity claim; no media uploads, AI provider, long disconnection, or physical devices measured."
+}
