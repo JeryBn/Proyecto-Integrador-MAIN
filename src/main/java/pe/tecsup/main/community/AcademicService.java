@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AcademicService {
- private final JdbcTemplate db;private final IdentityService identities;
- public AcademicService(JdbcTemplate db,IdentityService identities){this.db=db;this.identities=identities;}
+ private final JdbcTemplate db;private final IdentityService identities;private final AdministrativeAudit audit;
+ public AcademicService(JdbcTemplate db,IdentityService identities,AdministrativeAudit audit){this.db=db;this.identities=identities;this.audit=audit;}
  public record Course(long id,String name,String teacher){}
  public record LinkedStudent(long id,String name){}
  public record Slot(String id,long courseId,String course,String teacher,int dayOfWeek,String startsAt,String endsAt,String classroom){}
@@ -36,6 +36,7 @@ public class AcademicService {
  }
  @Transactional public String createSlot(String actor,NewSlot input){
   identities.admin(actor);String classroom=IdentityService.text(input.classroom(),100,"aula");
+  if(db.queryForList("SELECT id FROM curso WHERE id=? FOR UPDATE",Long.class,input.courseId()).isEmpty())throw DomainException.missing();
   if(input.dayOfWeek()==null||input.dayOfWeek()<1||input.dayOfWeek()>7)throw DomainException.invalid("Día: 1 (lunes) a 7 (domingo).");
   LocalTime start,end;
   try{start=LocalTime.parse(input.startsAt());end=LocalTime.parse(input.endsAt());}catch(Exception e){throw DomainException.invalid("Horas ISO HH:mm o HH:mm:ss requeridas.");}
@@ -48,7 +49,7 @@ public class AcademicService {
    """,Long.class,input.dayOfWeek(),Time.valueOf(end),Time.valueOf(start),teachers.getFirst(),classroom)>0)
    throw DomainException.invalid("El horario se cruza con otra clase del docente o aula.");
   String id=UUID.randomUUID().toString();
-  db.update("INSERT INTO timetable VALUES(?,?,?,?,?,?)",id,input.courseId(),input.dayOfWeek(),Time.valueOf(start),Time.valueOf(end),classroom);return id;
+  db.update("INSERT INTO timetable VALUES(?,?,?,?,?,?)",id,input.courseId(),input.dayOfWeek(),Time.valueOf(start),Time.valueOf(end),classroom);audit.record(actor,"TIMETABLE_CREATED",id);return id;
  }
- public void removeSlot(String actor,String id){identities.admin(actor);if(db.update("DELETE FROM timetable WHERE id=?",id)==0)throw DomainException.missing();}
+ @Transactional public void removeSlot(String actor,String id){identities.admin(actor);if(db.update("DELETE FROM timetable WHERE id=?",id)==0)throw DomainException.missing();audit.record(actor,"TIMETABLE_REMOVED",id);}
 }

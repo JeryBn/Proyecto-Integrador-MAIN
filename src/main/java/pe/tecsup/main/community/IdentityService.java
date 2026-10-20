@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class IdentityService implements UserDetailsService {
- private final JdbcTemplate db;private final PasswordEncoder encoder;private final SessionRegistry sessions;private final Clock clock;
- public IdentityService(JdbcTemplate db,PasswordEncoder encoder,SessionRegistry sessions,Clock clock){this.db=db;this.encoder=encoder;this.sessions=sessions;this.clock=clock;}
+ private final JdbcTemplate db;private final PasswordEncoder encoder;private final SessionRegistry sessions;private final Clock clock;private final AdministrativeAudit audit;
+ public IdentityService(JdbcTemplate db,PasswordEncoder encoder,SessionRegistry sessions,Clock clock,AdministrativeAudit audit){this.db=db;this.encoder=encoder;this.sessions=sessions;this.clock=clock;this.audit=audit;}
  public record Account(String username,String name,String role,boolean enabled,Long alumnoId,Long docenteId){}
  public record NewAccount(String username,String name,String role,String password,Long alumnoId,Long docenteId){
   @Override public String toString(){return "NewAccount[redacted]";}
@@ -61,7 +61,7 @@ public class IdentityService implements UserDetailsService {
    if(input.alumnoId()!=null)throw DomainException.invalid("Un docente no puede reclamar identidad de alumno.");
   }else if(input.alumnoId()!=null||input.docenteId()!=null)throw DomainException.invalid("Los parentescos se verifican por separado.");
   db.update("INSERT INTO main_user(username,display_name,role,password_hash,enabled,alumno_id,docente_id) VALUES(?,?,?,?,TRUE,?,?)",
-   username,name,input.role(),encoder.encode(input.password()),student,teacher);return account(username);
+   username,name,input.role(),encoder.encode(input.password()),student,teacher);audit.record(actor,"ACCOUNT_CREATED",username);return account(username);
  }
  @Transactional public void bootstrap(String username,String name,String role,String hash,Long student,Long teacher){
   if(db.queryForObject("SELECT COUNT(*) FROM main_user WHERE username=?",Long.class,username)==0)
@@ -78,17 +78,19 @@ public class IdentityService implements UserDetailsService {
  @Transactional public void verifyGuardian(String actor,String guardian,long student){
   admin(actor);if(!active(guardian).role().equals("FAMILIAR"))throw DomainException.invalid("La cuenta debe ser familiar.");
   if(db.queryForObject("SELECT COUNT(*) FROM alumno WHERE id=?",Long.class,student)==0)throw DomainException.missing();
-  if(db.queryForObject("SELECT COUNT(*) FROM guardian_link WHERE guardian=? AND alumno_id=?",Long.class,guardian,student)==0)
+  if(db.queryForObject("SELECT COUNT(*) FROM guardian_link WHERE guardian=? AND alumno_id=?",Long.class,guardian,student)==0){
    db.update("INSERT INTO guardian_link VALUES(?,?,?,?)",guardian,student,actor,Timestamp.valueOf(LocalDateTime.now(clock)));
+   audit.record(actor,"GUARDIAN_VERIFIED",guardian+":"+student);
+  }
  }
- public void revokeGuardian(String actor,String guardian,long student){admin(actor);db.update("DELETE FROM guardian_link WHERE guardian=? AND alumno_id=?",guardian,student);}
+ @Transactional public void revokeGuardian(String actor,String guardian,long student){admin(actor);if(db.update("DELETE FROM guardian_link WHERE guardian=? AND alumno_id=?",guardian,student)>0)audit.record(actor,"GUARDIAN_REVOKED",guardian+":"+student);}
  @Transactional public void resetPassword(String actor,String target,String value){
   admin(actor);password(value);if(active(target).role().equals("ADMIN"))throw DomainException.denied();
-  db.update("UPDATE main_user SET password_hash=? WHERE username=?",encoder.encode(value),target);expire(target);
+  db.update("UPDATE main_user SET password_hash=? WHERE username=?",encoder.encode(value),target);audit.record(actor,"PASSWORD_RESET",target);expire(target);
  }
- public void disable(String actor,String target){
+ @Transactional public void disable(String actor,String target){
   admin(actor);if(account(target).role().equals("ADMIN"))throw DomainException.denied();
-  db.update("UPDATE main_user SET enabled=FALSE WHERE username=?",target);expire(target);
+  db.update("UPDATE main_user SET enabled=FALSE WHERE username=?",target);audit.record(actor,"ACCOUNT_DISABLED",target);expire(target);
  }
  private void expire(String username){
   for(Object p:sessions.getAllPrincipals())if(p instanceof UserDetails u&&u.getUsername().equals(username))
@@ -107,7 +109,7 @@ public class IdentityService implements UserDetailsService {
   a=text(a,60,"primer usuario");b=text(b,60,"segundo usuario");
   admin(actor);if(a.equals(b)||active(a).role().equals("ADMIN")||active(b).role().equals("ADMIN"))throw DomainException.invalid("Contacto inválido.");
   String first=a.compareTo(b)<0?a:b,second=a.compareTo(b)<0?b:a;
-  if(db.queryForObject("SELECT COUNT(*) FROM contact_link WHERE user_a=? AND user_b=?",Long.class,first,second)==0)db.update("INSERT INTO contact_link VALUES(?,?,?)",first,second,actor);
+  if(db.queryForObject("SELECT COUNT(*) FROM contact_link WHERE user_a=? AND user_b=?",Long.class,first,second)==0){db.update("INSERT INTO contact_link VALUES(?,?,?)",first,second,actor);audit.record(actor,"CONTACT_APPROVED",first+":"+second);}
  }
  public boolean contacts(String a,String b){
   String first=a.compareTo(b)<0?a:b,second=a.compareTo(b)<0?b:a;

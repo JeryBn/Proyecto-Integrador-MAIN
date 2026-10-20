@@ -9,8 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Service public class StatusService {
- private final JdbcTemplate db;private final IdentityService users;private final Clock clock;
- public StatusService(JdbcTemplate db,IdentityService users,Clock clock){this.db=db;this.users=users;this.clock=clock;}
+ private final JdbcTemplate db;private final IdentityService users;private final Clock clock;private final AdministrativeAudit audit;
+ public StatusService(JdbcTemplate db,IdentityService users,Clock clock,AdministrativeAudit audit){this.db=db;this.users=users;this.clock=clock;this.audit=audit;}
  public record Update(String id,String owner,String name,String text,String background,String audience,String kind,String state,String contentHash,String createdAt,String expiresAt,String reason,boolean seen,int views){}
  public record Review(String contentHash,boolean approved,String reason){}
  private LocalDateTime now(){return LocalDateTime.now(clock);}
@@ -47,5 +47,5 @@ import org.springframework.transaction.annotation.Transactional;
  @Transactional public void seen(String actor,String id){db.queryForList("SELECT id FROM status_update WHERE id=? FOR UPDATE",String.class,id);var s=get(actor,id);if(s.owner().equals(actor))return;if(db.queryForObject("SELECT COUNT(*) FROM status_view WHERE status_id=? AND username=?",Long.class,id,actor)==0)db.update("INSERT INTO status_view VALUES(?,?,?)",id,actor,Timestamp.valueOf(now()));}
  @Transactional public void delete(String actor,String id){users.active(actor);var s=row(id);if(!s.owner().equals(actor))throw DomainException.missing();db.update("UPDATE status_update SET state='DELETED',body='',reason=NULL WHERE id=?",id);db.update("DELETE FROM status_media_chunk WHERE status_id=?",id);}
  public List<Update> queue(String actor,int offset,int limit){users.admin(actor);IdentityService.page(offset,limit);return db.queryForList("SELECT id FROM status_update WHERE state='PENDING' AND expires_at>? ORDER BY created_at,id LIMIT ? OFFSET ?",String.class,Timestamp.valueOf(now()),limit,offset).stream().map(this::row).toList();}
- @Transactional public void review(String actor,String id,Review review){users.admin(actor);String reason=review.approved()?"":IdentityService.text(review.reason(),300,"motivo");int changed=db.update("UPDATE status_update SET state=?,reason=?,reviewed_by=?,reviewed_at=? WHERE id=? AND state='PENDING' AND content_hash=? AND expires_at>?",review.approved()?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,review.contentHash(),Timestamp.valueOf(now()));if(changed!=1)throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"CONFLICT","El estado cambió o caducó. Actualiza la cola.");}
+ @Transactional public void review(String actor,String id,Review review){users.admin(actor);String reason=review.approved()?"":IdentityService.text(review.reason(),300,"motivo");int changed=db.update("UPDATE status_update SET state=?,reason=?,reviewed_by=?,reviewed_at=? WHERE id=? AND state='PENDING' AND content_hash=? AND expires_at>?",review.approved()?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,review.contentHash(),Timestamp.valueOf(now()));if(changed!=1)throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"CONFLICT","El estado cambió o caducó. Actualiza la cola.");audit.record(actor,review.approved()?"STATUS_APPROVED":"STATUS_REJECTED",id);}
 }

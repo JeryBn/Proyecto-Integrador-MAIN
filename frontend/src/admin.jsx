@@ -2,6 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
+import {AcademicAdmin} from './academic-admin.jsx';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -289,12 +290,14 @@ function App() {
           <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
           <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
+          <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
           <a href="/moderation.html">Revisar contenido</a>
         </nav>
         <span>{user}</span>
         <button onClick={logout}>Cerrar sesión</button>
       </header>
       <main>
+        {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
         {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
         {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user} />}
         {view.name === 'list' && <Lista reload={reload} onExpire={expire} onOpen={id => { setNotice(''); setView({name: 'detail', id}); }} />}

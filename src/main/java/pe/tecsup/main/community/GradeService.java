@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GradeService {
- private final JdbcTemplate db;private final IdentityService users;private final AcademicService academic;private final Clock clock;
- public GradeService(JdbcTemplate db,IdentityService users,AcademicService academic,Clock clock){this.db=db;this.users=users;this.academic=academic;this.clock=clock;}
+ private final JdbcTemplate db;private final IdentityService users;private final AcademicService academic;private final Clock clock;private final AdministrativeAudit audit;
+ public GradeService(JdbcTemplate db,IdentityService users,AcademicService academic,Clock clock,AdministrativeAudit audit){this.db=db;this.users=users;this.academic=academic;this.clock=clock;this.audit=audit;}
  public record Grade(String id,String assessment,BigDecimal score,BigDecimal maximum,String recordedAt){}
  public record CourseGrades(long courseId,String course,String teacher,List<Grade> grades){}
  public record Input(long studentId,String assessment,BigDecimal score,BigDecimal maximum,String expectedRecordedAt){
@@ -49,6 +49,7 @@ public class GradeService {
   String id=previous.isEmpty()?UUID.randomUUID().toString():previous.getFirst();var now=Timestamp.valueOf(LocalDateTime.now(clock));
   if(previous.isEmpty())db.update("INSERT INTO course_grade VALUES(?,?,?,?,?,?,?,?)",id,course,input.studentId(),assessment,score,maximum,actor,now);
   else db.update("UPDATE course_grade SET score=?,maximum=?,recorded_by=?,recorded_at=? WHERE id=?",score,maximum,actor,now,id);
+  audit.record(actor,previous.isEmpty()?"GRADE_CREATED":"GRADE_UPDATED",id);
   return new Grade(id,assessment,score,maximum,now.toString());
  }
 }

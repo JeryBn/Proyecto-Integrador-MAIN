@@ -11,8 +11,8 @@ import org.springframework.http.HttpStatus;
 
 @Service
 public class CommunicationService {
- private final JdbcTemplate db;private final IdentityService users;private final Clock clock;private final NotificationService notifications;
- public CommunicationService(JdbcTemplate db,IdentityService users,Clock clock,NotificationService notifications){this.db=db;this.users=users;this.clock=clock;this.notifications=notifications;}
+ private final JdbcTemplate db;private final IdentityService users;private final Clock clock;private final NotificationService notifications;private final AdministrativeAudit audit;
+ public CommunicationService(JdbcTemplate db,IdentityService users,Clock clock,NotificationService notifications,AdministrativeAudit audit){this.db=db;this.users=users;this.clock=clock;this.notifications=notifications;this.audit=audit;}
  public record Conversation(String id,String kind,String title,boolean administrator,String state){}
  public record Member(String username,String name,String role,String state,boolean administrator){}
  public record Message(String id,String conversationId,String sender,String senderName,int revision,String text,String state,String reason,
@@ -63,7 +63,7 @@ public class CommunicationService {
   if(users.active(actor).role().equals("ADMIN"))throw DomainException.denied();
   String id=UUID.randomUUID().toString();var date=Timestamp.valueOf(now());
   db.update("INSERT INTO conversation VALUES(?,?,?,?,?,NULL)",id,"GROUP",IdentityService.text(title,100,"nombre del grupo"),actor,date);
-  db.update("INSERT INTO conversation_member VALUES(?,?,'ACTIVE',TRUE,?)",id,actor,date);return id;
+  db.update("INSERT INTO conversation_member VALUES(?,?,'ACTIVE',TRUE,?)",id,actor,date);audit.record(actor,"GROUP_CREATED",id);return id;
  }
  @Transactional public void invite(String actor,String id,String target){
   lock(id);administrator(actor,id);users.active(target);
@@ -71,12 +71,13 @@ public class CommunicationService {
   var states=db.queryForList("SELECT state FROM conversation_member WHERE conversation_id=? AND username=?",String.class,id,target);
   if(states.isEmpty())db.update("INSERT INTO conversation_member VALUES(?,?,'INVITED',FALSE,NULL)",id,target);
   else if(!states.getFirst().equals("ACTIVE"))db.update("UPDATE conversation_member SET state='INVITED',administrator=FALSE,joined_at=NULL WHERE conversation_id=? AND username=?",id,target);
-  if(states.isEmpty()||!states.getFirst().equals("ACTIVE"))notifications.enqueue(target,actor,id,null,"INVITATION","invitation:"+id+":"+target);
+  if(states.isEmpty()||!states.getFirst().equals("ACTIVE")){notifications.enqueue(target,actor,id,null,"INVITATION","invitation:"+id+":"+target);audit.record(actor,"GROUP_INVITED",id+":"+target);}
  }
  @Transactional public void invitation(String actor,String id,boolean accept){
   lock(id);users.active(actor);
   if(db.update("UPDATE conversation_member SET state=?,joined_at=? WHERE conversation_id=? AND username=? AND state='INVITED'",
    accept?"ACTIVE":"REMOVED",accept?Timestamp.valueOf(now()):null,id,actor)==0)throw DomainException.missing();
+  audit.record(actor,accept?"GROUP_INVITATION_ACCEPTED":"GROUP_INVITATION_REJECTED",id);
  }
  public List<Member> members(String actor,String id){
   member(actor,id);return db.query("SELECT m.username,u.display_name,u.role,m.state,m.administrator FROM conversation_member m JOIN main_user u ON u.username=m.username WHERE m.conversation_id=? AND m.state<>'REMOVED' ORDER BY m.username",
@@ -90,6 +91,7 @@ public class CommunicationService {
   if(rows.getFirst()&&(remove||!administrator)&&db.queryForObject("SELECT COUNT(*) FROM conversation_member WHERE conversation_id=? AND administrator=TRUE AND state='ACTIVE'",Long.class,id)<2)
    throw DomainException.invalid("Designa otro administrador antes de salir o retirar al último administrador.");
   db.update("UPDATE conversation_member SET administrator=?,state=? WHERE conversation_id=? AND username=?",administrator&&!remove,remove?"REMOVED":"ACTIVE",id,target);
+  audit.record(actor,remove?"GROUP_MEMBER_REMOVED":"GROUP_MEMBER_ROLE_CHANGED",id+":"+target);
  }
  private String hash(String text){
   try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));}
@@ -172,6 +174,7 @@ public class CommunicationService {
   String reason=input.approved()?"":IdentityService.text(input.reason(),300,"categoría de rechazo");
   db.update("UPDATE message_revision SET state=?,reason=?,reviewed_by=?,reviewed_at=? WHERE message_id=? AND revision=?",
    input.approved()?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,current);
+  audit.record(actor,input.approved()?"MESSAGE_APPROVED":"MESSAGE_REJECTED",id+":"+current);
   if(input.approved()){
    boolean published=h.get("published_revision")!=null;
    boolean corrected=!published&&db.queryForObject("SELECT COUNT(*) FROM message_revision WHERE message_id=? AND state='REJECTED'",Long.class,id)>0;
