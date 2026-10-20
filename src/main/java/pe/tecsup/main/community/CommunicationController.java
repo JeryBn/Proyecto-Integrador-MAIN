@@ -25,7 +25,7 @@ public class CommunicationController{
   service.membership(p.getName(),id,username,input.administrator(),input.remove());return Map.of("saved",true);
  }
  @GetMapping("/conversations/{id}/messages") public List<CommunicationService.Message> messages(Principal p,@PathVariable String id,@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="30")int limit){return service.messages(p.getName(),id,offset,limit);}
- @PostMapping("/conversations/{id}/messages") @ResponseStatus(HttpStatus.ACCEPTED)
+ @PostMapping(value="/conversations/{id}/messages",consumes="application/json") @ResponseStatus(HttpStatus.ACCEPTED)
  public CommunicationService.Message send(Principal p,@PathVariable String id,@RequestBody CommunicationService.Send input){return service.send(p.getName(),id,input);}
  @PutMapping("/messages/{id}") public CommunicationService.Message edit(Principal p,@PathVariable String id,@RequestBody CommunicationService.Edit input){return service.edit(p.getName(),id,input);}
  @PostMapping("/messages/{id}/cancel") public Map<String,Boolean> cancel(Principal p,@PathVariable String id,@RequestBody Cancel input){service.cancel(p.getName(),id,input.expectedRevision());return Map.of("cancelled",true);}

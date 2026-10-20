@@ -11,15 +11,18 @@ import org.springframework.http.HttpStatus;
 
 @Service
 public class CommunicationService {
- private final JdbcTemplate db;private final IdentityService users;private final Clock clock;private final NotificationService notifications;private final AdministrativeAudit audit;
- public CommunicationService(JdbcTemplate db,IdentityService users,Clock clock,NotificationService notifications,AdministrativeAudit audit){this.db=db;this.users=users;this.clock=clock;this.notifications=notifications;this.audit=audit;}
+ private final JdbcTemplate db;private final IdentityService users;private final Clock clock;private final NotificationService notifications;private final AdministrativeAudit audit;private final MessageAttachments attachments;
+ public CommunicationService(JdbcTemplate db,IdentityService users,Clock clock,NotificationService notifications,AdministrativeAudit audit,MessageAttachments attachments){this.db=db;this.users=users;this.clock=clock;this.notifications=notifications;this.audit=audit;this.attachments=attachments;}
  public record Conversation(String id,String kind,String title,boolean administrator,String state){}
  public record Member(String username,String name,String role,String state,boolean administrator){}
  public record Message(String id,String conversationId,String sender,String senderName,int revision,String text,String state,String reason,
-                       boolean correctedBeforeDelivery,boolean editedAfterDelivery,String createdAt,String contentHash){}
+                       boolean correctedBeforeDelivery,boolean editedAfterDelivery,String createdAt,String contentHash,
+                       String attachmentKind,String attachmentMime,String attachmentName,int attachmentSize){}
  public record Send(String clientKey,String text){}
  public record Edit(int expectedRevision,String text){}
- public record Review(int revision,String contentHash,boolean approved,String reason){}
+ public record Review(int revision,String contentHash,boolean approved,String reason,boolean attachmentReviewed){
+  public Review(int revision,String contentHash,boolean approved,String reason){this(revision,contentHash,approved,reason,false);}
+ }
  private LocalDateTime now(){return LocalDateTime.now(clock);}
  private void lock(String id){if(db.queryForList("SELECT id FROM conversation WHERE id=? FOR UPDATE",String.class,id).isEmpty())throw DomainException.missing();}
  private void member(String actor,String id){
@@ -93,33 +96,43 @@ public class CommunicationService {
   db.update("UPDATE conversation_member SET administrator=?,state=? WHERE conversation_id=? AND username=?",administrator&&!remove,remove?"REMOVED":"ACTIVE",id,target);
   audit.record(actor,remove?"GROUP_MEMBER_REMOVED":"GROUP_MEMBER_ROLE_CHANGED",id+":"+target);
  }
- private String hash(String text){
-  try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));}
-  catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
- }
  private int latest(String id){return db.queryForObject("SELECT MAX(revision) FROM message_revision WHERE message_id=?",Integer.class,id);}
  private void revision(String id,int revision,String text){
-  db.update("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES(?,?,?,'PENDING',?)",id,revision,text,hash(text));
+  db.update("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES(?,?,?,'PENDING',?)",id,revision,text,attachments.revisionHash(id,text));
  }
  @Transactional public Message send(String actor,String conversation,Send input){
-  lock(conversation);canSend(actor,conversation);String text=IdentityService.text(input.text(),4000,"mensaje");
+  return sendWithAttachment(actor,conversation,input,null);
+ }
+ @Transactional public Message sendMedia(String actor,String conversation,Send input,MessageAttachments.Validated media){
+  return sendWithAttachment(actor,conversation,input,Objects.requireNonNull(media));
+ }
+ public void authorizeAttachment(String actor,String conversation){canSend(actor,conversation);}
+ private String body(String text,boolean media){String result=Objects.toString(text,"").strip();if(result.length()>4000||(!media&&result.isBlank()))throw DomainException.invalid("Escribe hasta 4000 caracteres o añade un archivo.");return result;}
+ private Message sendWithAttachment(String actor,String conversation,Send input,MessageAttachments.Validated media){
+  lock(conversation);canSend(actor,conversation);String text=body(input.text(),media!=null);
   try{UUID.fromString(input.clientKey());}catch(Exception e){throw DomainException.invalid("clientKey debe ser UUID.");}
   var prior=db.queryForList("SELECT id FROM message WHERE sender=? AND client_key=?",String.class,actor,input.clientKey());
   if(!prior.isEmpty()){
    var own=message(actor,prior.getFirst());
    String original=db.queryForObject("SELECT body FROM message_revision WHERE message_id=? AND revision=1",String.class,own.id());
-   if(!own.conversationId().equals(conversation)||!original.equals(text))throw new DomainException(HttpStatus.CONFLICT,"IDEMPOTENCY_CONFLICT","La clave de envío ya tiene otro contenido.");
+   if(!own.conversationId().equals(conversation)||!original.equals(text)||!attachments.matches(own.id(),media))throw new DomainException(HttpStatus.CONFLICT,"IDEMPOTENCY_CONFLICT","La clave de envío ya tiene otro contenido.");
    return own;
+  }
+  if(media!=null){
+   db.queryForObject("SELECT username FROM main_user WHERE username=? FOR UPDATE",String.class,actor);
+   long used=db.queryForObject("SELECT COALESCE(SUM(a.byte_size),0) FROM message_attachment a JOIN message m ON m.id=a.message_id WHERE m.sender=? AND m.created_at>?",Long.class,actor,Timestamp.valueOf(now().minusDays(1)));
+   if(used+media.bytes().length>100*1024*1024)throw new DomainException(HttpStatus.TOO_MANY_REQUESTS,"UPLOAD_LIMIT","Límite de adjuntos: 100 MB procesados por cuenta en 24 horas.");
   }
   String id=UUID.randomUUID().toString();
   db.update("INSERT INTO message(id,conversation_id,sender,client_key,created_at) VALUES(?,?,?,?,?)",id,conversation,actor,input.clientKey(),Timestamp.valueOf(now()));
+  if(media!=null)attachments.save(id,media);
   revision(id,1,text);return message(actor,id);
  }
  @Transactional public Message edit(String actor,String id,Edit input){
   var header=header(id);String conversation=(String)header.get("conversation_id");lock(conversation);canSend(actor,conversation);
   if(!actor.equals(header.get("sender")))throw DomainException.missing();
   int current=latest(id);if(input.expectedRevision()!=current)throw stale();
-  revision(id,current+1,IdentityService.text(input.text(),4000,"mensaje"));return message(actor,id);
+  revision(id,current+1,body(input.text(),attachments.info(id)!=null));return message(actor,id);
  }
  private DomainException stale(){return new DomainException(HttpStatus.CONFLICT,"REVISION_CONFLICT","La versión cambió. Actualiza y revisa el contenido actual.");}
  private Map<String,Object> header(String id){
@@ -133,15 +146,19 @@ public class CommunicationService {
   if(!sender.equals(actor)&&users.blocked(actor,sender))throw DomainException.missing();
   var joined=db.queryForObject("SELECT joined_at FROM conversation_member WHERE conversation_id=? AND username=?",Timestamp.class,conversation,actor);
   if(!sender.equals(actor)&&((Timestamp)h.get("created_at")).before(joined))throw DomainException.missing();
-  Integer revision=sender.equals(actor)?latest(id):(h.get("published_revision")==null?null:((Number)h.get("published_revision")).intValue());
+  Integer revision;
+  if(sender.equals(actor)) revision=latest(id);
+  else revision=h.get("published_revision")==null?null:Integer.valueOf(((Number)h.get("published_revision")).intValue());
   if(revision==null)throw DomainException.missing();
   return dto(h,revision,sender.equals(actor),false);
  }
  private Message dto(Map<String,Object> h,int revision,boolean own,boolean review){
   String id=(String)h.get("id"),sender=(String)h.get("sender");
+  var file=attachments.info(id);
   return db.queryForObject("SELECT * FROM message_revision WHERE message_id=? AND revision=?",(r,n)->new Message(id,(String)h.get("conversation_id"),sender,
    users.account(sender).name(),revision,r.getString("body"),r.getString("state"),own||review?Objects.toString(r.getString("reason"),""):"",
-   Boolean.TRUE.equals(h.get("corrected_before")),Boolean.TRUE.equals(h.get("edited_after")),h.get("created_at").toString(),own||review?r.getString("content_hash"):""),id,revision);
+   Boolean.TRUE.equals(h.get("corrected_before")),Boolean.TRUE.equals(h.get("edited_after")),h.get("created_at").toString(),own||review?r.getString("content_hash"):"",
+   file==null?"NONE":file.kind(),file==null?"":file.mime(),file==null?"":file.name(),file==null?0:file.size()),id,revision);
  }
  public List<Message> messages(String actor,String id,int offset,int limit){
   member(actor,id);IdentityService.page(offset,limit);
@@ -169,8 +186,9 @@ public class CommunicationService {
   if(actor.equals(h.get("sender")))throw DomainException.denied();
   int current=latest(id);var draft=dto(header(id),current,true,true);
   if(input.revision()!=current||!Objects.equals(input.contentHash(),draft.contentHash())||!draft.state().equals("PENDING"))throw stale();
+  if(input.approved()&&attachments.info(id)!=null&&!input.attachmentReviewed())throw DomainException.invalid("Revisa el adjunto completo y confirma su revisión antes de aprobar.");
   // Approval is human and explicit; no absent/uncertain AI result can publish.
-  canSend((String)h.get("sender"),conversation);
+  if(input.approved())canSend((String)h.get("sender"),conversation);
   String reason=input.approved()?"":IdentityService.text(input.reason(),300,"categoría de rechazo");
   db.update("UPDATE message_revision SET state=?,reason=?,reviewed_by=?,reviewed_at=? WHERE message_id=? AND revision=?",
    input.approved()?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,current);
@@ -189,5 +207,16 @@ public class CommunicationService {
   if(!actor.equals(h.get("sender")))throw DomainException.missing();
   if(latest(id)!=expected)throw stale();
   if(db.update("UPDATE message_revision SET state='CANCELLED' WHERE message_id=? AND revision=? AND state IN ('PENDING','REJECTED')",id,expected)==0)throw stale();
+ }
+ public record MediaDownload(byte[] bytes,String mime,String name,String kind){}
+ public MediaDownload attachment(String actor,String id,int revision,boolean review){
+  Message visible;
+  if(review){
+   users.admin(actor);var h=header(id);visible=dto(h,latest(id),false,true);
+   if(!visible.state().equals("PENDING"))throw DomainException.missing();
+  }else visible=message(actor,id);
+  if(visible.revision()!=revision||visible.state().equals("CANCELLED"))throw DomainException.missing();
+  var media=attachments.info(id);if(media==null)throw DomainException.missing();
+  return new MediaDownload(attachments.bytes(id),media.mime(),media.name(),media.kind());
  }
 }
