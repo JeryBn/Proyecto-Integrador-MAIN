@@ -9,13 +9,13 @@ async function request(path,options={}){
  return value;
 }
 function element(tag,text){const item=document.createElement(tag);if(text!==undefined)item.textContent=text;return item;}
-async function review(message,approved,reason,button){
+async function review(message,approved,reason,button,attachmentReviewed=false){
  button.disabled=true;notice.textContent='';
  try{
   const csrf=await request('/api/admin/csrf');
   await request('/api/admin/v1/moderation/messages/'+encodeURIComponent(message.id)+'/review',{
    method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},
-   body:JSON.stringify({revision:message.revision,contentHash:message.contentHash,approved,reason})
+   body:JSON.stringify({revision:message.revision,contentHash:message.contentHash,approved,reason,attachmentReviewed})
   });
   await load();notice.textContent=approved?'Versión aprobada.':'Versión rechazada; el emisor puede corregirla y solicitar otra revisión.';
  }catch(error){notice.textContent=error.message;button.disabled=false;}
@@ -31,7 +31,28 @@ async function load(){
    const label=element('label','Norma o categoría de rechazo (según reglas aprobadas del equipo)');
    const reason=element('input');reason.maxLength=300;label.append(reason);
    const approve=element('button','Aprobar esta versión'),reject=element('button','Rechazar esta versión');
-   approve.addEventListener('click',()=>review(message,true,'',approve));
+   let attachmentReviewed=null;
+   if(message.attachmentKind&&message.attachmentKind!=='NONE'){
+    const source='/api/admin/v1/moderation/messages/'+encodeURIComponent(message.id)+'/attachment?revision='+message.revision;
+    card.append(element('p',message.attachmentName+' · '+message.attachmentMime+' · '+Math.ceil(message.attachmentSize/1024)+' KB'));
+    const confirmation=element('label','He revisado el adjunto completo, incluido su audio y texto visible cuando corresponda.');
+    attachmentReviewed=element('input');attachmentReviewed.type='checkbox';attachmentReviewed.disabled=true;confirmation.prepend(attachmentReviewed);
+    approve.disabled=true;
+    attachmentReviewed.addEventListener('change',()=>{approve.disabled=!attachmentReviewed.checked;});
+    if(message.attachmentKind==='FILE'){
+     const preview=element('pre','Cargando documento…');card.append(preview);
+     const full=element('a','Descargar TXT completo para revisar');full.href=source;card.append(full);
+     fetch(source,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.text();}).then(text=>{preview.textContent=text.slice(0,6000);if(text.length>6000)preview.append(element('p','Vista previa limitada; revisa el archivo completo.'));attachmentReviewed.disabled=false;}).catch(()=>{preview.textContent='El adjunto no está disponible. Actualiza la cola.';});
+    }else{
+     const media=element(message.attachmentKind==='IMAGE'?'img':message.attachmentKind==='VIDEO'?'video':'audio');
+     media.style.maxWidth='100%';if(message.attachmentKind==='IMAGE')media.alt='Foto adjunta pendiente de revisión';else{media.controls=true;media.preload='metadata';}
+     media.addEventListener(message.attachmentKind==='IMAGE'?'load':'loadedmetadata',()=>{attachmentReviewed.disabled=false;});
+     media.addEventListener('error',()=>{attachmentReviewed.disabled=true;attachmentReviewed.checked=false;approve.disabled=true;notice.textContent='No se pudo abrir el adjunto; actualiza la cola antes de decidir.';});
+     media.src=source;card.append(media);
+    }
+    card.append(confirmation);
+   }
+   approve.addEventListener('click',()=>review(message,true,'',approve,attachmentReviewed?.checked||false));
    reject.addEventListener('click',()=>{if(!reason.value.trim()){reason.focus();notice.textContent='Indica la norma que explica el rechazo.';return;}review(message,false,reason.value.trim(),reject);});
    card.append(label,approve,reject);queue.append(card);
   }
