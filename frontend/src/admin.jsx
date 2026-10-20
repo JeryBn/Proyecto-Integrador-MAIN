@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import './admin.css';
+import {CommunityAdmin} from './community-admin.jsx';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -257,7 +258,22 @@ function App() {
   }, []);
 
   async function logout() {
-    try { await api('/logout', {method: 'POST'}); } catch { /* igual cerramos en pantalla */ }
+    setNotice('');
+    try {
+      // Otra pestaña puede haber renovado la sesión y el token CSRF.
+      await loadCsrf();
+      try { await api('/logout', {method: 'POST'}); }
+      catch (x) {
+        if (x.status !== 403) throw x;
+        await loadCsrf();
+        await api('/logout', {method: 'POST'});
+      }
+    } catch (x) {
+      if (x.status !== 401) {
+        setNotice('No se pudo confirmar el cierre de sesión. Comprueba la conexión y vuelve a intentarlo.');
+        return;
+      }
+    }
     setAuth('out'); setView({name: 'list'}); setNotice('Sesión cerrada.');
     try { await loadCsrf(); } catch { /* se reintenta al ingresar */ }
   }
@@ -272,11 +288,15 @@ function App() {
         <nav>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
+          <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
+          <a href="/moderation.html">Revisar contenido</a>
         </nav>
         <span>{user}</span>
         <button onClick={logout}>Cerrar sesión</button>
       </header>
       <main>
+        {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
+        {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user} />}
         {view.name === 'list' && <Lista reload={reload} onExpire={expire} onOpen={id => { setNotice(''); setView({name: 'detail', id}); }} />}
         {view.name === 'detail' && <Detalle id={view.id} notice={notice} onExpire={expire} onBack={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }} />}
         {view.name === 'new' && <Formulario onExpire={expire} onBack={() => setView({name: 'list'})}
