@@ -1,6 +1,18 @@
 # Proyecto Integrador MAIN - seccion A
 
-Base ejecutable HU06/HU07: interfaz React, backend Spring Boot y datos sinteticos H2. Integra la interfaz de referencia para facilitar el trabajo local; las modificaciones propias de Pamela y las nuevas pruebas de Michael siguen pendientes de sus aportes. No es el proyecto final terminado.
+## Estado actual del 20 de octubre de 2026
+
+Proyecto académico en desarrollo con Spring Boot, React y Android. Se conservan los aportes de Michael Julian Fernandez Camarena (API administrativa `b386291`) y Pamela Regina Meneses Mayhua (panel React `a34efa6`). Los incrementos posteriores se realizaron con asistencia técnica por encargo de Jery Becerra Ninaquispe; no se presume aceptación del equipo ni proyecto completo.
+
+- [Estado y pendientes por tarjeta](docs/REVISION_2026_10_20.md).
+- [Informe detallado en Word](docs/informes/2026-10-20/MAIN_Informe_de_avances_20_octubre_2026.docx) y [PDF](docs/informes/2026-10-20/MAIN_Informe_de_avances_20_octubre_2026.pdf).
+- [Pruebas y evidencias del 20 de octubre](docs/informes/2026-10-20/LEEME.md).
+- Administración web de cuentas y vínculos, cursos y notas del alumno y registro/edición docente añadidos el 20/10. Android incluye comunicación privada, grupos y estados con revisión humana previa. 80 pruebas de servidor aprobadas; no equivale a cobertura completa.
+- Pendientes principales: adjuntos de chats, notificaciones en segundo plano, paridad web restante, moderación automática/operación, despliegue y firma Android. La última llamada real de OpenAI quedó sin saldo; la integración no se presenta como respuesta generada verificada.
+
+## Información histórica del primer incremento
+
+Las instrucciones y paquetes siguientes corresponden a la base HU06/HU07. Para conocer las funciones actuales y sus límites, usar la revisión enlazada arriba. El ZIP histórico no contiene los incrementos nuevos.
 
 ## Descargar el paquete completo
 [Descargar MAIN_LOCAL_PAMELA.zip](entregables/MAIN_LOCAL_PAMELA.zip?raw=true). Abre el archivo y pulsa Download raw file si GitHub muestra su pagina. Extrae todo y ejecuta INICIAR-MAIN.cmd. Necesita Java JDK 21 o superior. No requiere Node, Maven o MySQL para esta demostracion.
