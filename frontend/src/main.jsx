@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './app.css';
+import {Academic} from './academic.jsx';
 
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
@@ -79,8 +80,11 @@ function App() {
   };
 
   useEffect(() => {
-    load();
-    request('/api/perfil').then(setProfile).catch(() => {});
+    request('/api/perfil').then(p => {
+      setProfile(p);
+      if (p.rol === 'Alumno') load();
+      else { setLoading(false); if (!location.hash) location.hash = 'cursos'; }
+    }).catch(e => {setError(e.message); setLoading(false);});
     request('/api/csrf').then(setCsrf).catch(() => {});
     const change = () => setHash(location.hash);
     window.addEventListener('hashchange', change);
@@ -94,8 +98,9 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
-        <span className="workspace-label">ESPACIO DEL ALUMNO</span>
-        <a className="nav-item active" href="/">▦ <span>Mis actividades</span></a>
+        <span className="workspace-label">ESPACIO ACADÉMICO</span>
+        {profile?.rol === 'Alumno' && <a className="nav-item active" href="/">▦ <span>Mis actividades</span></a>}
+        <a className="nav-item" href="#cursos">Cursos y notas</a>
         <div className="sidebar-bottom">
           <span className="sprint-badge">Sprint 1 · Avance</span>
           <p>Un paso a la vez.<br />Tu aprendizaje, organizado.</p>
@@ -104,6 +109,7 @@ function App() {
       <div className="main-area">
         <header className="topbar">
           <span className="breadcrumb">Mi espacio <span>/</span> Actividades</span>
+          <nav aria-label="Secciones académicas"><a href="#cursos">Cursos y notas</a>{profile?.rol === 'Alumno' && <> · <a href="/">Actividades</a></>}</nav>
           <div className="user-area">
             <span>{profile?.nombre || 'Alumno'}</span>
             <form method="post" action="/logout">
@@ -113,6 +119,7 @@ function App() {
           </div>
         </header>
         <main className="content">
+          {hash === '#cursos' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">TU AGENDA ACADÉMICA</span>
@@ -157,6 +164,7 @@ function App() {
             </section>
           )}
           <footer>MAIN · Primer incremento de HU06 y HU07 · Información sintética para la demostración</footer>
+          </>}
         </main>
       </div>
     </div>
