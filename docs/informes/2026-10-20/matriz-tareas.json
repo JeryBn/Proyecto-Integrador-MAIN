@@ -1,0 +1,218 @@
+[
+  {
+    "code": "M01",
+    "title": "M01 [Equipo] Consolidar alcance, historias y plan de entregas",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/eqleey71/19-m01-equipo-consolidar-alcance-historias-y-plan-de-entregas",
+    "status": "Inventario y reparto documentados",
+    "done": "El inventario M01 a M24 y la fecha objetivo están documentados.",
+    "gap": "Faltan estimaciones del equipo y aceptación del esfuerzo; no se calcula un porcentaje global sin esa base."
+  },
+  {
+    "code": "M02",
+    "title": "M02 [Equipo] Arquitectura, contratos y persistencia compartida",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/RnkwF0eI/20-m02-equipo-arquitectura-contratos-y-persistencia-compartida",
+    "status": "Persistencia local implementada",
+    "done": "Spring Boot concentra datos y migraciones V1 a V7; reinicio persistente probado.",
+    "gap": "Falta MySQL real, entorno compartido y acuerdo sobre contratos con el equipo; no existe implementación Django en este checkout."
+  },
+  {
+    "code": "M03",
+    "title": "M03 [App/API] Usuarios reales, roles y parentescos verificados",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/T7k14Jij/21-m03-app-api-usuarios-reales-roles-y-parentescos-verificados",
+    "status": "Finalizado técnicamente en Trello",
+    "done": "Roles, cuentas persistentes, recuperación administrativa, parentesco verificado y revocación. El 20/10 se añadió pantalla web en 2e5684d.",
+    "gap": "La carga de usuarios reales y aceptación académica son pasos operativos posteriores; pruebas hechas con identidades sintéticas."
+  },
+  {
+    "code": "M04",
+    "title": "M04 [Jery/App] Sistema visual profesional con Material 3",
+    "owners": "Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/PQFqc1Dh/22-m04-jery-app-sistema-visual-profesional-con-material-3",
+    "status": "Implementado parcialmente",
+    "done": "Android usa Material 3, navegación y estilo de mensajería solicitado, con Inicio académico conservado.",
+    "gap": "Falta validar tamaños, fuentes grandes y dispositivo físico con el usuario; no se afirma identidad exacta con WhatsApp."
+  },
+  {
+    "code": "M05",
+    "title": "M05 [Jery/App] Navegación principal y panel académico",
+    "owners": "Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/naY89EwE/23-m05-jery-app-navegaci%C3%B3n-principal-y-panel-acad%C3%A9mico",
+    "status": "Implementado parcialmente",
+    "done": "Inicio, actividades, mensajes, estados, IA, perfil, agenda y notas autorizadas.",
+    "gap": "Falta aceptación de todos los recorridos y datos académicos reales; no inventar horarios cuando no están cargados."
+  },
+  {
+    "code": "M06",
+    "title": "M06 [App/API] Conversaciones privadas y mensajes en tiempo real",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/ayO8UuLc/24-m06-app-api-conversaciones-privadas-y-mensajes-en-tiempo-real",
+    "status": "Texto privado implementado",
+    "done": "Conversaciones directas, revisión previa, correcciones, paginación y reintentos sin duplicar.",
+    "gap": "Sincronización solo durante uso en primer plano; falta validación prolongada de desconexión y entrega con aplicación cerrada."
+  },
+  {
+    "code": "M07",
+    "title": "M07 [App/API] Grupos privados, miembros y administración",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/C01A7tfK/25-m07-app-api-grupos-privados-miembros-y-administraci%C3%B3n",
+    "status": "Finalizado técnicamente en Trello",
+    "done": "Grupos de todos los roles, invitaciones aceptadas, administradores, expulsión, salida y revocación de acceso.",
+    "gap": "La aceptación del equipo no se presume. Los adjuntos de mensajes son M08 y no se incluyen en este cierre."
+  },
+  {
+    "code": "M08",
+    "title": "M08 [App/API] Imágenes, videos con audio y archivos en mensajes",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/bO7wJrgY/26-m08-app-api-im%C3%A1genes-videos-con-audio-y-archivos-en-mensajes",
+    "status": "Pendiente de implementación",
+    "done": "El chat disponible envía texto; la infraestructura multimedia actual corresponde a Estados.",
+    "gap": "Faltan adjuntos privados de mensajes, validación de archivos, revisión vinculada al contenido y UI Android y web. Es trabajo pendiente, no un bloqueo de acceso del usuario."
+  },
+  {
+    "code": "M09",
+    "title": "M09 [App/API] Estados multimedia y privacidad de audiencia",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/SFeqNex6/27-m09-app-api-estados-multimedia-y-privacidad-de-audiencia",
+    "status": "Estados multimedia implementados con límites",
+    "done": "Texto, imagen, video y audio; revisión humana, 24 horas, vistas, borrado y contactos autorizados.",
+    "gap": "Faltan purga/retención, apelaciones y moderación automática multimodal; cámara física no verificada. Audio se selecciona de archivo; no hay grabadora incorporada ni editor completo de WhatsApp."
+  },
+  {
+    "code": "M10",
+    "title": "M10 [App/API] Notificaciones y sincronización fiable",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/Sp0H59Ki/28-m10-app-api-notificaciones-y-sincronizaci%C3%B3n-fiable",
+    "status": "Avisos internos implementados",
+    "done": "Buzón persistente de avisos e invitaciones, leído, preferencias, silencio y bloqueos.",
+    "gap": "Faltan notificaciones del sistema en segundo plano y recordatorios; no confundir buzón interno con push."
+  },
+  {
+    "code": "M11",
+    "title": "M11 [Equipo/IA] Definir asistente académico y proveedor",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/NdK02gB6/29-m11-equipo-ia-definir-asistente-acad%C3%A9mico-y-proveedor",
+    "status": "Proveedor definido y evaluación incompleta",
+    "done": "Asistente con OpenAI, secretos en servidor, contexto mínimo y límites de consumo.",
+    "gap": "Faltan saldo operativo, evaluación pedagógica, evaluación multimodal y política de retención aprobada."
+  },
+  {
+    "code": "M12",
+    "title": "M12 [Jery/App + API] Integrar asistente IA funcional",
+    "owners": "Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/7Qn9shZI/30-m12-jery-app-api-integrar-asistente-ia-funcional",
+    "status": "Integración implementada y proveedor bloqueado",
+    "done": "Android y servidor consultan OpenAI; errores, cancelación y límites tienen pruebas.",
+    "gap": "La última llamada real documentada devolvió credit_balance_exhausted / insufficient_quota. Requiere saldo del proyecto y nueva prueba exitosa; no se afirma respuesta generada."
+  },
+  {
+    "code": "M13",
+    "title": "M13 [Equipo] Administración e integración web con app",
+    "owners": "Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/OaZqYFzL/31-m13-equipo-administraci%C3%B3n-e-integraci%C3%B3n-web-con-app",
+    "status": "Administración ampliada el 20 de octubre",
+    "done": "Se conservan API de Michael b386291 y panel de Pamela a34efa6. 2e5684d incorpora cuentas, contactos, parentescos, reportes y recuperación.",
+    "gap": "Faltan administración completa de cursos/matrículas y auditoría general de cambios. La tarjeta permanece EN PROGRESO."
+  },
+  {
+    "code": "M14",
+    "title": "M14 [App/API] Perfil, ajustes y controles de privacidad",
+    "owners": "Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/VI8J36fp/32-m14-app-api-perfil-ajustes-y-controles-de-privacidad",
+    "status": "Privacidad implementada parcialmente",
+    "done": "Perfil, tema, preferencias, bloqueo, silencio y reporte persistentes; estilo de contactos en Android.",
+    "gap": "Faltan avatar y avisos del sistema. Controles de privacidad aún sin paridad completa en React."
+  },
+  {
+    "code": "M15",
+    "title": "M15 [Equipo] Pruebas completas, seguridad y rendimiento",
+    "owners": "Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/JjlG2EqD/33-m15-equipo-pruebas-completas-seguridad-y-rendimiento",
+    "status": "Regresión ejecutada y cobertura incompleta",
+    "done": "El 20/10 se ejecutaron 80 casos de servidor sin fallos; React compila. Se probó cierre entre pestañas y crear/editar/consultar notas en navegador.",
+    "gap": "Faltan mediciones de rendimiento/carga, validación física y pruebas de módulos todavía ausentes. Sigue PRUEBAS; 80 casos no equivalen a cobertura completa."
+  },
+  {
+    "code": "M16",
+    "title": "M16 [Equipo] Servidor compartido, despliegue y operación",
+    "owners": "Michael Julian Fernandez Camarena, Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/tWfZ3s43/34-m16-equipo-servidor-compartido-despliegue-y-operaci%C3%B3n",
+    "status": "Preparación local y despliegue pendiente",
+    "done": "Configuración de producción propuesta y referencia Caddy HTTPS; servidor local funciona en 8088.",
+    "gap": "Jery confirmó que no tiene servidor ni dominio. Falta destino autorizado, DB de pruebas, HTTPS, respaldos/restauración y validación con dos dispositivos."
+  },
+  {
+    "code": "M17",
+    "title": "M17 [Jery/App] APK de entrega, teléfono físico y aceptación",
+    "owners": "Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/OipuXCub/35-m17-jery-app-apk-de-entrega-tel%C3%A9fono-f%C3%ADsico-y-aceptaci%C3%B3n",
+    "status": "APK de depuración disponible",
+    "done": "APK Android existente instalado y abierto en emulador; firma release exige configuración externa.",
+    "gap": "Jery confirmó que no existe firma de entrega. Faltan decisión de custodia, firma, teléfono físico y aceptación; debug no es entrega de producción."
+  },
+  {
+    "code": "M18",
+    "title": "M18 [Equipo] Documentación, evidencias y cierre del proyecto",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/8EMiZ9A7/36-m18-equipo-documentaci%C3%B3n-evidencias-y-cierre-del-proyecto",
+    "status": "Documentación y publicación en curso",
+    "done": "Contratos, pruebas y límites documentados; informe Word/PDF y commits diferenciados de esta revisión.",
+    "gap": "Faltan aceptación conjunta y cierre de todos los módulos; este informe no declara terminado el proyecto."
+  },
+  {
+    "code": "M19",
+    "title": "M19 [App/API/IA] Moderación previa de mensajes y estados",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
+    "url": "https://trello.com/c/qeft1Wx1/37-m19-app-api-ia-moderaci%C3%B3n-previa-de-mensajes-y-estados",
+    "status": "Revisión humana implementada",
+    "done": "Colas privadas, revisión/hash exactos y rechazo sin fuga a destinatarios; estados y mensajes requieren aprobación previa.",
+    "gap": "Faltan clasificación automática multimodal, apelaciones y recuperación operativa completa. No se aprueba contenido automáticamente cuando falla la IA."
+  },
+  {
+    "code": "M20",
+    "title": "M20 [Equipo] Normas de contenido y evaluación de moderación",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/gF9ubXm5/38-m20-equipo-normas-de-contenido-y-evaluaci%C3%B3n-de-moderaci%C3%B3n",
+    "status": "Normas iniciales aprobadas y política pendiente",
+    "done": "Jery aprobó bloquear contenido sexual explícito, acoso dirigido, amenazas, discriminación y violencia gráfica, permitiendo contexto educativo apropiado.",
+    "gap": "Jery indicará revisor y conservación después. Faltan esos datos, apelaciones, purga y evaluación de falsos positivos/negativos; no inventar política."
+  },
+  {
+    "code": "M21",
+    "title": "M21 [Web/Equipo] Paridad funcional web con la app MAIN",
+    "owners": "Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/nWNxf793/39-m21-web-equipo-paridad-funcional-web-con-la-app-main",
+    "status": "Paridad web parcial",
+    "done": "Web HU06/HU07 de Pamela conservada. 2e5684d amplía administración y 54b1168 añade cursos/notas del alumno y registro/edición por docente.",
+    "gap": "Faltan chats/grupos, estados, IA y preferencias web equivalentes a Android; esta tarjeta no se finaliza."
+  },
+  {
+    "code": "M22",
+    "title": "M22 [Backend/Equipo] API compartida para Android y web",
+    "owners": "Michael Julian Fernandez Camarena, Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/q2Ewnesn/40-m22-backend-equipo-api-compartida-para-android-y-web",
+    "status": "API compartida implementada parcialmente",
+    "done": "Contratos v1, errores, permisos, CSRF, paginación y persistencia utilizados por Android y nuevos módulos React.",
+    "gap": "Faltan consumos web restantes y validación conjunta de contratos; no crear bases o modelos paralelos."
+  },
+  {
+    "code": "M23",
+    "title": "M23 [Jery + Equipo] Guía de traspaso app a web por incremento",
+    "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
+    "url": "https://trello.com/c/pE3vpWEA/41-m23-jery-equipo-gu%C3%ADa-de-traspaso-app-a-web-por-incremento",
+    "status": "Documentación de traspaso disponible",
+    "done": "Contratos, pantallas y límites por incremento en docs; esta revisión añade rutas web y pruebas reproducibles.",
+    "gap": "Falta aceptación del traspaso y evidencia por cada módulo que todavía no tiene implementación web."
+  },
+  {
+    "code": "M24",
+    "title": "M24 [Pruebas/Equipo] Validar sincronización y paridad Android-web",
+    "owners": "Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua, Jery Becerra Ninaquispe",
+    "url": "https://trello.com/c/TiQ3ZIys/42-m24-pruebas-equipo-validar-sincronizaci%C3%B3n-y-paridad-android-web",
+    "status": "Sincronización parcial comprobada",
+    "done": "Registro y edición de nota desde web y lectura del alumno usan la misma API; permisos de notas y conflictos probados en servidor.",
+    "gap": "Falta recorrido Android y web simultáneo de todos los módulos, conectividad prolongada y dispositivos físicos. Las pruebas Android del 18/10 se citan como históricas."
+  }
+]
