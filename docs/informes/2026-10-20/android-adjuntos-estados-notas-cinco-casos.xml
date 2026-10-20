@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="pe.tecsup.main.mobile.MessageAttachmentUiTest" tests="5" failures="0" errors="0" skipped="0" time="95.037" timestamp="2026-10-20T20:53:42" hostname="localhost">
+  <properties>
+    <property name="device" value="Medium_Phone(AVD) - 17" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="interruptedUploadCanRetryWithoutDuplicate" classname="pe.tecsup.main.mobile.MessageAttachmentUiTest" time="8.102" />
+  <testcase name="privateAttachmentsUploadRetryAndDisplayInAndroid" classname="pe.tecsup.main.mobile.MessageAttachmentUiTest" time="34.182" />
+  <testcase name="approvedVideoAndAudioPlayInTheViewer" classname="pe.tecsup.main.mobile.TeacherAndStatusUiTest" time="21.987" />
+  <testcase name="imageViewerAndTextStateRespectReviewBeforeDelivery" classname="pe.tecsup.main.mobile.TeacherAndStatusUiTest" time="12.813" />
+  <testcase name="teacherRecordsEditsAndStudentReadsTheSavedGrade" classname="pe.tecsup.main.mobile.TeacherAndStatusUiTest" time="15.286" />
+</testsuite>

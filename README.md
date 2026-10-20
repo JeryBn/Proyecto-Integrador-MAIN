@@ -7,8 +7,10 @@ Proyecto académico en desarrollo con Spring Boot, React y Android. Se conservan
 - [Estado y pendientes por tarjeta](docs/REVISION_2026_10_20.md).
 - [Informe detallado en Word](docs/informes/2026-10-20/MAIN_Informe_de_avances_20_octubre_2026.docx) y [PDF](docs/informes/2026-10-20/MAIN_Informe_de_avances_20_octubre_2026.pdf).
 - [Pruebas y evidencias del 20 de octubre](docs/informes/2026-10-20/LEEME.md).
-- Administración web de cuentas y vínculos, cursos y notas del alumno y registro/edición docente añadidos el 20/10. Android incluye comunicación privada, grupos y estados con revisión humana previa. 80 pruebas de servidor aprobadas; no equivale a cobertura completa.
-- Pendientes principales: adjuntos de chats, notificaciones en segundo plano, paridad web restante, moderación automática/operación, despliegue y firma Android. La última llamada real de OpenAI quedó sin saldo; la integración no se presenta como respuesta generada verificada.
+- Administración web de cuentas, vínculos, cursos y matrículas con auditoría; notas del alumno y registro/edición docente añadidos el 20/10. Android incluye comunicación privada, grupos y estados con revisión humana previa. 96 pruebas de servidor y siete recorridos Android del 20/10 aprobados; no equivale a cobertura completa. [Contrato y evidencias de administración](docs/ADMINISTRACION_ACADEMICA_2026_10_20.md).
+- Pendientes principales: formatos de documentos adicionales y grabadora de voz, notificaciones en segundo plano, paridad web restante, moderación automática/operación, despliegue y firma Android. La última llamada real de OpenAI quedó sin saldo; la integración no se presenta como respuesta generada verificada.
+
+Los avances anteriores y los nuevos commits están integrados en `main` por instrucción de Jery. Los adjuntos privados, la revisión web y los visores Android están publicados y verificados. [Contrato de formatos y pruebas](docs/ADJUNTOS_PRIVADOS_2026_10_20.md).
 
 ## Información histórica del primer incremento
 

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="pe.tecsup.main.mobile.MessagePickerUiTest" tests="1" failures="0" errors="0" skipped="0" time="28.951" timestamp="2026-10-20T21:00:39" hostname="localhost">
+  <properties>
+    <property name="device" value="Medium_Phone(AVD) - 17" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="systemPickerSelectsTxtAndSendsItForReview" classname="pe.tecsup.main.mobile.MessagePickerUiTest" time="27.118" />
+</testsuite>

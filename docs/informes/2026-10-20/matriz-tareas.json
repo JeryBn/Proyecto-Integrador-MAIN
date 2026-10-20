@@ -5,7 +5,7 @@
     "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
     "url": "https://trello.com/c/eqleey71/19-m01-equipo-consolidar-alcance-historias-y-plan-de-entregas",
     "status": "Inventario y reparto documentados",
-    "done": "El inventario M01 a M24 y la fecha objetivo están documentados.",
+    "done": "El inventario M01 a M24 y la fecha objetivo están documentados. Formatos iniciales de M08 y límites de notas de voz registrados en la tarjeta.",
     "gap": "Faltan estimaciones del equipo y aceptación del esfuerzo; no se calcula un porcentaje global sin esa base."
   },
   {
@@ -14,7 +14,7 @@
     "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
     "url": "https://trello.com/c/RnkwF0eI/20-m02-equipo-arquitectura-contratos-y-persistencia-compartida",
     "status": "Persistencia local implementada",
-    "done": "Spring Boot concentra datos y migraciones V1 a V7; reinicio persistente probado.",
+    "done": "Spring Boot concentra datos y migraciones V1 a V9; reinicio persistente probado.",
     "gap": "Falta MySQL real, entorno compartido y acuerdo sobre contratos con el equipo; no existe implementación Django en este checkout."
   },
   {
@@ -67,9 +67,9 @@
     "title": "M08 [App/API] Imágenes, videos con audio y archivos en mensajes",
     "owners": "Jery Becerra Ninaquispe, Michael Julian Fernandez Camarena",
     "url": "https://trello.com/c/bO7wJrgY/26-m08-app-api-im%C3%A1genes-videos-con-audio-y-archivos-en-mensajes",
-    "status": "Pendiente de implementación",
-    "done": "El chat disponible envía texto; la infraestructura multimedia actual corresponde a Estados.",
-    "gap": "Faltan adjuntos privados de mensajes, validación de archivos, revisión vinculada al contenido y UI Android y web. Es trabajo pendiente, no un bloqueo de acceso del usuario."
+    "status": "Finalizado técnicamente en Trello",
+    "done": "a43f820 y 195dad8 añaden archivos privados y revisión explícita; 07b190b incorpora Android y 5fb2a8b verifica el selector real. Fotos, video con audio, audio y TXT, cancelación y reintentos comprobados.",
+    "gap": "Alcance inicial definido en M01: TXT UTF8 y audio desde archivo. No PDF u Office ni grabadora interna; ampliaciones posteriores. La paridad web sigue en M21 y la prueba física en M17."
   },
   {
     "code": "M09",
@@ -105,16 +105,16 @@
     "url": "https://trello.com/c/7Qn9shZI/30-m12-jery-app-api-integrar-asistente-ia-funcional",
     "status": "Integración implementada y proveedor bloqueado",
     "done": "Android y servidor consultan OpenAI; errores, cancelación y límites tienen pruebas.",
-    "gap": "La última llamada real documentada devolvió credit_balance_exhausted / insufficient_quota. Requiere saldo del proyecto y nueva prueba exitosa; no se afirma respuesta generada."
+    "gap": "Nueva comprobación real del 20/10: AI_QUOTA_EXHAUSTED. Requiere habilitar cuota o saldo del proyecto y repetir una respuesta exitosa. No se generó una respuesta verificada."
   },
   {
     "code": "M13",
     "title": "M13 [Equipo] Administración e integración web con app",
     "owners": "Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua",
     "url": "https://trello.com/c/OaZqYFzL/31-m13-equipo-administraci%C3%B3n-e-integraci%C3%B3n-web-con-app",
-    "status": "Administración ampliada el 20 de octubre",
-    "done": "Se conservan API de Michael b386291 y panel de Pamela a34efa6. 2e5684d incorpora cuentas, contactos, parentescos, reportes y recuperación.",
-    "gap": "Faltan administración completa de cursos/matrículas y auditoría general de cambios. La tarjeta permanece EN PROGRESO."
+    "status": "Finalizado técnicamente en Trello",
+    "done": "Se conservan API de Michael b386291 y panel de Pamela a34efa6. 2e5684d incorpora cuentas y vínculos. b99080e completa cursos, matrículas y auditoría privada; la creación web y lectura Android quedaron comprobadas.",
+    "gap": "No se presume aceptación académica ni despliegue MySQL real. La auditoría registra eventos desde V8 y no reconstruye cambios históricos."
   },
   {
     "code": "M14",
@@ -130,9 +130,9 @@
     "title": "M15 [Equipo] Pruebas completas, seguridad y rendimiento",
     "owners": "Michael Julian Fernandez Camarena",
     "url": "https://trello.com/c/JjlG2EqD/33-m15-equipo-pruebas-completas-seguridad-y-rendimiento",
-    "status": "Regresión ejecutada y cobertura incompleta",
-    "done": "El 20/10 se ejecutaron 80 casos de servidor sin fallos; React compila. Se probó cierre entre pestañas y crear/editar/consultar notas en navegador.",
-    "gap": "Faltan mediciones de rendimiento/carga, validación física y pruebas de módulos todavía ausentes. Sigue PRUEBAS; 80 casos no equivalen a cobertura completa."
+    "status": "Regresión y línea base local comprobadas",
+    "done": "96 pruebas de servidor aprobadas. El 20/10 pasaron cinco casos conjuntos de adjuntos, notas y estados, uno del selector y uno de matrícula: siete recorridos, sin sumar repeticiones. Línea base local: 160 lecturas, ocho sesiones, cero errores y p95 14,54 ms.",
+    "gap": "Faltan carga representativa de producción, validación física y módulos ausentes. Sigue PRUEBAS; la medición local excluye latencia de login y no demuestra capacidad de producción."
   },
   {
     "code": "M16",
@@ -185,7 +185,7 @@
     "owners": "Pamela Regina Meneses Mayhua",
     "url": "https://trello.com/c/nWNxf793/39-m21-web-equipo-paridad-funcional-web-con-la-app-main",
     "status": "Paridad web parcial",
-    "done": "Web HU06/HU07 de Pamela conservada. 2e5684d amplía administración y 54b1168 añade cursos/notas del alumno y registro/edición por docente.",
+    "done": "Web HU06/HU07 de Pamela conservada. 2e5684d y b99080e amplían administración; 54b1168 añade cursos/notas del alumno y registro/edición por docente.",
     "gap": "Faltan chats/grupos, estados, IA y preferencias web equivalentes a Android; esta tarjeta no se finaliza."
   },
   {
@@ -212,7 +212,7 @@
     "owners": "Michael Julian Fernandez Camarena, Pamela Regina Meneses Mayhua, Jery Becerra Ninaquispe",
     "url": "https://trello.com/c/TiQ3ZIys/42-m24-pruebas-equipo-validar-sincronizaci%C3%B3n-y-paridad-android-web",
     "status": "Sincronización parcial comprobada",
-    "done": "Registro y edición de nota desde web y lectura del alumno usan la misma API; permisos de notas y conflictos probados en servidor.",
-    "gap": "Falta recorrido Android y web simultáneo de todos los módulos, conectividad prolongada y dispositivos físicos. Las pruebas Android del 18/10 se citan como históricas."
+    "done": "Notas web y Android usan la misma API. El curso creado y editado desde React se vio en Android; la prueba de matrícula y revocación pasó el 20/10.",
+    "gap": "Falta recorrido simultáneo de todos los módulos, conectividad prolongada y dispositivos físicos. Las seis pruebas Android del 18/10 se citan como históricas y se separan del caso nuevo."
   }
 ]

@@ -28,6 +28,13 @@
     "skipped": "0"
   },
   {
+    "suite": "pe.tecsup.main.community.AcademicAdministrationTest",
+    "tests": "8",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  {
     "suite": "pe.tecsup.main.community.AssistantIntegrationTest",
     "tests": "6",
     "failures": "0",
@@ -51,6 +58,13 @@
   {
     "suite": "pe.tecsup.main.community.IdentityIntegrationTest",
     "tests": "10",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  {
+    "suite": "pe.tecsup.main.community.MessageAttachmentIntegrationTest",
+    "tests": "8",
     "failures": "0",
     "errors": "0",
     "skipped": "0"

@@ -1,0 +1,6 @@
+{
+  "status": 503,
+  "error": "AI_QUOTA_EXHAUSTED",
+  "message": "El proyecto de OpenAI no tiene cuota o saldo disponible. El responsable debe revisar la facturación.",
+  "checkedAtUtc": "2026-10-20T20:54:06.010256+00:00"
+}
