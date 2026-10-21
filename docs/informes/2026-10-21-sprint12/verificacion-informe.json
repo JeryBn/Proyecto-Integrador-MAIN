@@ -1,0 +1,26 @@
+{
+  "pages": 6,
+  "visualReview": "Se revisaron todas las páginas; versión final sin borde en título. Páginas 2–6 idénticas a las ya inspeccionadas.",
+  "tests": {
+    "server": 99,
+    "django": 15,
+    "loginWeb": 4,
+    "androidMysql": 3,
+    "httpCreate": 19,
+    "httpAfterRestart": 16
+  },
+  "trello": {
+    "finalizedTechnical": [
+      "T03",
+      "T04",
+      "T05",
+      "T06"
+    ],
+    "totalFinalized": 13,
+    "totalCards": 42
+  },
+  "hashes": {
+    ".docx": "17ed3e1f051310daa9a11dbc2d3c25f1ae30472decd0ad0e7fd9d8dd2287c78d",
+    ".pdf": "bce6af3f65696c4c72e4fd81842388627a915763533e79773672b619ce435b9c"
+  }
+}

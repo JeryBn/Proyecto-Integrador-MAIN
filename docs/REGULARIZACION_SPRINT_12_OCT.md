@@ -30,6 +30,13 @@ Los commits nuevos son ejecución asistida para Jery. No prueban una revisión p
 - `8a9f938`: recuperación completa de perfil/listado al reintentar, salida confirmada y mensajes de red comprensibles; fixture HTTP reproducible de estados de interfaz.
 - `d1eb219`: Django administrativo con identidad/MySQL compartidos, integración React, auditoría, documentación y pruebas.
 - `4ec140e`: prueba Android del registro creado en Django y su autorización por Spring.
+- `6aa1122`: resultados y evidencias de la revisión; `d0f8d7e`: iniciador local y documentación de arquitectura actualizada.
+
+## Estado verificado en Trello el 21 de octubre
+
+T03, T04, T05 y T06 se marcaron completas y se movieron a FINALIZADO con checklist 3/3. Los comentarios identifican el cierre técnico delegado por encargo de Jery y preservan autores originales; no acreditan revisión personal de otros integrantes. HU06 conserva pendiente esa constancia y la aceptación conjunta.
+
+T09 y T11 permanecen PRUEBAS con 9/10: falta identificar/aceptar HU administrativa y contrato. T10 pasó a PRUEBAS con 2/3, pendiente el acuerdo del esquema/propietario propuesto. MICHAEL queda 2/3 y PAMELA 0/3 por condiciones personales/acuerdos no verificados. HU06 tiene 3/5, HU07 4/5 y EQUIPO 1/4. También se actualizaron M02, M21, M22 y M15. El tablero tiene 13 tarjetas FINALIZADO, frente a 9 antes de esta revisión; no representa porcentaje de esfuerzo.
 
 ## Resultados comprobados
 
