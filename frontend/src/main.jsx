@@ -6,7 +6,9 @@ import {Academic} from './academic.jsx';
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
 async function request(url) {
-  const r = await fetch(url);
+  let r;
+  try { r = await fetch(url); }
+  catch { throw Error('No hay conexión con el servidor. Intenta nuevamente.'); }
   if (r.status === 401) {
     location.href = '/login.html';
     throw Error('Sesión finalizada');
@@ -71,21 +73,43 @@ function ActivityDetail({ id }) {
 }
 
 function App() {
-  const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [csrf, setCsrf] = useState(null), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
+  const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
 
-  const load = () => {
+  const logout = async event => {
+    event.preventDefault();
+    if (signingOut) return;
+    setSigningOut(true); setSessionError('');
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const tokenResponse = await fetch('/login-token', {cache: 'no-store'});
+        if (!tokenResponse.ok) throw Error('No pudimos renovar la sesión. Intenta nuevamente.');
+        const token = await tokenResponse.json();
+        const response = await fetch('/logout', {method: 'POST', body: new URLSearchParams({[token.parameterName]: token.token})});
+        if (response.status === 403 && attempt === 0) continue;
+        if (!response.ok || !response.redirected || !new URL(response.url).pathname.endsWith('/login.html'))
+          throw Error('No pudimos confirmar el cierre. Intenta nuevamente.');
+        location.href = '/login.html?salida';
+        return;
+      }
+    } catch (error) {
+      setSessionError(error.message || 'No hay conexión. Intenta nuevamente.');
+    } finally { setSigningOut(false); }
+  };
+
+  const load = async () => {
     setLoading(true);
     setError('');
-    request('/api/actividades/pendientes').then(setItems).catch(e => setError(e.message)).finally(() => setLoading(false));
+    try {
+      const currentProfile = await request('/api/perfil');
+      setProfile(currentProfile);
+      if (currentProfile.rol === 'Alumno') setItems(await request('/api/actividades/pendientes'));
+      else if (!location.hash) location.hash = 'cursos';
+    } catch (error) { setError(error.message); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => {
-    request('/api/perfil').then(p => {
-      setProfile(p);
-      if (p.rol === 'Alumno') load();
-      else { setLoading(false); if (!location.hash) location.hash = 'cursos'; }
-    }).catch(e => {setError(e.message); setLoading(false);});
-    request('/api/csrf').then(setCsrf).catch(() => {});
+    load();
     const change = () => setHash(location.hash);
     window.addEventListener('hashchange', change);
     return () => window.removeEventListener('hashchange', change);
@@ -112,9 +136,9 @@ function App() {
           <nav aria-label="Secciones académicas"><a href="#cursos">Cursos y notas</a>{profile?.rol === 'Alumno' && <> · <a href="/">Actividades</a></>}</nav>
           <div className="user-area">
             <span>{profile?.nombre || 'Alumno'}</span>
-            <form method="post" action="/logout">
-              {csrf && <input type="hidden" name={csrf.parameterName} value={csrf.token} />}
-              <button className="text-button" type="submit" disabled={!csrf}>Salir ↗</button>
+            <form onSubmit={logout}>
+              <button className="text-button" type="submit" disabled={signingOut}>{signingOut ? 'Cerrando…' : 'Salir ↗'}</button>
+              {sessionError && <p role="alert">{sessionError}</p>}
             </form>
           </div>
         </header>
