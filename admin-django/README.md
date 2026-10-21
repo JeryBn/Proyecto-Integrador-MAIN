@@ -20,6 +20,8 @@ Primero iniciar Spring con perfil `mysql` para aplicar Flyway V1–V9. Después 
 
 Arranque local: `python -m waitress --listen=127.0.0.1:8090 --threads=4 main_admin.wsgi:application`. Las cuentas ADMIN deben existir en `main_user`, creadas por el arranque configurado de Spring; Django no crea una identidad paralela ni eleva alumnos. Las sesiones son independientes de Spring y revalidan rol, activación y versión de contraseña.
 
+Para reabrir el entorno ya preparado en Windows, `scripts/Start-SharedArchitecture.ps1` recibe rutas explícitas al JSON privado, Java, Python, MySQL, directorio de datos y JAR. El JSON contiene `database`, `port`, `spring_password`, `migration_password`, `django_password` y `django_secret`; debe quedar fuera de Git. El iniciador no crea bases ni modifica contraseñas y rechaza un puerto ocupado por otro proceso. La opción `-DemoData` habilita únicamente identidades sintéticas. Se comprobó su análisis y reutilización de los tres procesos ya abiertos; el inicio desde una PC sin el entorno preparado no está acreditado.
+
 ## Contrato compartido
 
 - Flyway es dueño de las tablas de negocio; modelos Django `managed=False`. No ejecutar generación destructiva de esquema ni recrear tablas compartidas.
