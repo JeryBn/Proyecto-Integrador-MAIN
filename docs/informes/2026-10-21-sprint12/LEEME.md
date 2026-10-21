@@ -10,6 +10,7 @@ Ejecución entre 20 y 21/10/2026 para Jery Becerra Ninaquispe. [Informe factual 
 - `django-15-casos.txt`: prueba Django con SQLite desechable; el flujo MySQL real se acredita aparte con los JSON.
 - `acceso-web-4-casos.txt`: cuatro regresiones del formulario web.
 - `android-mysql-3-casos.xml` y `31-django-mysql-android.png`: tres casos aprobados en emulador contra Spring/MySQL.
+- `android-mysql-notas-estados-adjuntos-5-casos.xml` y `mysql-*.png`: cinco recorridos adicionales aprobados sobre MySQL; notas docente/alumno, estados y adjuntos. Ocho casos Android en este entorno al contar ambas ejecuciones; no sumar las ejecuciones históricas del 20/10 como casos nuevos.
 - `01`–`04`, `06`, `08`, `11`–`14`: recorridos reales con cuentas sintéticas. `12`–`13` pertenecen al servidor H2 antes de cambiar a la arquitectura compartida; `14` es creación React/Django/MySQL.
 - `05-error-red-anterior.png`: fallo anterior al mensaje de red traducido; no es el estado corregido.
 - `07`, `09`, `10`, `15`, `16`, `17`: fixture HTTP sintético del React real para carga, error, reintento y salida sin confirmación falsa. No acreditan autenticación ni permisos de producción.

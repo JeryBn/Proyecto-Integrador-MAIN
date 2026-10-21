@@ -6,7 +6,7 @@
 
 [Informe detallado en Word](docs/informes/2026-10-21-sprint12/MAIN_Regularizacion_Sprint_12_octubre_2026.docx) y [PDF de seis páginas](docs/informes/2026-10-21-sprint12/MAIN_Regularizacion_Sprint_12_octubre_2026.pdf), con responsables originales, brechas cubiertas, resultados y pendientes. T03–T06 cerradas técnicamente en Trello por ejecución asistida; T09/T10/T11 conservan pendientes los acuerdos oficiales indicados en las tarjetas.
 
-Verificados: 99 casos de servidor, 15 Django, 4 de formulario web, contrato HTTP cruzado con persistencia tras reiniciar y 3 casos Android sobre MySQL. Cada suite y su límite están descritos en [las evidencias](docs/informes/2026-10-21-sprint12/LEEME.md). Django cubre las operaciones administrativas del Sprint 1; los módulos administrativos posteriores aún requieren migración/paridad. [Preparación Django](admin-django/README.md).
+Verificados: 99 casos de servidor, 15 Django, 4 de formulario web, contrato HTTP cruzado con persistencia tras reiniciar y 8 casos Android sobre MySQL (3 de arquitectura y 5 de notas/estados/adjuntos). Cada suite y su límite están descritos en [las evidencias](docs/informes/2026-10-21-sprint12/LEEME.md). Django cubre las operaciones administrativas del Sprint 1; los módulos administrativos posteriores aún requieren migración/paridad. [Preparación Django](admin-django/README.md).
 
 ## Corte histórico del 20 de octubre de 2026
 

@@ -46,10 +46,12 @@ T09 y T11 permanecen PRUEBAS con 9/10: falta identificar/aceptar HU administrati
 | Formulario web de ingreso | **4 aprobadas** en Node: token renovado al enviar, fallo de red/reintento, fallo inicial y doble envío. |
 | Django | **15 aprobadas** con SQLite desechable: roles, CSRF, sesiones/rotación/revocación, validación, duplicados, orden, detalle y rollback de auditoría. |
 | Django y Spring sobre MySQL real | **19 comprobaciones HTTP aprobadas** al crear; **16 aprobadas después de reiniciar** MySQL y ambos backends. Se volvió a aprobar la verificación en los puertos finales. Son ejecuciones del mismo contrato, no 35 pruebas unitarias independientes. |
-| Android conectado a Spring/MySQL | **3 aprobadas**: registro creado en Django visible al matriculado y oculto al ajeno; detalle con campos/fecha; rechazo ajeno/inexistente/sin sesión. Emulador, no teléfono físico. |
+| Android conectado a Spring/MySQL | **8 aprobadas**: 3 de arquitectura (registro Django, detalle y permisos) y 5 recorridos adicionales de notas docente/alumno, estados multimedia y adjuntos. Ambas ejecuciones sin fallos; emulador, no teléfono físico. |
 | React en navegador | Búsqueda/filtros, campos/fecha Lima, teclado/regreso, error/vacío, ingreso/salida entre pestañas y creación desde React a Django comprobados. Fallos de carga/reintento administrativo ejercitados con fixture sintético identificado. |
 
 Evidencias seguras en [carpeta del 21 de octubre](informes/2026-10-21-sprint12/LEEME.md). Los siete recorridos Android del informe del 20/10 son históricos separados; no se presentan como repetidos sobre MySQL.
+
+La ejecución adicional de cinco casos se realizó después del primer informe de esta regularización. Se conservan los XML de 3 y 5 por separado y las capturas nuevas de notas, imagen, video, audio y adjuntos sobre MySQL. Los ensayos prepararon el profesor sintético `docente_revision` y contactos autorizados con cuentas de demostración para facilitar pruebas manuales; no se cargaron estudiantes reales ni se migró toda la base H2 anterior.
 
 ## Cómo queda abierto el proyecto
 
