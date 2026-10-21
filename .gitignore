@@ -16,6 +16,9 @@ mobile/local.properties
 
 frontend/node_modules/
 frontend/dist/
+__pycache__/
+*.pyc
+admin-django/.venv/
 
 frontend/node_modules/
 frontend/dist/

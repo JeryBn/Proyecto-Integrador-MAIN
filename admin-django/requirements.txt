@@ -1,0 +1,7 @@
+asgiref==3.12.1
+bcrypt==5.0.0
+Django==5.2.18
+mysqlclient==2.3.0
+sqlparse==0.6.0
+tzdata==2026.5
+waitress==3.0.2

@@ -1,0 +1,151 @@
+import json
+from unittest.mock import patch
+import bcrypt
+from django.core.cache import cache
+from django.db import connection, IntegrityError
+from django.test import Client, TransactionTestCase
+from .models import Activity, Audit, Course, SharedUser, Teacher
+
+PASSWORD = 'SyntheticDjangoTest2026!'
+HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
+
+class AdministrationTests(TransactionTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Únicamente la BD desechable de pruebas. En ejecución real crea Flyway.
+        with connection.schema_editor() as editor:
+            for model in (Teacher, Course, Activity, SharedUser, Audit):
+                editor.create_model(model)
+
+    @classmethod
+    def tearDownClass(cls):
+        with connection.schema_editor() as editor:
+            for model in (Audit, SharedUser, Activity, Course, Teacher):
+                editor.delete_model(model)
+        super().tearDownClass()
+
+    def setUp(self):
+        cache.clear()
+        for model in (Audit, Activity, SharedUser, Course, Teacher):
+            model.objects.all().delete()
+        Teacher.objects.create(id=1, nombre='Docente sintético')
+        Course.objects.create(id=1, nombre='Curso sintético', docente_id=1)
+        for name, role in [('admin_test', 'ADMIN'), ('alumno', 'ALUMNO')]:
+            SharedUser.objects.create(username=name, display_name=name, role=role, password_hash=HASH, enabled=True)
+        self.client = Client(enforce_csrf_checks=True)
+
+    def token(self):
+        return self.client.get('/api/admin/csrf').json()['token']
+
+    def login(self, username='admin_test', password=PASSWORD):
+        return self.client.post('/api/admin/login', {'username':username, 'password':password}, HTTP_X_CSRFTOKEN=self.token())
+
+    def payload(self):
+        return dict(id=100, cursoId=1, titulo='Actividad sintética', descripcion='Instrucciones', fechaLimite='2026-11-20T15:30:00')
+
+    def create(self, body=None):
+        return self.client.post('/api/admin/actividades', json.dumps(self.payload() if body is None else body),
+                                content_type='application/json', HTTP_X_CSRFTOKEN=self.token())
+
+    def test_anonymous_cannot_read_or_create(self):
+        self.assertEqual(self.client.get('/api/admin/actividades').status_code, 401)
+        self.assertEqual(self.create().status_code, 401)
+
+    def test_csrf_required_even_for_login(self):
+        self.assertEqual(self.client.post('/api/admin/login', {'username':'admin_test','password':PASSWORD}).status_code, 403)
+        self.login()
+        self.assertEqual(self.client.post('/api/admin/actividades', '{}', content_type='application/json').status_code, 403)
+
+    def test_student_never_gets_admin_session(self):
+        self.assertEqual(self.login('alumno').status_code, 403)
+        self.assertEqual(self.client.get('/api/admin/perfil').status_code, 401)
+
+    def test_wrong_disabled_and_unknown_accounts(self):
+        self.assertEqual(self.login(password='incorrecta').status_code, 401)
+        self.assertEqual(self.login(username='inexistente').status_code, 401)
+        SharedUser.objects.filter(pk='admin_test').update(enabled=False)
+        self.assertEqual(self.login().status_code, 401)
+
+    def test_login_rotates_csrf_and_session_and_logout_invalidates_cookie(self):
+        before = self.token()
+        previous_cookie = self.client.cookies['MAIN_ADMIN_SESSION'].value
+        self.assertEqual(self.login().status_code, 200)
+        self.assertNotEqual(previous_cookie, self.client.cookies['MAIN_ADMIN_SESSION'].value)
+        self.assertEqual(self.client.post('/api/admin/logout', HTTP_X_CSRFTOKEN=before).status_code, 403)
+        saved_cookie = self.client.cookies['MAIN_ADMIN_SESSION'].value
+        self.assertEqual(self.client.post('/api/admin/logout', HTTP_X_CSRFTOKEN=self.token()).status_code, 200)
+        self.client.cookies['MAIN_ADMIN_SESSION'] = saved_cookie
+        self.assertEqual(self.client.get('/api/admin/perfil').status_code, 401)
+
+    def test_revoked_account_or_role_invalidates_session(self):
+        self.login()
+        SharedUser.objects.filter(pk='admin_test').update(role='ALUMNO')
+        self.assertEqual(self.client.get('/api/admin/actividades').status_code, 401)
+
+    def test_password_change_invalidates_session(self):
+        self.login()
+        SharedUser.objects.filter(pk='admin_test').update(password_hash=bcrypt.hashpw(b'AnotherSynthetic2026!',bcrypt.gensalt(rounds=4)).decode())
+        self.assertEqual(self.client.get('/api/admin/perfil').status_code, 401)
+
+    def test_create_contract_audit_and_duplicate_do_not_overwrite(self):
+        self.login()
+        response = self.create()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response['Location'], '/api/admin/actividades/100')
+        self.assertEqual(response.json()['fechaLimite'], '2026-11-20T15:30:00')
+        self.assertEqual(response.json()['docente'], 'Docente sintético')
+        self.assertEqual(self.create().status_code, 409)
+        self.assertEqual(Activity.objects.count(), 1)
+        self.assertEqual(Audit.objects.count(), 1)
+        self.assertEqual(Audit.objects.get().action, 'ACTIVITY_CREATED')
+
+    def test_invalid_numbers_strings_unknown_fields_and_dates(self):
+        self.login()
+        for key, value in [('id',True),('id',1.5),('id','100'),('id',-1),('id',9007199254740992),
+                           ('cursoId',0),('titulo',' '),('descripcion','x'*2001),('rol','ADMIN'),
+                           ('fechaLimite','2026-02-30T15:30:00'),('fechaLimite','2026-11-20T15:30:00Z')]:
+            body = self.payload(); body[key] = value
+            with self.subTest(key=key, value=str(value)[:40]):
+                self.assertEqual(self.create(body).status_code, 400)
+        self.assertEqual(Activity.objects.count(), 0)
+
+    def test_unknown_course_and_missing_fields(self):
+        self.login()
+        self.assertEqual(self.create({}).status_code, 400)
+        body = self.payload(); body['cursoId']=999
+        self.assertEqual(self.create(body).status_code, 400)
+
+    def test_malformed_json_and_non_object(self):
+        self.login()
+        for body in ('{','[]','null'):
+            self.assertEqual(self.client.post('/api/admin/actividades', body, content_type='application/json',
+                                             HTTP_X_CSRFTOKEN=self.token()).status_code, 400)
+
+    def test_pagination_order_and_detail(self):
+        self.login(); self.create()
+        body = self.payload(); body.update(id=101,fechaLimite='2026-11-19T15:30:00'); self.create(body)
+        response = self.client.get('/api/admin/actividades?limit=1&offset=0').json()
+        self.assertEqual(response['total'],2); self.assertEqual(response['items'][0]['id'],101)
+        self.assertEqual(self.client.get('/api/admin/actividades/100').status_code,200)
+        self.assertEqual(self.client.get('/api/admin/actividades/999').status_code,404)
+        for query in ('limit=0','limit=101','offset=-1','offset=bad'):
+            self.assertEqual(self.client.get('/api/admin/actividades?'+query).status_code,400)
+        self.assertEqual(self.client.get('/api/admin/cursos').json()['items'][0]['id'],1)
+
+    def test_audit_failure_rolls_back_creation(self):
+        self.login()
+        with patch('administration.views.Audit.objects.create', side_effect=IntegrityError('synthetic audit failure')):
+            self.assertEqual(self.create().status_code,409)
+        self.assertEqual(Activity.objects.count(),0)
+
+    def test_login_throttle(self):
+        for _ in range(10):
+            self.assertEqual(self.login(password='incorrecta').status_code,401)
+        self.assertEqual(self.login().status_code,429)
+
+    def test_react_assets_and_unsupported_operations(self):
+        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="activities"')
+        self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
+        self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
+        self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)

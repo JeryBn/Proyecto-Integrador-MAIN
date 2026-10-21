@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
+const activityScope = document.documentElement.dataset.adminScope === 'activities';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -50,6 +51,8 @@ function Login({notice, onOk}) {
   async function submit(e) {
     e.preventDefault(); setErr(''); setBusy(true);
     try {
+      // La página puede seguir abierta tras reiniciar servidor o cambiar sesión en otra pestaña.
+      await loadCsrf();
       await api('/login', {method: 'POST', form: {username: u, password: p}});
       await loadCsrf(); // la sesión cambió: hay que pedir un token nuevo
       const perfil = await api('/perfil');
@@ -289,9 +292,9 @@ function App() {
         <nav>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
-          <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
+          {!activityScope && <><button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
           <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
-          <a href="/moderation.html">Revisar contenido</a>
+          <a href="/moderation.html">Revisar contenido</a></>}
         </nav>
         <span>{user}</span>
         <button onClick={logout}>Cerrar sesión</button>
