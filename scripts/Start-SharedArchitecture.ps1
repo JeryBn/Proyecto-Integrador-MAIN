@@ -5,6 +5,7 @@ param(
   [Parameter(Mandatory=$true)][string]$MySqlExecutable,
   [Parameter(Mandatory=$true)][string]$MySqlDataDirectory,
   [string]$JarPath,
+  [string]$FfmpegDirectory,
   [switch]$DemoData
 )
 $ErrorActionPreference='Stop'
@@ -41,6 +42,10 @@ $env:SPRING_FLYWAY_PASSWORD=$configuration.migration_password
 $env:SPRING_PROFILES_ACTIVE='mysql'
 $env:MAIN_DEMO_ENABLED=if($DemoData){'true'}else{'false'}
 $env:SERVER_PORT='8088'
+if($FfmpegDirectory){
+  if(!(Test-Path -LiteralPath (Join-Path $FfmpegDirectory 'ffmpeg.exe') -PathType Leaf)){throw 'No existe FFmpeg en la ruta indicada'}
+  $env:MAIN_MEDIA_FFMPEG_DIRECTORY=$FfmpegDirectory
+}
 $springProcess=Get-ListenerProcess 8088
 if($springProcess){
   if($springProcess.CommandLine -notlike "*$JarPath*"){throw '8088 está ocupado por otro servidor; no se detiene'}

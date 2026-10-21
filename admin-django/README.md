@@ -22,6 +22,8 @@ Arranque local: `python -m waitress --listen=127.0.0.1:8090 --threads=4 main_adm
 
 Para reabrir el entorno ya preparado en Windows, `scripts/Start-SharedArchitecture.ps1` recibe rutas explícitas al JSON privado, Java, Python, MySQL, directorio de datos y JAR. El JSON contiene `database`, `port`, `spring_password`, `migration_password`, `django_password` y `django_secret`; debe quedar fuera de Git. El iniciador no crea bases ni modifica contraseñas y rechaza un puerto ocupado por otro proceso. La opción `-DemoData` habilita únicamente identidades sintéticas. Se comprobó su análisis y reutilización de los tres procesos ya abiertos; el inicio desde una PC sin el entorno preparado no está acreditado.
 
+Pasar también `-FfmpegDirectory` con la carpeta existente de FFmpeg para conservar el procesamiento de audio/video de Spring al reabrir. El iniciador comprueba el ejecutable y transmite la ruta por entorno; no descarga herramientas ni inserta secretos en argumentos.
+
 ## Contrato compartido
 
 - Flyway es dueño de las tablas de negocio; modelos Django `managed=False`. No ejecutar generación destructiva de esquema ni recrear tablas compartidas.
