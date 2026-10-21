@@ -43,6 +43,7 @@ def main():
     parser.add_argument('--user-base',default='http://127.0.0.1:8089')
     parser.add_argument('--mode',choices=['create','verify'],default='create')
     parser.add_argument('--evidence-file',type=Path,required=True)
+    parser.add_argument('--result-file',type=Path)
     args=parser.parse_args()
     admin_password=os.environ['MAIN_TEST_ADMIN_PASSWORD']
     student_password=os.environ['MAIN_TEST_STUDENT_PASSWORD']
@@ -97,6 +98,8 @@ def main():
                 adminBase=args.admin_base,userBase=args.user_base,passed=len(checks),checks=checks,
                 limitation='Identidades sintéticas; aceptación académica y despliegue HTTPS no incluidos.')
     destination=args.evidence_file if args.mode=='create' else args.evidence_file.with_name(args.evidence_file.stem+'-after-restart.json')
+    if args.result_file:
+        destination=args.result_file
     destination.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     print(f'{len(checks)} comprobaciones HTTP aprobadas; evidencia segura: {destination.name}')
 

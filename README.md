@@ -1,6 +1,12 @@
 # Proyecto Integrador MAIN - seccion A
 
-## Estado actual del 20 de octubre de 2026
+## Actualización del 21 de octubre de 2026
+
+[Regularización de las tareas del 12 de octubre](docs/REGULARIZACION_SPRINT_12_OCT.md): Django administrativo y React conectados a MySQL compartido con Spring Boot, según el diagrama confirmado por Jery. Se conservan los aportes anteriores y su autoría. El entorno local de usuarios está en 8088 y el administrativo Django en 8090. La base H2 previa se preservó; no se afirma migración de todos sus ensayos.
+
+Verificados: 99 casos de servidor, 15 Django, 4 de formulario web, contrato HTTP cruzado con persistencia tras reiniciar y 3 casos Android sobre MySQL. Cada suite y su límite están descritos en [las evidencias](docs/informes/2026-10-21-sprint12/LEEME.md). Django cubre las operaciones administrativas del Sprint 1; los módulos administrativos posteriores aún requieren migración/paridad. [Preparación Django](admin-django/README.md).
+
+## Corte histórico del 20 de octubre de 2026
 
 Proyecto académico en desarrollo con Spring Boot, React y Android. Se conservan los aportes de Michael Julian Fernandez Camarena (API administrativa `b386291`) y Pamela Regina Meneses Mayhua (panel React `a34efa6`). Los incrementos posteriores se realizaron con asistencia técnica por encargo de Jery Becerra Ninaquispe; no se presume aceptación del equipo ni proyecto completo.
 

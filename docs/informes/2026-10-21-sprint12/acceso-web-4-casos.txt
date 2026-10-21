@@ -1,0 +1,12 @@
+✔ renueva el token al enviar una página que ya estaba abierta (7.2097ms)
+✔ fallo de red conserva el formulario y permite reintentar (2.322ms)
+✔ fallo inicial del token no deja el acceso bloqueado (2.355ms)
+✔ doble envío mientras se renueva el token hace una sola solicitud (2.7077ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 156.9255

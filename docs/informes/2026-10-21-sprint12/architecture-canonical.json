@@ -1,0 +1,107 @@
+{
+  "timestampUTC": "2026-10-21T05:20:10.890319+00:00",
+  "mode": "verify",
+  "activityId": 1792559397011,
+  "adminBase": "http://127.0.0.1:8090",
+  "userBase": "http://127.0.0.1:8088",
+  "passed": 16,
+  "checks": [
+    {
+      "name": "django_anonymous",
+      "passed": true,
+      "actual": 401,
+      "expected": 401
+    },
+    {
+      "name": "spring_anonymous",
+      "passed": true,
+      "actual": 401,
+      "expected": 401
+    },
+    {
+      "name": "student_cannot_administer_django",
+      "passed": true,
+      "actual": 403,
+      "expected": 403
+    },
+    {
+      "name": "django_login",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "django_csrf_required",
+      "passed": true,
+      "actual": 403,
+      "expected": 403
+    },
+    {
+      "name": "django_reads_activity",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "enrolled_login",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "spring_list",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "enrolled_list_contains_django_record",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "enrolled_detail",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "spring_lima_date",
+      "passed": true,
+      "actual": "2026-11-20T15:30:00",
+      "expected": "2026-11-20T15:30:00"
+    },
+    {
+      "name": "other_login",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "other_detail_hidden",
+      "passed": true,
+      "actual": 404,
+      "expected": 404
+    },
+    {
+      "name": "other_list_excludes_record",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "empty_login",
+      "passed": true,
+      "actual": 200,
+      "expected": 200
+    },
+    {
+      "name": "empty_list",
+      "passed": true,
+      "actual": [],
+      "expected": []
+    }
+  ],
+  "limitation": "Identidades sintéticas; aceptación académica y despliegue HTTPS no incluidos."
+}

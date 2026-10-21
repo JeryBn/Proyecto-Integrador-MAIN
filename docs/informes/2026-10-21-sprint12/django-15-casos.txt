@@ -1,0 +1,34 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+Found 15 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: administration
+  Apply all migrations: sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+test_anonymous_cannot_read_or_create (administration.tests.AdministrationTests.test_anonymous_cannot_read_or_create) ... ok
+test_audit_failure_rolls_back_creation (administration.tests.AdministrationTests.test_audit_failure_rolls_back_creation) ... ok
+test_create_contract_audit_and_duplicate_do_not_overwrite (administration.tests.AdministrationTests.test_create_contract_audit_and_duplicate_do_not_overwrite) ... ok
+test_csrf_required_even_for_login (administration.tests.AdministrationTests.test_csrf_required_even_for_login) ... ok
+test_invalid_numbers_strings_unknown_fields_and_dates (administration.tests.AdministrationTests.test_invalid_numbers_strings_unknown_fields_and_dates) ... ok
+test_login_rotates_csrf_and_session_and_logout_invalidates_cookie (administration.tests.AdministrationTests.test_login_rotates_csrf_and_session_and_logout_invalidates_cookie) ... ok
+test_login_throttle (administration.tests.AdministrationTests.test_login_throttle) ... ok
+test_malformed_json_and_non_object (administration.tests.AdministrationTests.test_malformed_json_and_non_object) ... ok
+test_pagination_order_and_detail (administration.tests.AdministrationTests.test_pagination_order_and_detail) ... ok
+test_password_change_invalidates_session (administration.tests.AdministrationTests.test_password_change_invalidates_session) ... ok
+test_react_assets_and_unsupported_operations (administration.tests.AdministrationTests.test_react_assets_and_unsupported_operations) ... ok
+test_revoked_account_or_role_invalidates_session (administration.tests.AdministrationTests.test_revoked_account_or_role_invalidates_session) ... ok
+test_student_never_gets_admin_session (administration.tests.AdministrationTests.test_student_never_gets_admin_session) ... ok
+test_unknown_course_and_missing_fields (administration.tests.AdministrationTests.test_unknown_course_and_missing_fields) ... ok
+test_wrong_disabled_and_unknown_accounts (administration.tests.AdministrationTests.test_wrong_disabled_and_unknown_accounts) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 1.220s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).
