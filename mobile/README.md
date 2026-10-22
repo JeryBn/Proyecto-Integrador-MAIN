@@ -2,7 +2,9 @@
 
 Revisión de interfaz y notas: [Chats, privados y calificaciones por curso](../docs/CHATS_Y_NOTAS_2026_10_18.md). Inicio mantiene el centro académico. Chats → Nuevo chat permite iniciar privados con estudiantes o profesores; la privacidad se gestiona desde la información de cada contacto.
 
-Cliente Kotlin y Jetpack Compose para actividades, agenda autorizada, perfiles, mensajes de texto revisados, grupos, avisos y asistente académico. Consume Spring Boot. Estados y adjuntos multimedia siguen pendientes.
+Cliente Kotlin y Jetpack Compose para actividades, agenda autorizada, perfiles, mensajes, grupos, estados, adjuntos, avisos y asistente académico. Consume Spring Boot. Consultar la [matriz de paridad del 22/10](../docs/PARIDAD_WEB_22_OCT.md) para distinguir implementación local de aceptación, operación y bloqueos pendientes.
+
+Entrega Android: [procedimiento de firma, pruebas en teléfono y aportes pendientes de Jery](../docs/mobile/CIERRE_JERY_SPRINT_2.md). La preparación del paquete no sustituye una entrega firmada ni su aceptación física.
 
 Estado actual: [implementación y pendientes](../docs/ESTADO_IMPLEMENTACION_2026_10_18.md), [IA y despliegue](../docs/IA_Y_DESPLIEGUE.md). Las evidencias anteriores de HU06/HU07 se conservan como historial.
 
