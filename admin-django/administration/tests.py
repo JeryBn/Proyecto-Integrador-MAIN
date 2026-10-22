@@ -1,4 +1,7 @@
 import json
+import hashlib
+from datetime import datetime,timedelta
+from pathlib import Path
 from unittest.mock import patch
 import bcrypt
 from django.core.cache import cache
@@ -10,6 +13,8 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
+    moderation_tables=('notification','message_attachment_chunk','message_attachment','message_revision','message',
+                       'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -25,10 +30,19 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE guardian_link(guardian VARCHAR(60), alumno_id BIGINT, verified_by VARCHAR(60), verified_at TIMESTAMP, PRIMARY KEY(guardian,alumno_id))')
             cursor.execute('CREATE TABLE contact_link(user_a VARCHAR(60), user_b VARCHAR(60), approved_by VARCHAR(60), PRIMARY KEY(user_a,user_b))')
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
+            cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
+            migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
+            for prefix in ('V3__','V5__','V7__','V9__'):
+                source=next(migrations.glob(prefix+'*.sql')).read_text()
+                for sql in source.split(';'):
+                    if sql.strip():
+                        cursor.execute(sql)
 
     @classmethod
     def tearDownClass(cls):
         with connection.cursor() as cursor:
+            for table in cls.moderation_tables:
+                cursor.execute('DROP TABLE '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DROP TABLE ' + table)
         with connection.schema_editor() as editor:
@@ -39,6 +53,8 @@ class AdministrationTests(TransactionTestCase):
     def setUp(self):
         cache.clear()
         with connection.cursor() as cursor:
+            for table in self.moderation_tables:
+                cursor.execute('DELETE FROM '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DELETE FROM ' + table)
         for model in (Audit, Activity, SharedUser, Course, Teacher):
@@ -159,7 +175,7 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.login().status_code,429)
 
     def test_react_assets_and_unsupported_operations(self):
-        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="management"')
+        self.assertContains(self.client.get('/admin.html'), '<html lang="es">')
         self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
         self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
         self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)
@@ -323,3 +339,88 @@ class AdministrationTests(TransactionTestCase):
         with connection.cursor() as cursor:
             cursor.execute('SELECT COUNT(*) FROM course_grade')
             self.assertEqual(cursor.fetchone()[0],0)
+
+    def moderation_fixture(self, media=False):
+        from .moderation import execute,now
+        self.login()
+        SharedUser.objects.create(username='recipient',display_name='Destinatario',role='ALUMNO',password_hash=HASH,enabled=True)
+        execute("INSERT INTO conversation VALUES('conv','DIRECT','Sintética','alumno',%s,'alumno:recipient')",[now()])
+        for name in ('alumno','recipient'):
+            execute("INSERT INTO conversation_member VALUES('conv',%s,'ACTIVE',FALSE,%s)",[name,now()-timedelta(minutes=1)])
+        execute("INSERT INTO contact_link VALUES('alumno','recipient','admin_test')")
+        execute("INSERT INTO message(id,conversation_id,sender,client_key,created_at) VALUES('msg','conv','alumno','key',%s)",[now()])
+        digest=hashlib.sha256(b'hola').hexdigest()
+        if media:
+            content=hashlib.sha256(b'archivo').hexdigest()
+            execute("INSERT INTO message_attachment VALUES('msg','FILE','text/plain','documento.txt',7,%s,%s)",[content,content])
+            execute("INSERT INTO message_attachment_chunk VALUES('msg',0,%s)",[b'archivo'])
+            digest=hashlib.sha256(('MAIN-ATTACHMENT\nhola\x00'+content).encode()).hexdigest()
+        execute("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES('msg',1,'hola','PENDING',%s)",[digest])
+        return dict(revision=1,contentHash=digest,approved=True,attachmentReviewed=False)
+
+    def test_moderation_message_contract_publish_and_notification_once(self):
+        from .moderation import rows
+        value=self.moderation_fixture()
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').json()[0]['senderName'],'alumno')
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,200)
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,409)
+        self.assertEqual(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'],1)
+        self.assertEqual(len(rows('SELECT id FROM notification')),1)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').json(),[])
+
+    def test_moderation_attachment_requires_review_and_integrity(self):
+        from .moderation import execute
+        value=self.moderation_fixture(media=True)
+        path='/api/admin/v1/moderation/messages/msg/attachment?revision=1'
+        response=self.client.get(path)
+        self.assertEqual(response.content,b'archivo')
+        self.assertIn('no-store',response['Cache-Control'])
+        self.assertEqual(response['X-Content-Type-Options'],'nosniff')
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,400)
+        value['attachmentReviewed']=True
+        execute("UPDATE message_attachment_chunk SET payload=%s WHERE message_id='msg'",[b'corrupto'])
+        self.assertEqual(self.client.get(path).status_code,409)
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,400)
+
+    def test_moderation_blocked_sender_stale_revision_and_audit_rollback(self):
+        from .moderation import execute,rows
+        value=self.moderation_fixture()
+        stale=dict(value,revision=2)
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',stale).status_code,409)
+        execute("INSERT INTO contact_preference VALUES('recipient','alumno',FALSE,TRUE)")
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,403)
+        value.update(approved=False,reason='Categoría sintética')
+        with patch('administration.moderation.record',side_effect=IntegrityError('synthetic')):
+            self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,409)
+        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'PENDING')
+
+    def status_fixture(self, kind='TEXT'):
+        from .moderation import execute,now
+        self.login()
+        raw=b'' if kind=='TEXT' else b'imagen'
+        digest=hashlib.sha256((kind+'\nhola\n#008800\nCONTACTS\n').encode()+raw).hexdigest()
+        execute("INSERT INTO status_update(id,owner,client_key,body,background,audience,kind,state,content_hash,created_at,expires_at) VALUES('status','alumno','key','hola','#008800','CONTACTS',%s,'PENDING',%s,%s,%s)",[kind,digest,now(),now()+timedelta(hours=1)])
+        if raw:
+            execute("INSERT INTO status_media_chunk VALUES('status',0,%s)",[raw])
+        return dict(contentHash=digest,approved=True)
+
+    def test_status_review_expiry_hash_and_explicit_attachment(self):
+        from .moderation import execute,now
+        value=self.status_fixture('IMAGE')
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses').json()[0]['kind'],'IMAGE')
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses/status/media').content,b'imagen')
+        self.assertEqual(self.academic_call('moderation/statuses/status/review',value).status_code,400)
+        value['attachmentReviewed']=True
+        self.assertEqual(self.academic_call('moderation/statuses/status/review',dict(value,contentHash='stale')).status_code,409)
+        self.assertEqual(self.academic_call('moderation/statuses/status/review',value).status_code,200)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses/status/media').status_code,404)
+        execute("UPDATE status_update SET state='PENDING',expires_at=%s WHERE id='status'",[now()-timedelta(seconds=1)])
+        self.assertEqual(self.academic_call('moderation/statuses/status/review',value).status_code,409)
+
+    def test_moderation_authentication_csrf_and_page_assets(self):
+        self.assertEqual(self.client.get('/moderation.html').status_code,401)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages/msg/attachment?revision=1').status_code,401)
+        self.login()
+        for path in ('/moderation.html','/moderation.js','/moderation.css'):
+            self.assertEqual(self.client.get(path).status_code,200)
+        self.assertEqual(self.client.post('/api/admin/v1/moderation/messages/msg/review','{}',content_type='application/json').status_code,403)

@@ -71,17 +71,23 @@ async function loadStatuses(){
  if(!statuses.length)target.append(element('p','No hay estados pendientes en esta página.'));
  for(const status of statuses){
   const card=element('article');card.append(element('h3',status.name+' · '+status.kind),element('p','Caduca: '+status.expiresAt+' · Audiencia: '+status.audience),element('pre',status.text));
+  let mediaReviewed=null;
   if(status.kind!=='TEXT'){
+   mediaReviewed=element('input');mediaReviewed.type='checkbox';mediaReviewed.disabled=true;
+   const confirmation=element('label','He revisado todo el contenido multimedia, incluido el audio.');confirmation.prepend(mediaReviewed);
    const media=element(status.kind==='IMAGE'?'img':status.kind==='VIDEO'?'video':'audio');media.src='/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/media';
    if(status.kind==='IMAGE'){media.alt='Imagen pendiente de revisión';media.style.maxWidth='100%';}else{media.controls=true;media.preload='metadata';media.style.maxWidth='100%';}
-   card.append(media);
+   media.addEventListener(status.kind==='IMAGE'?'load':'loadedmetadata',()=>{mediaReviewed.disabled=false;});
+   media.addEventListener('error',()=>{mediaReviewed.checked=false;mediaReviewed.disabled=true;});
+   card.append(media,confirmation);
   }
   const reason=element('input');reason.placeholder='Motivo del rechazo';reason.maxLength=300;
   const approve=element('button','Aprobar estado'),reject=element('button','Rechazar estado');
   async function decide(approved){
+   if(approved&&mediaReviewed&&!mediaReviewed.checked){notice.textContent='Revisa el archivo completo y confirma la revisión antes de aprobar.';return;}
    if(!approved&&!reason.value.trim()){notice.textContent='Indica el motivo del rechazo.';return;}
    approve.disabled=reject.disabled=true;
-   try{const csrf=await request('/api/admin/csrf');await request('/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/review',{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({contentHash:status.contentHash,approved,reason:reason.value.trim()})});await load();}
+   try{const csrf=await request('/api/admin/csrf');await request('/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/review',{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({contentHash:status.contentHash,approved,reason:reason.value.trim(),attachmentReviewed:mediaReviewed?.checked||false})});await load();}
    catch(error){notice.textContent=error.message;approve.disabled=reject.disabled=false;}
   }
   approve.addEventListener('click',()=>decide(true));reject.addEventListener('click',()=>decide(false));card.append(reason,approve,reject);target.append(card);

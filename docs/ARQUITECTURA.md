@@ -1,18 +1,19 @@
 # Arquitectura MAIN
 
-Actualización del 21/10/2026 según el diagrama aportado nuevamente por Jery. Administración React/Django y usuarios React/Kotlin con Spring Boot comparten una base de datos. Se implementó el flujo administrativo de actividades con esta separación; no se declara migrada toda la administración posterior.
+Actualización del 22/10/2026 según el diagrama aportado nuevamente por Jery. Administración React/Django y usuarios React/Kotlin con Spring Boot comparten una base de datos. Se migraron también cuentas, vínculos, cursos/matrículas, horarios, notas administrativas, auditoría y moderación de mensajes/estados. [Contrato y evidencia](MIGRACION_DJANGO_22_OCT.md).
 
 ```mermaid
 flowchart LR
-  AR[Administración React] --> DJ[Django actividades Sprint 1]
+  AR[Administración React] --> DJ[Django administración]
   UR[Usuarios React] --> SB[Spring Boot usuarios]
   KM[Android Kotlin] --> SB
   DJ --> DB[(MySQL compartido)]
   SB --> DB
-  EX[Administración extendida en transición] -.-> SB
 ```
 
-## Implementación comprobada el 21 de octubre
+El iniciador compartido establece `MAIN_ADMIN_LEGACY_ENABLED=false` y cierra las rutas administrativas antiguas de Spring. El código Java previo se conserva con compatibilidad optativa para respetar autoría y pruebas históricas. Django conserva sesiones/CSRF propios, y ambos servidores revalidan la identidad compartida.
+
+## Corte comprobado el 21 de octubre
 
 - Django sirve el React original y atiende ADMIN, cursos, listado, detalle y creación de actividades. Lee/escribe MySQL directamente; no deriva estas operaciones a Spring.
 - Spring sirve la web de usuarios y la API Android. Consulta de actividades limitada a matrícula; entregadas excluidas del listado pendiente. Actividad ajena e inexistente devuelven 404.

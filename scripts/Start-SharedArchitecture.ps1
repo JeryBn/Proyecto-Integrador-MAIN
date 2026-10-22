@@ -40,6 +40,7 @@ $env:MAIN_DB_PASSWORD=$configuration.spring_password
 $env:SPRING_FLYWAY_USER='main_migration'
 $env:SPRING_FLYWAY_PASSWORD=$configuration.migration_password
 $env:SPRING_PROFILES_ACTIVE='mysql'
+$env:MAIN_ADMIN_LEGACY_ENABLED='false'
 $env:MAIN_DEMO_ENABLED=if($DemoData){'true'}else{'false'}
 $env:SERVER_PORT='8088'
 if($FfmpegDirectory){

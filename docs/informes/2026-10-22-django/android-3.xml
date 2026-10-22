@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="pe.tecsup.main.mobile.SharedArchitectureUiTest" tests="3" failures="0" errors="0" skipped="0" time="16.642" timestamp="2026-10-22T14:51:43" hostname="localhost">
+  <properties>
+    <property name="device" value="Medium_Phone(AVD) - 17" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="djangoActivitySurvivesRestartAndIsVisibleOnlyToEnrolledStudent" classname="pe.tecsup.main.mobile.SharedArchitectureUiTest" time="13.771" />
+  <testcase name="authorizedDetailIncludesAllRequiredFields" classname="pe.tecsup.main.mobile.DetailContractTest" time="1.08" />
+  <testcase name="foreignAndMissingDetailsAreHiddenAndAnonymousIsRejected" classname="pe.tecsup.main.mobile.DetailContractTest" time="0.393" />
+</testsuite>

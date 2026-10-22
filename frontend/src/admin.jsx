@@ -3,9 +3,6 @@ import {createRoot} from 'react-dom/client';
 import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
-const activityScope = document.documentElement.dataset.adminScope === 'activities';
-const academicScope = document.documentElement.dataset.adminScope === 'academic';
-const managementScope = document.documentElement.dataset.adminScope === 'management';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -294,9 +291,9 @@ function App() {
         <nav>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
-          {!activityScope && <>{!academicScope && <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>}
+          <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
           <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
-          {!academicScope && !managementScope && <a href="/moderation.html">Revisar contenido</a>}</>}
+          <a href="/moderation.html">Revisar contenido</a>
         </nav>
         <span>{user}</span>
         <button onClick={logout}>Cerrar sesión</button>

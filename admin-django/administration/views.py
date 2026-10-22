@@ -182,8 +182,8 @@ def detail(request, item_id):
 
 @require_GET
 def page(request):
-    # Reutilizar el React de Pamela. Ocultar módulos posteriores que aún no migraron a Django.
-    html = (STATIC / 'admin.html').read_text(encoding='utf-8').replace('<html lang="es">', '<html lang="es" data-admin-scope="management">')
+    # La interfaz React consume directamente todos los módulos administrativos de Django.
+    html = (STATIC / 'admin.html').read_text(encoding='utf-8')
     return HttpResponse(html)
 
 @require_GET

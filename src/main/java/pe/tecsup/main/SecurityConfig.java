@@ -36,7 +36,15 @@ public class SecurityConfig {
     @Bean HttpSessionCsrfTokenRepository csrfRepository(){ return new HttpSessionCsrfTokenRepository(); }
     @Bean org.springframework.security.core.session.SessionRegistry sessionRegistry(){return new org.springframework.security.core.session.SessionRegistryImpl();}
     @Bean org.springframework.security.web.session.HttpSessionEventPublisher sessionEvents(){return new org.springframework.security.web.session.HttpSessionEventPublisher();}
-    @Bean @Order(1) SecurityFilterChain administrativeSecurity(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
+    @Bean @Order(1) SecurityFilterChain administrativeSecurity(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db,
+            @Value("${main.admin.legacy-enabled:true}") boolean legacyEnabled) throws Exception {
+        if(!legacyEnabled){
+            http.securityMatcher("/api/admin/**","/moderation.html","/moderation.js","/moderation.css")
+                .authorizeHttpRequests(a->a.anyRequest().denyAll())
+                .exceptionHandling(e->e.authenticationEntryPoint((req,res,ex)->adminError(res,410,"ADMIN_MOVED_TO_DJANGO"))
+                    .accessDeniedHandler((req,res,ex)->adminError(res,410,"ADMIN_MOVED_TO_DJANGO")));
+            return http.build();
+        }
         http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.access.intercept.AuthorizationFilter.class);
         http.securityMatcher("/api/admin/**","/moderation.html","/moderation.js","/moderation.css")
                 .csrf(c -> c.csrfTokenRepository(csrfRepository))

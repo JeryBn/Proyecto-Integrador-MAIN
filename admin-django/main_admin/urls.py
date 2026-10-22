@@ -3,8 +3,17 @@ from administration import views
 from administration import academic
 from administration import identity
 from administration import scheduling, grades
+from administration import moderation
 
 urlpatterns = [
+    path('moderation.html', moderation.page),
+    path('moderation.js', moderation.page, {'name':'moderation.js'}),
+    path('moderation.css', moderation.page, {'name':'moderation.css'}),
+    path('api/admin/v1/moderation/<str:kind>', moderation.queue),
+    path('api/admin/v1/moderation/messages/<str:item_id>/review', moderation.review, {'kind':'messages'}),
+    path('api/admin/v1/moderation/statuses/<str:item_id>/review', moderation.review, {'kind':'statuses'}),
+    path('api/admin/v1/moderation/messages/<str:item_id>/attachment', moderation.download, {'kind':'messages'}),
+    path('api/admin/v1/moderation/statuses/<str:item_id>/media', moderation.download, {'kind':'statuses'}),
     path('api/admin/v1/timetable', scheduling.timetable),
     path('api/admin/v1/timetable/<str:slot_id>', scheduling.timetable),
     path('api/admin/v1/courses/<int:item_id>/grades', grades.save),

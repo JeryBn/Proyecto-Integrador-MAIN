@@ -1,0 +1,29 @@
+{
+  "passed": 6,
+  "checks": [
+    {
+      "name": "spring_closed_/api/admin/csrf",
+      "passed": true
+    },
+    {
+      "name": "spring_closed_/api/admin/v1/users",
+      "passed": true
+    },
+    {
+      "name": "spring_closed_/api/admin/v1/moderation/messages",
+      "passed": true
+    },
+    {
+      "name": "spring_closed_/moderation.html",
+      "passed": true
+    },
+    {
+      "name": "django_csrf_available",
+      "passed": true
+    },
+    {
+      "name": "django_accounts_require_admin",
+      "passed": true
+    }
+  ]
+}

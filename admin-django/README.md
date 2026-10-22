@@ -1,4 +1,4 @@
-# Administración Django del Sprint 1
+# Administración Django de MAIN
 
 Implementación asistida para Jery Becerra Ninaquispe, según la arquitectura que volvió a proporcionar el 21/10/2026. Conserva el React aportado por Pamela Regina Meneses Mayhua y el contrato administrativo previo de Michael Julian Fernandez Camarena. El aporte Spring Boot anterior permanece disponible para compatibilidad; no se reescribe su autoría.
 
@@ -6,9 +6,9 @@ Implementación asistida para Jery Becerra Ninaquispe, según la arquitectura qu
 
 React → Django → MySQL compartido ← Spring Boot ← web de alumnos y Kotlin.
 
-Django implementa ingreso ADMIN, perfil, salida, cursos, listado y detalle de actividades, y creación con validación y auditoría transaccional. Mantiene las rutas `/api/admin/csrf`, `/login`, `/logout`, `/perfil`, `/cursos` y `/actividades`. No deriva estas operaciones a Spring: lee/escribe directamente las tablas compartidas.
+Django implementa ingreso ADMIN, perfil, salida, actividades, cuentas, vínculos, contactos/reportes, cursos/matrículas, horarios, notas administrativas, auditoría y moderación de mensajes/estados con descarga autorizada de adjuntos. Mantiene los contratos React bajo `/api/admin` y `/api/admin/v1`. Lee/escribe directamente la base compartida.
 
-Los módulos posteriores de cuentas, vínculos, cursos/matrículas y moderación siguen en la administración Spring existente. La interfaz servida por Django muestra solo las operaciones implementadas del Sprint 1. Su migración a Django y la paridad completa se deben continuar en M21/M22; no se declara completa toda la administración del proyecto.
+La interfaz React servida por Django habilita actividades, comunidad, cursos/matrículas y revisión. Horarios y notas administrativas conservan su API; la app docente y estudiantil consulta Spring. La paridad global de toda la web con Android sigue siendo otra entrega M21. [Contrato y verificaciones del 22 de octubre](../docs/MIGRACION_DJANGO_22_OCT.md).
 
 ## Preparación
 
@@ -16,7 +16,7 @@ Python 3.12, dependencias fijadas en `requirements.txt` y MySQL compatible con D
 
 Variables obligatorias: `MAIN_DJANGO_SECRET_KEY`, `MAIN_DB_NAME`, `MAIN_DB_USER`, `MAIN_DB_PASSWORD`. Opcionales: `MAIN_DB_HOST` (127.0.0.1), `MAIN_DB_PORT` (3306), `MAIN_DJANGO_HOSTS` (127.0.0.1,localhost), `MAIN_HTTPS` (false para pruebas locales). No guardar credenciales en Git.
 
-Primero iniciar Spring con perfil `mysql` para aplicar Flyway V1–V9. Después ejecutar `python manage.py migrate --noinput` usando una cuenta de migraciones: Django solo añade `django_session` y su registro `django_migrations`. Ejecutar con una cuenta limitada: SELECT en `main_user`, `docente`, `curso`; SELECT e INSERT en `actividad`; INSERT en `administrative_audit`; CRUD en `django_session`.
+Primero iniciar Spring con perfil `mysql` para aplicar Flyway V1–V9. Después ejecutar `python manage.py migrate --noinput` usando una cuenta de migraciones: Django solo añade `django_session` y su registro `django_migrations`. Ejecutar con una cuenta limitada por tabla, según [el contrato de permisos](../docs/MIGRACION_DJANGO_22_OCT.md). No conceder DDL ni permisos globales al proceso web.
 
 Arranque local: `python -m waitress --listen=127.0.0.1:8090 --threads=4 main_admin.wsgi:application`. Las cuentas ADMIN deben existir en `main_user`, creadas por el arranque configurado de Spring; Django no crea una identidad paralela ni eleva alumnos. Las sesiones son independientes de Spring y revalidan rol, activación y versión de contraseña.
 
@@ -35,7 +35,9 @@ Pasar también `-FfmpegDirectory` con la carpeta existente de FFmpeg para conser
 
 ## Verificación reproducible
 
-`python manage.py test administration --settings=main_admin.test_settings --noinput -v 2`: 15 casos en SQLite desechable, sin tocar MySQL compartido.
+`python manage.py test administration --settings=main_admin.test_settings --noinput -v 2`: 32 casos en SQLite desechable, sin tocar MySQL compartido.
+
+El iniciador establece `MAIN_ADMIN_LEGACY_ENABLED=false`: las antiguas rutas administrativas de Spring quedan cerradas (410; una escritura sin CSRF puede ser rechazada antes con 403). La compatibilidad histórica de Java se conserva bajo `main.admin.legacy-enabled=true` para pruebas o transición explícita; no usarla en el despliegue que exige administración exclusivamente Django. El filtro Spring verifica rol, habilitación y huella de contraseña compartidos en cada petición autenticada.
 
 `scripts/verificar_arquitectura_compartida.py` prueba por HTTP los dos backends reales sobre MySQL. Configurar `MAIN_TEST_ADMIN_PASSWORD`, `MAIN_TEST_STUDENT_PASSWORD` y cuentas sintéticas. Modo `create`: 19 comprobaciones y una actividad nueva; modo `verify`: 16 comprobaciones de la misma actividad después del reinicio. El JSON de evidencia no contiene secretos. No ejecutar sobre datos reales.
 
