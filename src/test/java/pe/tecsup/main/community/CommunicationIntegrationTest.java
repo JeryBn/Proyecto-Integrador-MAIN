@@ -16,6 +16,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommunicationIntegrationTest{
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;
  final String admin="admin_chat";
+ @Test void conversationLinkResolvesOnlyForCurrentMember() throws Exception {
+  String id=chat.direct("alumno","otro");
+  mvc.perform(get("/api/v1/conversations/"+id).with(user("alumno").roles("ALUMNO"))).andExpect(status().isOk()).andExpect(jsonPath("$.kind").value("DIRECT"));
+  mvc.perform(get("/api/v1/conversations/"+id).with(user("vacio").roles("ALUMNO"))).andExpect(status().isNotFound());
+ }
+ @Test void invitationMetadataDoesNotGrantMessagesAndDisappearsWhenDeclined() throws Exception {
+  String id=chat.group("alumno","Grupo sintético");chat.invite("alumno",id,"otro");
+  assertEquals("INVITED",chat.conversation("otro",id).state());
+  mvc.perform(get("/api/v1/conversations/"+id+"/messages").with(user("otro").roles("ALUMNO"))).andExpect(status().isNotFound());
+  chat.invitation("otro",id,false);assertThrows(DomainException.class,()->chat.conversation("otro",id));
+ }
  @BeforeEach void setup(){
   users.create(admin,new IdentityService.NewAccount("docente_chat","Docente chat","DOCENTE","SyntheticTeacher2026!",null,1L));
   users.create(admin,new IdentityService.NewAccount("familiar_chat","Familiar chat","FAMILIAR","SyntheticFamily2026!",null,null));

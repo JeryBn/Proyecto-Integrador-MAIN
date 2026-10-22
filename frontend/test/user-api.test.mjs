@@ -13,3 +13,22 @@ test('no reenvía automáticamente un POST con resultado incierto',async()=>{let
 test('clave idempotente se conserva solo para contenido idéntico',()=>{const initial=submissionKey(null,'same');assert.deepEqual(submissionKey(initial,'same'),initial);assert.notEqual(submissionKey(initial,'changed').key,initial.key);});
 test('validación de archivos aplica límites distintos de mensajes y estados',()=>{assert.match(fileError({size:0,type:'image/png'}),/vacío/);assert.match(fileError({size:13*1024*1024,type:'image/png'}),/12 MB/);assert.match(fileError({size:2*1024*1024,type:'text/plain'}),/1 MB/);assert.equal(fileError({size:32,type:'text/plain'}),'');assert.match(fileError({size:32,type:'text/plain'},{status:true}),/JPG/);assert.match(fileError({size:32,type:'text/html'}),/Usa/);assert.equal(fileError({size:32,type:'video/mp4'}),'');});
 test('fechas SQL Lima e instantes ISO representan el mismo momento',()=>{assert.equal(localDate('2026-10-22 10:00:00.0'),localDate('2026-10-22T15:00:00Z'));});
+test('subida transmite CSRF e identidad y confirma progreso antes del resultado',async()=>{
+ const seen={};let progress=0;
+ const api=createUserApi({fetcher:async()=>response(200,{token:'token',headerName:'X-CSRF-TOKEN'})});api.setIdentity('student');
+ const xhr={upload:{},open:(method,path)=>Object.assign(seen,{method,path}),setRequestHeader:(k,v)=>seen[k]=v,send(){this.upload.onprogress({lengthComputable:true,loaded:5,total:10});this.status=202;this.responseText='{"id":"receipt"}';queueMicrotask(()=>this.onload());}};
+ const result=await api.upload('/api/v1/messages',new FormData(),{xhrFactory:()=>xhr,onProgress:p=>{progress=p;}});
+ assert.equal(result.id,'receipt');assert.equal(progress,50);assert.equal(seen['X-MAIN-Expected-User'],'student');assert.equal(seen['X-CSRF-TOKEN'],'token');
+});
+test('cancelar subida conserva un resultado incierto sin reenvío automático',async()=>{
+ const controller=new AbortController();let sends=0;
+ const api=createUserApi({fetcher:async()=>response(200,{token:'token'})});
+ const xhr={upload:{},open(){},setRequestHeader(){},send(){sends++;queueMicrotask(()=>controller.abort());},abort(){this.onabort();}};
+ await assert.rejects(()=>api.upload('/upload',new FormData(),{signal:controller.signal,xhrFactory:()=>xhr}),e=>e.code==='CANCELLED'&&e.message.includes('puede haber recibido'));
+ assert.equal(sends,1);
+});
+test('subida revocada no devuelve contenido ni anuncia éxito',async()=>{
+ let expired=0;const api=createUserApi({expired:()=>expired++,fetcher:async()=>response(200,{token:'token'})});
+ const xhr={upload:{},open(){},setRequestHeader(){},send(){this.status=401;this.responseText='{}';queueMicrotask(()=>this.onload());}};
+ await assert.rejects(()=>api.upload('/upload',new FormData(),{xhrFactory:()=>xhr}),e=>e.status===401);assert.equal(expired,1);
+});

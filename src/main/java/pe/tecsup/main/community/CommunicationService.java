@@ -51,6 +51,16 @@ public class CommunicationService {
    WHERE m.username=? AND m.state IN ('ACTIVE','INVITED') ORDER BY c.created_at DESC,c.id LIMIT ? OFFSET ?
    """,(r,n)->new Conversation(r.getString(1),r.getString(2),r.getString(3),r.getBoolean(4),r.getString(5)),actor,limit,offset);
  }
+ public Conversation conversation(String actor,String id){
+  users.active(actor);
+  return db.query("""
+   SELECT c.id,c.kind,CASE WHEN c.kind='DIRECT' THEN
+    (SELECT u.display_name FROM conversation_member other JOIN main_user u ON u.username=other.username WHERE other.conversation_id=c.id AND other.username<>m.username)
+    ELSE c.title END AS title,m.administrator,m.state FROM conversation c JOIN conversation_member m ON m.conversation_id=c.id
+   WHERE m.username=? AND c.id=? AND m.state IN ('ACTIVE','INVITED')
+   """,(r,n)->new Conversation(r.getString(1),r.getString(2),r.getString(3),r.getBoolean(4),r.getString(5)),actor,id)
+   .stream().findFirst().orElseThrow(DomainException::missing);
+ }
  @Transactional public String direct(String actor,String target){
   users.active(actor);users.active(target);
   if(actor.equals(target)||!users.contacts(actor,target)||users.blocked(actor,target))throw DomainException.denied();

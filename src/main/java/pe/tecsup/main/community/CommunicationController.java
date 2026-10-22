@@ -14,6 +14,7 @@ public class CommunicationController{
  public record Membership(boolean administrator,boolean remove){}
  public record Cancel(int expectedRevision){}
  @GetMapping("/conversations") public List<CommunicationService.Conversation> list(Principal p,@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="30")int limit){return service.conversations(p.getName(),offset,limit);}
+ @GetMapping("/conversations/{id}") public CommunicationService.Conversation conversation(Principal p,@PathVariable String id){return service.conversation(p.getName(),id);}
  @PostMapping("/conversations/direct") @ResponseStatus(HttpStatus.CREATED)
  public Map<String,String> direct(Principal p,@RequestBody Direct input){return Map.of("id",service.direct(p.getName(),input.username()));}
  @PostMapping("/conversations/groups") @ResponseStatus(HttpStatus.CREATED)

@@ -6,6 +6,7 @@ import {Profile,Notifications} from './profile.jsx';
 import {userApi} from './user-api.mjs';
 import {useResource} from './user-hooks.jsx';
 import './workspace.css';
+import {Messages} from './messages.jsx';
 
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
@@ -71,6 +72,8 @@ function ActivityDetail({ id }) {
 function App() {
   const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
   const [preferences,setPreferences]=useState(null);
+  const [chatDrafts,setChatDrafts]=useState({});
+  const openChat=id=>{location.hash=id?'chats/'+id:'chats';};
   const notices=useResource('/api/v1/notifications?limit=30',{enabled:!!profile,interval:5000});
   useResource('/api/perfil',{enabled:!!profile,interval:10000});
   useEffect(()=>{document.documentElement.dataset.theme=preferences?.darkTheme?'dark':'light';},[preferences?.darkTheme]);
@@ -117,6 +120,8 @@ function App() {
   }, []);
 
   const match = hash.match(/^#actividad\/(\d+)$/);
+  const chatRoute=/^#chats(?:\/[A-Za-z0-9-]+)?$/.test(hash);
+  const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
   const shown = items.filter(a => (filter === 'all' || (filter === 'late' ? a.vencida : !a.vencida)) && (a.titulo + ' ' + a.curso).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es').trim()));
 
   return (
@@ -124,7 +129,7 @@ function App() {
       <aside className="sidebar">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
         <span className="workspace-label">ESPACIO ACADÉMICO</span>
-        {[['#inicio','Inicio'],...(profile?.rol==='Alumno'?[['#actividades','Tareas']]:[]),['#cursos','Cursos y notas'],['#avisos','Avisos'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio'))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
+        {[['#inicio','Inicio'],['#chats','Chats'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio')||(route==='#chats'&&chatRoute))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
         <div className="sidebar-bottom">
           <span className="sprint-badge">Tu comunidad académica</span>
           <p>Cursos, tareas y conversaciones<br/>con los mismos datos de tu app.</p>
@@ -133,7 +138,7 @@ function App() {
       <div className="main-area">
         <header className="topbar">
           <span className="breadcrumb">MAIN <span>/</span> {profile?.rol||'Mi espacio'}</span>
-          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a> · <a href="#avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a> · <a href="#perfil">Perfil</a></nav>
+          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a>{profile?.rol==='Alumno'&&<> · <a href="#actividades">Tareas</a></>} · <a href="#avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a></nav>
           <div className="user-area">
             <span>{profile?.nombre || 'Alumno'}</span>
             <form onSubmit={logout}>
@@ -143,7 +148,7 @@ function App() {
           </div>
         </header>
         <main className="content">
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">TU AGENDA ACADÉMICA</span>
