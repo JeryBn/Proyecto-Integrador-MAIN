@@ -17,9 +17,16 @@ class AdministrationTests(TransactionTestCase):
         with connection.schema_editor() as editor:
             for model in (Teacher, Course, Activity, SharedUser, Audit):
                 editor.create_model(model)
+        with connection.cursor() as cursor:
+            cursor.execute('CREATE TABLE alumno(id BIGINT PRIMARY KEY, nombre VARCHAR(100) NOT NULL)')
+            cursor.execute('CREATE TABLE matricula(alumno_id BIGINT NOT NULL REFERENCES alumno(id), curso_id BIGINT NOT NULL REFERENCES curso(id), PRIMARY KEY(alumno_id,curso_id))')
+            cursor.execute('CREATE TABLE timetable(id VARCHAR(36) PRIMARY KEY, curso_id BIGINT NOT NULL REFERENCES curso(id))')
 
     @classmethod
     def tearDownClass(cls):
+        with connection.cursor() as cursor:
+            for table in ('timetable', 'matricula', 'alumno'):
+                cursor.execute('DROP TABLE ' + table)
         with connection.schema_editor() as editor:
             for model in (Audit, SharedUser, Activity, Course, Teacher):
                 editor.delete_model(model)
@@ -27,6 +34,9 @@ class AdministrationTests(TransactionTestCase):
 
     def setUp(self):
         cache.clear()
+        with connection.cursor() as cursor:
+            for table in ('timetable', 'matricula', 'alumno'):
+                cursor.execute('DELETE FROM ' + table)
         for model in (Audit, Activity, SharedUser, Course, Teacher):
             model.objects.all().delete()
         Teacher.objects.create(id=1, nombre='Docente sintético')
@@ -145,7 +155,76 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.login().status_code,429)
 
     def test_react_assets_and_unsupported_operations(self):
-        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="activities"')
+        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="academic"')
         self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
         self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
         self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)
+
+    def academic_call(self, path, value, method='post'):
+        return getattr(self.client, method)('/api/admin/v1/' + path, json.dumps(value),
+                     content_type='application/json', HTTP_X_CSRFTOKEN=self.token())
+
+    def prepare_academic(self):
+        self.login()
+        SharedUser.objects.create(username='teacher', display_name='Teacher', role='DOCENTE', password_hash=HASH,
+                                  enabled=True, docente_id=1)
+
+    def test_course_create_edit_and_stale_version(self):
+        self.prepare_academic()
+        value = dict(id=2, name='Nuevo', teacherUsername='teacher', expectedVersion=None)
+        self.assertEqual(self.academic_call('courses', value).status_code, 201)
+        self.assertEqual(self.academic_call('courses', value).status_code, 409)
+        value.update(name='Editado', expectedVersion=0)
+        self.assertEqual(self.academic_call('courses/2', value, 'put').json()['version'], 1)
+        self.assertEqual(self.academic_call('courses/2', value, 'put').status_code, 409)
+        self.assertEqual(Course.objects.get(pk=2).nombre, 'Editado')
+        self.assertEqual(Audit.objects.count(), 2)
+        self.assertEqual(self.client.get('/api/admin/v1/courses').json()[1]['teacherId'], 1)
+
+    def test_course_validation_teacher_and_timetable(self):
+        self.prepare_academic()
+        Teacher.objects.create(id=2, nombre='Otro docente')
+        SharedUser.objects.create(username='teacher2', display_name='Teacher2', role='DOCENTE', password_hash=HASH,
+                                  enabled=True, docente_id=2)
+        value = dict(id=1, name='Cambio', teacherUsername='teacher2', expectedVersion=0)
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO timetable VALUES('slot',1)")
+        self.assertEqual(self.academic_call('courses/1', value, 'put').status_code, 400)
+        for field, invalid in [('id',True), ('name',' '), ('teacherUsername','alumno'), ('expectedVersion',True)]:
+            candidate = dict(value); candidate[field] = invalid
+            self.assertEqual(self.academic_call('courses/1', candidate, 'put').status_code, 400)
+        self.assertEqual(Course.objects.get(pk=1).admin_version, 0)
+        self.assertEqual(Audit.objects.count(), 0)
+
+    def test_enrollment_idempotent_and_revoke_disabled_student(self):
+        self.prepare_academic()
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO alumno VALUES(1,'Alumno sintético')")
+        SharedUser.objects.filter(pk='alumno').update(alumno_id=1)
+        value = dict(username='alumno', enrolled=True)
+        for _ in range(2):
+            self.assertEqual(self.academic_call('courses/1/students', value, 'put').status_code, 200)
+        self.assertEqual(Audit.objects.count(), 1)
+        self.assertEqual(self.client.get('/api/admin/v1/courses/1/students').json()[0]['studentId'], 1)
+        SharedUser.objects.filter(pk='alumno').update(enabled=False)
+        self.assertEqual(self.academic_call('courses/1/students', value, 'put').status_code, 400)
+        value['enrolled'] = False
+        for _ in range(2):
+            self.assertEqual(self.academic_call('courses/1/students', value, 'put').status_code, 200)
+        self.assertEqual(Audit.objects.count(), 2)
+        self.assertEqual(self.client.get('/api/admin/v1/courses/1/students').json(), [])
+
+    def test_academic_access_pagination_and_audit_read_only(self):
+        for path in ('courses', 'courses/1/students', 'audit'):
+            self.assertEqual(self.client.get('/api/admin/v1/'+path).status_code, 401)
+        self.prepare_academic()
+        for path in ('courses', 'courses/1/students', 'audit'):
+            self.assertEqual(self.client.get('/api/admin/v1/'+path+'?limit=101').status_code, 400)
+        self.assertEqual(self.academic_call('audit', {}).status_code, 405)
+        self.assertEqual(self.academic_call('courses/1/students', {'username':'alumno','enrolled':'false'}, 'put').status_code, 400)
+
+    def test_academic_audit_failure_rolls_back_course(self):
+        self.prepare_academic()
+        with patch('administration.academic.record', side_effect=IntegrityError('synthetic')):
+            self.assertEqual(self.academic_call('courses', dict(id=2,name='Nuevo',teacherUsername='teacher')).status_code, 409)
+        self.assertFalse(Course.objects.filter(pk=2).exists())

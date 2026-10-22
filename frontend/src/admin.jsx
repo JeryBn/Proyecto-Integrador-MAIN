@@ -4,6 +4,7 @@ import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
 const activityScope = document.documentElement.dataset.adminScope === 'activities';
+const academicScope = document.documentElement.dataset.adminScope === 'academic';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -292,9 +293,9 @@ function App() {
         <nav>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
           <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
-          {!activityScope && <><button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
+          {!activityScope && <>{!academicScope && <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>}
           <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
-          <a href="/moderation.html">Revisar contenido</a></>}
+          {!academicScope && <a href="/moderation.html">Revisar contenido</a>}</>}
         </nav>
         <span>{user}</span>
         <button onClick={logout}>Cerrar sesión</button>

@@ -1,0 +1,58 @@
+{
+  "courseId": 1792679110264,
+  "passed": 13,
+  "checks": [
+    {
+      "name": "login_django",
+      "passed": true
+    },
+    {
+      "name": "create_course",
+      "passed": true
+    },
+    {
+      "name": "edit_course",
+      "passed": true
+    },
+    {
+      "name": "stale_course_conflict",
+      "passed": true
+    },
+    {
+      "name": "enroll",
+      "passed": true
+    },
+    {
+      "name": "enroll_idempotent",
+      "passed": true
+    },
+    {
+      "name": "roster",
+      "passed": true
+    },
+    {
+      "name": "login_spring",
+      "passed": true
+    },
+    {
+      "name": "spring_agenda",
+      "passed": true
+    },
+    {
+      "name": "spring_reads_django_enrollment",
+      "passed": true
+    },
+    {
+      "name": "revoke",
+      "passed": true
+    },
+    {
+      "name": "spring_revokes_access",
+      "passed": true
+    },
+    {
+      "name": "audit_metadata",
+      "passed": true
+    }
+  ]
+}
