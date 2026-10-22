@@ -25,3 +25,20 @@ export function useResource(path,{enabled=true,interval=0}={}){
   return {...state,reload};
 }
 export function Feedback({resource}){return <>{resource.loading&&<p role="status">Cargando…</p>}{resource.error&&<div role="alert"><p>{resource.error}</p><button onClick={resource.reload}>Reintentar</button></div>}</>;}
+
+export function useConfirmation(){
+  const [pending,setPending]=useState(null);
+  const confirm=(message,action)=>setPending(current=>current||{message,action});
+  const finish=approved=>{const action=pending?.action;setPending(null);if(approved)action?.();};
+  return {confirm,confirmation:pending&&<Confirmation message={pending.message} onFinish={finish}/>};
+}
+function Confirmation({message,onFinish}){
+  const dialog=useRef(null);
+  useEffect(()=>{dialog.current?.showModal();},[]);
+  return <dialog ref={dialog} className="confirmation-dialog" aria-label="Confirmar acción" onCancel={e=>{e.preventDefault();onFinish(false);}}>
+    <h2>Confirmar acción</h2><p>{message}</p><div className="toolbar">
+      <button autoFocus onClick={()=>onFinish(false)}>Cancelar acción</button>
+      <button onClick={()=>onFinish(true)}>Confirmar acción</button>
+    </div>
+  </dialog>;
+}

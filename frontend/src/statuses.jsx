@@ -1,11 +1,12 @@
 import {useEffect,useRef,useState} from 'react';
 import {userApi,enc,fileError,submissionKey,localDate} from './user-api.mjs';
-import {useResource,Feedback} from './user-hooks.jsx';
+import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {PrivateMedia} from './private-media.jsx';
 import {canPublish,ownerPlaylist,statusTextColor} from './status-model.mjs';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
 export function Statuses({profile,preferences,draft,setDraft,onChat}){
+ const {confirm,confirmation}=useConfirmation();
  const feed=useResource('/api/v1/statuses',{interval:5000});
  const [compose,setCompose]=useState(false),[selected,setSelected]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const publish=canPublish(profile.rol);
@@ -14,14 +15,14 @@ export function Statuses({profile,preferences,draft,setDraft,onChat}){
  const current=feed.data?.find(s=>s.id===selected);
  useEffect(()=>{if(feed.data&&selected&&!feed.data.some(s=>s.id===selected))setSelected(null);},[feed.data,selected]);
  function open(status){setError('');setSelected(status.id);if(status.owner!==profile.usuario)userApi.call('/api/v1/statuses/'+enc(status.id)+'/seen',{method:'POST',json:{}}).then(feed.reload).catch(e=>{setError(e.message);setSelected(null);feed.reload();});}
- async function remove(status){if(busy||!window.confirm('¿Eliminar este estado? Dejará de estar disponible para tus contactos.'))return;setBusy(true);setError('');try{await userApi.call('/api/v1/statuses/'+enc(status.id)+'/delete',{method:'POST',json:{}});setSelected(null);setNotice('Estado eliminado.');feed.reload();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function remove(status){if(busy)return;setBusy(true);setError('');try{await userApi.call('/api/v1/statuses/'+enc(status.id)+'/delete',{method:'POST',json:{}});setSelected(null);setNotice('Estado eliminado.');feed.reload();}catch(e){setError(e.message);}finally{setBusy(false);}}
  async function reply(status){if(busy)return;setBusy(true);setError('');try{const chat=await userApi.call('/api/v1/conversations/direct',{method:'POST',json:{username:status.owner}});onChat(chat.id);}catch(e){setError(e.message);feed.reload();}finally{setBusy(false);}}
- return <section className="user-panel statuses-panel" aria-label="Estados de MAIN"><div className="toolbar"><h1 className="grow">Estados</h1><button onClick={feed.reload}>Actualizar estados</button>{publish&&<button onClick={()=>{setCompose(v=>!v);setNotice('');}}>{compose?'Cerrar creación':'Crear estado'}</button>}</div>
+ return <section className="user-panel statuses-panel" aria-label="Estados de MAIN">{confirmation}<div className="toolbar"><h1 className="grow">Estados</h1><button onClick={feed.reload}>Actualizar estados</button>{publish&&<button onClick={()=>{setCompose(v=>!v);setNotice('');}}>{compose?'Cerrar creación':'Crear estado'}</button>}</div>
   <p>Actualizaciones de 24 horas. Solo los contactos incluidos y autorizados pueden ver los estados aprobados.</p>
   {!publish&&<p>Las cuentas familiares pueden ver estados autorizados; solo estudiantes y docentes pueden publicar.</p>}
   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}<Feedback resource={feed}/>
   {publish&&compose&&<StatusComposer draft={draft} setDraft={setDraft} preferences={preferences} onSaved={()=>{setCompose(false);setNotice('Estado guardado, pendiente de revisión. Aún no está publicado para tus contactos.');feed.reload();}}/>}
-  {current&&<StatusViewer key={current.id} status={current} playlist={ownerPlaylist(feed.data,current.owner)} mine={current.owner===profile.usuario} onOpen={open} onClose={()=>setSelected(null)} onDelete={()=>remove(current)} onReply={onChat?()=>reply(current):undefined} busy={busy}/>}
+  {current&&<StatusViewer key={current.id} status={current} playlist={ownerPlaylist(feed.data,current.owner)} mine={current.owner===profile.usuario} onOpen={open} onClose={()=>setSelected(null)} onDelete={()=>confirm('¿Eliminar este estado? Dejará de estar disponible para tus contactos.',()=>remove(current))} onReply={onChat?()=>reply(current):undefined} busy={busy}/>}
   <h2>Mi estado</h2>{own.length?<ul className="status-list">{own.map(s=><li key={s.id}><button onClick={()=>open(s)}><span className={'status-ring '+(s.state==='APPROVED'?'':'pending')}>{s.kind==='TEXT'?'T':s.kind==='IMAGE'?'Foto':s.kind==='VIDEO'?'Video':'Audio'}</span><span className="grow"><strong>{s.text||'Estado multimedia'}</strong><small>{s.state==='PENDING'?'Pendiente de revisión':s.state==='REJECTED'?'Rechazado · solo visible para ti':'Aprobado'} · Caduca {localDate(s.expiresAt)}</small></span></button></li>)}</ul>:<p>No tienes estados activos.</p>}
   <h2>Actualizaciones de contactos</h2>{!feed.loading&&owners.length===0&&<p>No hay estados de contactos disponibles.</p>}
   <ul className="status-list">{owners.map(owner=>{const updates=ownerPlaylist(feed.data,owner),first=updates.find(s=>!s.seen)||updates[0];return <li key={owner}><button onClick={()=>open(first)}><span className={'status-ring '+(updates.every(s=>s.seen)?'seen':'')}>{first.name.slice(0,1)}</span><span className="grow"><strong>{first.name}</strong><small>{updates.length} {updates.length===1?'actualización':'actualizaciones'} · {updates.every(s=>s.seen)?'Vistos':'Sin ver'} · {localDate(updates.at(-1).createdAt)}</small></span></button></li>;})}</ul>
