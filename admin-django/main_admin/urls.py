@@ -2,8 +2,12 @@ from django.urls import path
 from administration import views
 from administration import academic
 from administration import identity
+from administration import scheduling, grades
 
 urlpatterns = [
+    path('api/admin/v1/timetable', scheduling.timetable),
+    path('api/admin/v1/timetable/<str:slot_id>', scheduling.timetable),
+    path('api/admin/v1/courses/<int:item_id>/grades', grades.save),
     path('api/admin/v1/users', identity.users),
     path('api/admin/v1/users/<str:username>/reset-password', identity.change_account, {'action':'reset-password'}),
     path('api/admin/v1/users/<str:username>/disable', identity.change_account, {'action':'disable'}),

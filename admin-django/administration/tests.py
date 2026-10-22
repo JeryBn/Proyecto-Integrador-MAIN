@@ -20,7 +20,8 @@ class AdministrationTests(TransactionTestCase):
         with connection.cursor() as cursor:
             cursor.execute('CREATE TABLE alumno(id BIGINT PRIMARY KEY, usuario VARCHAR(60) UNIQUE NOT NULL, nombre VARCHAR(100) NOT NULL)')
             cursor.execute('CREATE TABLE matricula(alumno_id BIGINT NOT NULL REFERENCES alumno(id), curso_id BIGINT NOT NULL REFERENCES curso(id), PRIMARY KEY(alumno_id,curso_id))')
-            cursor.execute('CREATE TABLE timetable(id VARCHAR(36) PRIMARY KEY, curso_id BIGINT NOT NULL REFERENCES curso(id))')
+            cursor.execute('CREATE TABLE timetable(id VARCHAR(36) PRIMARY KEY, curso_id BIGINT NOT NULL REFERENCES curso(id),day_of_week INTEGER,starts_at TIME,ends_at TIME,classroom VARCHAR(100))')
+            cursor.execute('CREATE TABLE course_grade(id VARCHAR(36) PRIMARY KEY,course_id BIGINT,student_id BIGINT,assessment VARCHAR(120),score DECIMAL(8,2),maximum DECIMAL(8,2),recorded_by VARCHAR(100),recorded_at TIMESTAMP,UNIQUE(course_id,student_id,assessment))')
             cursor.execute('CREATE TABLE guardian_link(guardian VARCHAR(60), alumno_id BIGINT, verified_by VARCHAR(60), verified_at TIMESTAMP, PRIMARY KEY(guardian,alumno_id))')
             cursor.execute('CREATE TABLE contact_link(user_a VARCHAR(60), user_b VARCHAR(60), approved_by VARCHAR(60), PRIMARY KEY(user_a,user_b))')
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
@@ -28,7 +29,7 @@ class AdministrationTests(TransactionTestCase):
     @classmethod
     def tearDownClass(cls):
         with connection.cursor() as cursor:
-            for table in ('guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
+            for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DROP TABLE ' + table)
         with connection.schema_editor() as editor:
             for model in (Audit, SharedUser, Activity, Course, Teacher):
@@ -38,7 +39,7 @@ class AdministrationTests(TransactionTestCase):
     def setUp(self):
         cache.clear()
         with connection.cursor() as cursor:
-            for table in ('guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
+            for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DELETE FROM ' + table)
         for model in (Audit, Activity, SharedUser, Course, Teacher):
             model.objects.all().delete()
@@ -191,7 +192,7 @@ class AdministrationTests(TransactionTestCase):
                                   enabled=True, docente_id=2)
         value = dict(id=1, name='Cambio', teacherUsername='teacher2', expectedVersion=0)
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO timetable VALUES('slot',1)")
+            cursor.execute("INSERT INTO timetable(id,curso_id) VALUES('slot',1)")
         self.assertEqual(self.academic_call('courses/1', value, 'put').status_code, 400)
         for field, invalid in [('id',True), ('name',' '), ('teacherUsername','alumno'), ('expectedVersion',True)]:
             candidate = dict(value); candidate[field] = invalid
@@ -277,3 +278,48 @@ class AdministrationTests(TransactionTestCase):
         with connection.cursor() as cursor:
             cursor.execute('SELECT COUNT(*) FROM alumno WHERE id=99')
             self.assertEqual(cursor.fetchone()[0], 0)
+
+    def test_timetable_overlap_and_removal(self):
+        self.login()
+        value = dict(courseId=1,dayOfWeek=1,startsAt='08:00',endsAt='09:00',classroom='A1')
+        response = self.academic_call('timetable',value)
+        self.assertEqual(response.status_code,201)
+        self.assertEqual(self.academic_call('timetable',value).status_code,400)
+        value.update(startsAt='09:00',endsAt='10:00')
+        self.assertEqual(self.academic_call('timetable',value).status_code,201)
+        self.assertEqual(self.academic_call('timetable/'+response.json()['id'],{},'delete').status_code,200)
+        self.assertEqual(self.academic_call('timetable/'+response.json()['id'],{},'delete').status_code,404)
+        for field,invalid in [('dayOfWeek',True),('startsAt','08:00:00.1'),('endsAt','07:00')]:
+            candidate=dict(value);candidate[field]=invalid
+            self.assertEqual(self.academic_call('timetable',candidate).status_code,400)
+
+    def test_grade_contract_conflict_and_revoked_enrollment(self):
+        self.login()
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO alumno VALUES(1,'alumno','Alumno')")
+            cursor.execute('INSERT INTO matricula VALUES(1,1)')
+        value=dict(studentId=1,assessment='Evaluación',score=18.5,maximum=20,expectedRecordedAt='NEW')
+        response=self.academic_call('courses/1/grades',value,'put')
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json()['score'],18.5)
+        self.assertEqual(self.academic_call('courses/1/grades',value,'put').status_code,409)
+        value.update(score=19,expectedRecordedAt=response.json()['recordedAt'])
+        self.assertEqual(self.academic_call('courses/1/grades',value,'put').status_code,200)
+        with connection.cursor() as cursor:
+            cursor.execute('DELETE FROM matricula')
+        self.assertEqual(self.academic_call('courses/1/grades',value,'put').status_code,404)
+
+    def test_grade_rejects_invalid_numbers_and_rolls_back_audit_failure(self):
+        self.login()
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO alumno VALUES(1,'alumno','Alumno')")
+            cursor.execute('INSERT INTO matricula VALUES(1,1)')
+        value=dict(studentId=1,assessment='Evaluación',score=18,maximum=20)
+        for field,invalid in [('score',True),('score',20.001),('score',-1),('maximum',0),('maximum',1001),('score','18')]:
+            candidate=dict(value);candidate[field]=invalid
+            self.assertEqual(self.academic_call('courses/1/grades',candidate,'put').status_code,400)
+        with patch('administration.grades.record',side_effect=IntegrityError('synthetic')):
+            self.assertEqual(self.academic_call('courses/1/grades',value,'put').status_code,409)
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT COUNT(*) FROM course_grade')
+            self.assertEqual(cursor.fetchone()[0],0)

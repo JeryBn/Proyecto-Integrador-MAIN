@@ -21,4 +21,12 @@ Continuación asistida solicitada por Jery Becerra Ninaquispe. Se conserva el tr
 
 ## Pendiente en esta migración
 
-Horarios, notas administrativas y moderación de mensajes/estados con descarga segura de adjuntos. La navegación muestra únicamente los módulos ya implementados en Django. No se declara terminada M22 ni la paridad global M21.
+Moderación de mensajes/estados con descarga segura de adjuntos. No se declara terminada M22 ni la paridad global M21.
+
+## Incremento: horarios y notas administrativas
+
+- Django registra/retira horarios y registra/edita notas por curso. Conserva el bloqueo por curso/docente, detección de cruces, matrícula requerida, escala de hasta 1000 y dos decimales, versión temporal de nota y auditoría atómica.
+- Las rutas docentes y estudiantiles permanecen en Spring.
+- 27 pruebas Django aprobadas y 15 verificaciones HTTP reales sobre MySQL: horario compartido, cruce rechazado, nota creada/editada, versión obsoleta rechazada y nota oculta tras revocar matrícula.
+- Evidencia `docs/informes/2026-10-22-django/scheduling-grades-http.json`. Conserva curso y nota sintéticos; retira horario y matrícula de esa prueba.
+- La primera ejecución detectó un permiso insuficiente de bloqueo de `docente` en MySQL; se otorgó únicamente UPDATE de la columna id en esa tabla del esquema aislado y se repitió el recorrido completo correctamente. Una primera matrícula sintética requiere limpieza identificada; no afecta datos académicos reales.
