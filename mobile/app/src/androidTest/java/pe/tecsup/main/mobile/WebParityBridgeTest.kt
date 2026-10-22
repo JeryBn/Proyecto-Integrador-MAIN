@@ -33,6 +33,13 @@ class WebParityBridgeTest {
    assertTrue(peer.statuses().any{it.text=="WEB-PARITY estado de texto creado desde la web"})
    assertFalse(peer.statuses().any{it.text=="WEB-PARITY imagen privada creada desde web"})
    assertTrue(student.statuses().any{it.text=="WEB-PARITY imagen privada creada desde web"})
+   for(kind in listOf("VIDEO","AUDIO")){
+    val media=peer.statuses().first{it.owner==arg("webStudent") && it.kind==kind}
+    assertTrue(peer.statusMedia(media.id).isNotEmpty())
+   }
+   val group=arg("webGroup")
+   assertTrue(peer.conversations().any{it.id==group && it.administrator})
+   assertThrows(ResourceUnavailable::class.java){student.messages(group)}
    assertEquals("19",student.grades().first{it.courseId==arg("webCourse").toLong()}.grades
     .first{it.assessment=="Evaluación web de prueba"}.score)
    val label="WEB-PARITY respuesta creada desde Android "+System.currentTimeMillis()
@@ -41,6 +48,16 @@ class WebParityBridgeTest {
    assertFalse(student.messages(conversation).any{it.id==created.id})
    val admin=AdminTestApi();admin.review(created.id,true)
    assertTrue(student.messages(conversation).any{it.id==created.id && it.state=="APPROVED"})
+   val bitmap=android.graphics.Bitmap.createBitmap(8,8,android.graphics.Bitmap.Config.ARGB_8888)
+   bitmap.eraseColor(android.graphics.Color.rgb(8,127,104))
+   val bytes=java.io.ByteArrayOutputStream().also{bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}.toByteArray()
+   bitmap.recycle()
+   val photoLabel="WEB-PARITY foto enviada desde Android "+System.currentTimeMillis()
+   peer.sendAttachment(conversation,UUID.randomUUID().toString(),photoLabel,StatusAttachment(bytes,"image/png"))
+   val photo=peer.messages(conversation).first{it.text==photoLabel}
+   assertFalse(student.messages(conversation).any{it.id==photo.id})
+   admin.review(photo.id,true,attachmentReviewed=true)
+   assertTrue(student.messageAttachment(photo.id,photo.revision).isNotEmpty())
    val statusLabel="WEB-PARITY estado creado desde Android "+System.currentTimeMillis()
    peer.createStatus(UUID.randomUUID().toString(),statusLabel,"#087F68","CONTACTS",null)
    val state=peer.statuses().first{it.text==statusLabel}
