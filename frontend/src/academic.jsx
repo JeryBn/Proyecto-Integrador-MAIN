@@ -1,16 +1,8 @@
 import {useEffect, useState} from 'react';
+import {userApi} from './user-api.mjs';
 
 async function api(path, body) {
-  const headers={Accept:'application/json'};
-  if(body) {
-    const token=await fetch('/api/csrf').then(r=>r.json());
-    headers[token.headerName]=token.token; headers['Content-Type']='application/json';
-  }
-  const response=await fetch('/api/v1/'+path,{method:body?'PUT':'GET',headers,body:body?JSON.stringify(body):undefined});
-  if(response.status===401){location.href='/login.html';throw Error('Tu sesión finalizó.');}
-  const data=await response.json();
-  if(!response.ok)throw Error(data.error?.message || 'No se pudo consultar el curso.');
-  return data;
+  return userApi.call('/api/v1/'+path,{method:body?'PUT':'GET',json:body});
 }
 export function Academic({profile}) {
   const [agenda,setAgenda]=useState(null),[grades,setGrades]=useState([]),[error,setError]=useState('');

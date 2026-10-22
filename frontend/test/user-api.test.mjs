@@ -1,0 +1,15 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createUserApi,fileError,submissionKey,localDate} from '../src/user-api.mjs';
+const response=(status,value)=>({status,ok:status>=200&&status<300,json:async()=>value});
+test('renueva CSRF, protege identidad y no almacena respuestas privadas',async()=>{
+ const calls=[];const api=createUserApi({fetcher:async(path,options)=>{calls.push({path,options});return response(200,path==='/api/csrf'?{token:'fresh',headerName:'X-CSRF-TOKEN'}:{saved:true});}});
+ api.setIdentity('student');await api.call('/api/v1/preferences',{method:'PUT',json:{darkTheme:true}});
+ assert.equal(calls.length,2);assert.equal(calls[1].options.headers['X-CSRF-TOKEN'],'fresh');assert.equal(calls[0].options.headers['X-MAIN-Expected-User'],'student');assert.equal(calls[1].options.headers['X-MAIN-Expected-User'],'student');assert.equal(calls[1].options.cache,'no-store');assert.equal(calls[1].options.credentials,'same-origin');
+});
+test('sesión revocada redirige y no reintenta la mutación',async()=>{let expired=0,calls=0;const api=createUserApi({expired:()=>expired++,fetcher:async()=>{calls++;return response(401,{});}});await assert.rejects(()=>api.call('/api/v1/messages',{method:'POST',json:{}}),e=>e.status===401);assert.equal(expired,1);assert.equal(calls,1);});
+test('cambio de cuenta descarta la operación antes de escribir',async()=>{let changed=0,calls=0;const api=createUserApi({changed:()=>changed++,fetcher:async()=>{calls++;return response(409,{error:{code:'ACCOUNT_CHANGED',message:'Cambió la cuenta'}});}});await assert.rejects(()=>api.call('/api/v1/preferences',{method:'PUT',json:{}}),e=>e.code==='ACCOUNT_CHANGED');assert.equal(changed,1);assert.equal(calls,1);});
+test('no reenvía automáticamente un POST con resultado incierto',async()=>{let calls=0;const api=createUserApi({fetcher:async()=>{calls++;if(calls===1)return response(200,{token:'csrf'});throw Error('offline');}});await assert.rejects(()=>api.call('/api/v1/conversations',{method:'POST',json:{}}),e=>e.code==='NETWORK_ERROR');assert.equal(calls,2);});
+test('clave idempotente se conserva solo para contenido idéntico',()=>{const initial=submissionKey(null,'same');assert.deepEqual(submissionKey(initial,'same'),initial);assert.notEqual(submissionKey(initial,'changed').key,initial.key);});
+test('validación de archivos aplica límites distintos de mensajes y estados',()=>{assert.match(fileError({size:0,type:'image/png'}),/vacío/);assert.match(fileError({size:13*1024*1024,type:'image/png'}),/12 MB/);assert.match(fileError({size:2*1024*1024,type:'text/plain'}),/1 MB/);assert.equal(fileError({size:32,type:'text/plain'}),'');assert.match(fileError({size:32,type:'text/plain'},{status:true}),/JPG/);assert.match(fileError({size:32,type:'text/html'}),/Usa/);assert.equal(fileError({size:32,type:'video/mp4'}),'');});
+test('fechas SQL Lima e instantes ISO representan el mismo momento',()=>{assert.equal(localDate('2026-10-22 10:00:00.0'),localDate('2026-10-22T15:00:00Z'));});

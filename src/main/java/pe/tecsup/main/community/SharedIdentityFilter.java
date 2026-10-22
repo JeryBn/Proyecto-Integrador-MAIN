@@ -26,6 +26,11 @@ public final class SharedIdentityFilter extends OncePerRequestFilter {
     response.getWriter().write("{\"error\":{\"code\":\"SESSION_EXPIRED\",\"message\":\"Vuelve a iniciar sesión.\"}}");return;
    }
   }
+  String expected=request.getHeader("X-MAIN-Expected-User");
+  if(expected!=null&&auth!=null&&auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails&& !expected.equals(auth.getName())){
+   response.setStatus(409);response.setContentType("application/json;charset=UTF-8");response.setHeader("Cache-Control","no-store");
+   response.getWriter().write("{\"error\":{\"code\":\"ACCOUNT_CHANGED\",\"message\":\"La cuenta cambió en otra pestaña. Vuelve a abrir MAIN.\"}}");return;
+  }
   chain.doFilter(request,response);
  }
 }

@@ -9,6 +9,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest @AutoConfigureMockMvc @Transactional
@@ -30,5 +32,12 @@ class SharedIdentitySessionTest {
  @Test void sqlRoleChangeRevokesPreviousPrivileges() throws Exception {
   var session=login();db.update("UPDATE main_user SET role='FAMILIAR' WHERE username='alumno'");
   mvc.perform(get("/api/actividades/1").session(session)).andExpect(status().isUnauthorized());
+ }
+ @Test void staleWebIdentityCannotReadOrWriteAsAnotherAccount() throws Exception {
+  var session=login();
+  mvc.perform(get("/api/perfil").session(session).header("X-MAIN-Expected-User","otro")).andExpect(status().isConflict());
+  mvc.perform(put("/api/v1/preferences").session(session).with(csrf()).header("X-MAIN-Expected-User","otro")
+    .contentType("application/json").content("{\"darkTheme\":true,\"notifications\":false,\"statusAudience\":\"PRIVATE\"}")).andExpect(status().isConflict());
+  mvc.perform(get("/api/perfil").session(session).header("X-MAIN-Expected-User","alumno")).andExpect(status().isOk());
  }
 }

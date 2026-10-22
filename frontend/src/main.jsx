@@ -2,19 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './app.css';
 import {Academic} from './academic.jsx';
+import {Profile,Notifications} from './profile.jsx';
+import {userApi} from './user-api.mjs';
+import {useResource} from './user-hooks.jsx';
+import './workspace.css';
 
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
 async function request(url) {
-  let r;
-  try { r = await fetch(url); }
-  catch { throw Error('No hay conexión con el servidor. Intenta nuevamente.'); }
-  if (r.status === 401) {
-    location.href = '/login.html';
-    throw Error('Sesión finalizada');
-  }
-  if (!r.ok) throw Error(r.status === 404 ? 'Actividad no disponible.' : 'No pudimos cargar la información. Intenta nuevamente.');
-  return r.json();
+  return userApi.call(url);
 }
 
 function ActivityCard({ activity: a }) {
@@ -74,6 +70,11 @@ function ActivityDetail({ id }) {
 
 function App() {
   const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
+  const [preferences,setPreferences]=useState(null);
+  const notices=useResource('/api/v1/notifications?limit=30',{enabled:!!profile,interval:5000});
+  useResource('/api/perfil',{enabled:!!profile,interval:10000});
+  useEffect(()=>{document.documentElement.dataset.theme=preferences?.darkTheme?'dark':'light';},[preferences?.darkTheme]);
+  async function savePreferences(value){const saved=await userApi.call('/api/v1/preferences',{method:'PUT',json:value});setPreferences(saved);notices.reload();}
 
   const logout = async event => {
     event.preventDefault();
@@ -81,10 +82,8 @@ function App() {
     setSigningOut(true); setSessionError('');
     try {
       for (let attempt = 0; attempt < 2; attempt++) {
-        const tokenResponse = await fetch('/login-token', {cache: 'no-store'});
-        if (!tokenResponse.ok) throw Error('No pudimos renovar la sesión. Intenta nuevamente.');
-        const token = await tokenResponse.json();
-        const response = await fetch('/logout', {method: 'POST', body: new URLSearchParams({[token.parameterName]: token.token})});
+        const token = await userApi.call('/api/csrf');
+        const response = await fetch('/logout', {method: 'POST', headers:{'X-MAIN-Expected-User':profile.usuario}, body: new URLSearchParams({[token.parameterName]: token.token})});
         if (response.status === 403 && attempt === 0) continue;
         if (!response.ok || !response.redirected || !new URL(response.url).pathname.endsWith('/login.html'))
           throw Error('No pudimos confirmar el cierre. Intenta nuevamente.');
@@ -101,9 +100,11 @@ function App() {
     setError('');
     try {
       const currentProfile = await request('/api/perfil');
+      userApi.setIdentity(currentProfile.usuario);
       setProfile(currentProfile);
+      setPreferences(await request('/api/v1/preferences'));
       if (currentProfile.rol === 'Alumno') setItems(await request('/api/actividades/pendientes'));
-      else if (!location.hash) location.hash = 'cursos';
+      else setItems([]);
     } catch (error) { setError(error.message); }
     finally { setLoading(false); }
   };
@@ -123,17 +124,16 @@ function App() {
       <aside className="sidebar">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
         <span className="workspace-label">ESPACIO ACADÉMICO</span>
-        {profile?.rol === 'Alumno' && <a className="nav-item active" href="/">▦ <span>Mis actividades</span></a>}
-        <a className="nav-item" href="#cursos">Cursos y notas</a>
+        {[['#inicio','Inicio'],...(profile?.rol==='Alumno'?[['#actividades','Tareas']]:[]),['#cursos','Cursos y notas'],['#avisos','Avisos'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio'))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
         <div className="sidebar-bottom">
-          <span className="sprint-badge">Sprint 1 · Avance</span>
-          <p>Un paso a la vez.<br />Tu aprendizaje, organizado.</p>
+          <span className="sprint-badge">Tu comunidad académica</span>
+          <p>Cursos, tareas y conversaciones<br/>con los mismos datos de tu app.</p>
         </div>
       </aside>
       <div className="main-area">
         <header className="topbar">
-          <span className="breadcrumb">Mi espacio <span>/</span> Actividades</span>
-          <nav aria-label="Secciones académicas"><a href="#cursos">Cursos y notas</a>{profile?.rol === 'Alumno' && <> · <a href="/">Actividades</a></>}</nav>
+          <span className="breadcrumb">MAIN <span>/</span> {profile?.rol||'Mi espacio'}</span>
+          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a> · <a href="#avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a> · <a href="#perfil">Perfil</a></nav>
           <div className="user-area">
             <span>{profile?.nombre || 'Alumno'}</span>
             <form onSubmit={logout}>
@@ -143,14 +143,14 @@ function App() {
           </div>
         </header>
         <main className="content">
-          {hash === '#cursos' ? <Academic profile={profile} /> : <>
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">TU AGENDA ACADÉMICA</span>
-              <h1>Mis actividades</h1>
+              <h1>{hash==='#actividades'||match?'Mis actividades':'Tu espacio académico'}</h1>
               <p>Encuentra lo pendiente y prepara tu siguiente paso.</p>
             </div>
-            <span className="date-tag">Datos de demostración</span>
+            <span className="date-tag">{profile.nombre}</span>
           </div>
           <section className="summary-grid" aria-label="Resumen">
             <article><span>Pendientes</span><strong>{loading ? '—' : items.length}</strong><small>Actividades por completar</small></article>
@@ -187,7 +187,8 @@ function App() {
               )}
             </section>
           )}
-          <footer>MAIN · Primer incremento de HU06 y HU07 · Información sintética para la demostración</footer>
+          {!match&&hash!=='#actividades'&&<Academic profile={profile}/>}
+          <footer>MAIN · Información de tu cuenta según tus permisos</footer>
           </>}
         </main>
       </div>

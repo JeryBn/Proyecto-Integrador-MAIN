@@ -45,7 +45,7 @@ public class SecurityConfig {
                     .accessDeniedHandler((req,res,ex)->adminError(res,410,"ADMIN_MOVED_TO_DJANGO")));
             return http.build();
         }
-        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.access.intercept.AuthorizationFilter.class);
+        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.authentication.logout.LogoutFilter.class);
         http.securityMatcher("/api/admin/**","/moderation.html","/moderation.js","/moderation.css")
                 .csrf(c -> c.csrfTokenRepository(csrfRepository))
                 .authorizeHttpRequests(a -> a.requestMatchers("/api/admin/csrf", "/api/admin/login").permitAll().anyRequest().hasRole("ADMIN"))
@@ -75,7 +75,7 @@ public class SecurityConfig {
         res.getWriter().write("{\"error\":{\"code\":\""+code+"\",\"message\":\"Acceso rechazado\"}}");
     }
     @Bean @Order(2) SecurityFilterChain security(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
-        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.access.intercept.AuthorizationFilter.class);
+        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.authentication.logout.LogoutFilter.class);
         http.csrf(c -> c.csrfTokenRepository(csrfRepository));
         http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/error",
                         "/admin.html","/assets/admin.js","/assets/admin.css").permitAll()
