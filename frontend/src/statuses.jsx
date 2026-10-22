@@ -5,7 +5,7 @@ import {PrivateMedia} from './private-media.jsx';
 import {canPublish,ownerPlaylist,statusTextColor} from './status-model.mjs';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
-export function Statuses({profile,preferences,draft,setDraft}){
+export function Statuses({profile,preferences,draft,setDraft,onChat}){
  const feed=useResource('/api/v1/statuses',{interval:5000});
  const [compose,setCompose]=useState(false),[selected,setSelected]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const publish=canPublish(profile.rol);
@@ -15,12 +15,13 @@ export function Statuses({profile,preferences,draft,setDraft}){
  useEffect(()=>{if(feed.data&&selected&&!feed.data.some(s=>s.id===selected))setSelected(null);},[feed.data,selected]);
  function open(status){setError('');setSelected(status.id);if(status.owner!==profile.usuario)userApi.call('/api/v1/statuses/'+enc(status.id)+'/seen',{method:'POST',json:{}}).then(feed.reload).catch(e=>{setError(e.message);setSelected(null);feed.reload();});}
  async function remove(status){if(busy||!window.confirm('¿Eliminar este estado? Dejará de estar disponible para tus contactos.'))return;setBusy(true);setError('');try{await userApi.call('/api/v1/statuses/'+enc(status.id)+'/delete',{method:'POST',json:{}});setSelected(null);setNotice('Estado eliminado.');feed.reload();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function reply(status){if(busy)return;setBusy(true);setError('');try{const chat=await userApi.call('/api/v1/conversations/direct',{method:'POST',json:{username:status.owner}});onChat(chat.id);}catch(e){setError(e.message);feed.reload();}finally{setBusy(false);}}
  return <section className="user-panel statuses-panel" aria-label="Estados de MAIN"><div className="toolbar"><h1 className="grow">Estados</h1><button onClick={feed.reload}>Actualizar estados</button>{publish&&<button onClick={()=>{setCompose(v=>!v);setNotice('');}}>{compose?'Cerrar creación':'Crear estado'}</button>}</div>
   <p>Actualizaciones de 24 horas. Solo los contactos incluidos y autorizados pueden ver los estados aprobados.</p>
   {!publish&&<p>Las cuentas familiares pueden ver estados autorizados; solo estudiantes y docentes pueden publicar.</p>}
   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}<Feedback resource={feed}/>
   {publish&&compose&&<StatusComposer draft={draft} setDraft={setDraft} preferences={preferences} onSaved={()=>{setCompose(false);setNotice('Estado guardado, pendiente de revisión. Aún no está publicado para tus contactos.');feed.reload();}}/>}
-  {current&&<StatusViewer key={current.id} status={current} playlist={ownerPlaylist(feed.data,current.owner)} mine={current.owner===profile.usuario} onOpen={open} onClose={()=>setSelected(null)} onDelete={()=>remove(current)} busy={busy}/>}
+  {current&&<StatusViewer key={current.id} status={current} playlist={ownerPlaylist(feed.data,current.owner)} mine={current.owner===profile.usuario} onOpen={open} onClose={()=>setSelected(null)} onDelete={()=>remove(current)} onReply={onChat?()=>reply(current):undefined} busy={busy}/>}
   <h2>Mi estado</h2>{own.length?<ul className="status-list">{own.map(s=><li key={s.id}><button onClick={()=>open(s)}><span className={'status-ring '+(s.state==='APPROVED'?'':'pending')}>{s.kind==='TEXT'?'T':s.kind==='IMAGE'?'Foto':s.kind==='VIDEO'?'Video':'Audio'}</span><span className="grow"><strong>{s.text||'Estado multimedia'}</strong><small>{s.state==='PENDING'?'Pendiente de revisión':s.state==='REJECTED'?'Rechazado · solo visible para ti':'Aprobado'} · Caduca {localDate(s.expiresAt)}</small></span></button></li>)}</ul>:<p>No tienes estados activos.</p>}
   <h2>Actualizaciones de contactos</h2>{!feed.loading&&owners.length===0&&<p>No hay estados de contactos disponibles.</p>}
   <ul className="status-list">{owners.map(owner=>{const updates=ownerPlaylist(feed.data,owner),first=updates.find(s=>!s.seen)||updates[0];return <li key={owner}><button onClick={()=>open(first)}><span className={'status-ring '+(updates.every(s=>s.seen)?'seen':'')}>{first.name.slice(0,1)}</span><span className="grow"><strong>{first.name}</strong><small>{updates.length} {updates.length===1?'actualización':'actualizaciones'} · {updates.every(s=>s.seen)?'Vistos':'Sin ver'} · {localDate(updates.at(-1).createdAt)}</small></span></button></li>;})}</ul>
@@ -52,7 +53,7 @@ function StatusComposer({draft,setDraft,preferences,onSaved}){
  </fieldset>{busy&&<div role="status"><p>{progress<100?`Subiendo: ${progress}%`:'Esperando confirmación del servidor…'}</p><button type="button" onClick={()=>controller.current?.abort()}>Cancelar espera del estado</button></div>}</form>;
 }
 
-function StatusViewer({status,playlist,mine,onOpen,onClose,onDelete,busy}){
+function StatusViewer({status,playlist,mine,onOpen,onClose,onDelete,onReply,busy}){
  const [paused,setPaused]=useState(false),[hidden,setHidden]=useState(document.hidden);const next=useRef(null);
  const index=playlist.findIndex(s=>s.id===status.id);
  const advance=()=>{if(index+1<playlist.length)onOpen(playlist[index+1]);else onClose();};next.current=advance;
@@ -63,6 +64,7 @@ function StatusViewer({status,playlist,mine,onOpen,onClose,onDelete,busy}){
   <div className="status-content" style={{backgroundColor:background,color:statusTextColor(background)}}>{status.text&&<p className="status-text">{status.text}</p>}{status.kind!=='TEXT'&&<PrivateMedia key={status.id} kind={status.kind} path={'/api/v1/statuses/'+enc(status.id)+'/media'} name="Contenido del estado" onEnded={()=>{if(!paused&&!hidden)advance();}}/>}</div>
   <div className="toolbar"><button disabled={index===0} onClick={()=>onOpen(playlist[index-1])}>Estado anterior</button><button onClick={()=>setPaused(v=>!v)}>{paused?'Reanudar avance':'Pausar avance'}</button><button onClick={advance}>Estado siguiente</button></div>
   <p>Caduca {localDate(status.expiresAt)} · {status.audience==='PRIVATE'?'Solo yo':'Contactos autorizados'}</p>
+  {!mine&&onReply&&<button disabled={busy} onClick={onReply}>Responder por mensaje</button>}
   {mine&&<><p>{status.state==='APPROVED'?`Aprobado · ${status.views} vistas`:status.state==='PENDING'?'Pendiente de revisión · solo visible para ti':'Rechazado · solo visible para ti'}</p>{status.reason&&<p role="alert">{status.reason}</p>}<button disabled={busy} onClick={onDelete}>Eliminar mi estado</button></>}
  </section>;
 }
