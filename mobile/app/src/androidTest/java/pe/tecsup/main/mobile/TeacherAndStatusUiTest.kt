@@ -35,13 +35,14 @@ class TeacherAndStatusUiTest {
   val bitmap=android.graphics.Bitmap.createBitmap(300,500,android.graphics.Bitmap.Config.ARGB_8888);bitmap.eraseColor(android.graphics.Color.rgb(8,127,104));val image=java.io.ByteArrayOutputStream();bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,image);bitmap.recycle()
   val caption="Foto sintética "+System.currentTimeMillis();publisher.createStatus(UUID.randomUUID().toString(),caption,"#087F68","CONTACTS",StatusAttachment(image.toByteArray(),"image/png"))
   val photo=publisher.statuses().first{it.text==caption};val pending=admin.list("/api/admin/v1/moderation/statuses?limit=100");val item=(0 until pending.length()).map{pending.getJSONObject(it)}.first{it.getString("id")==photo.id}
-  admin.post("/api/admin/v1/moderation/statuses/"+photo.id+"/review",JSONObject().put("contentHash",item.getString("contentHash")).put("approved",true))
+  admin.post("/api/admin/v1/moderation/statuses/"+photo.id+"/review",JSONObject().put("contentHash",item.getString("contentHash")).put("approved",true).put("attachmentReviewed",true))
   val peer=MainApi("http://127.0.0.1:8088");peer.login("otro","MainDemo2026!");peer.savePreferences(UserPreferences());peer.saveContact(peer.contacts().first{it.username=="alumno"}.copy(blocked=false))
   login("otro","MainDemo2026!");ui.onNodeWithContentDescription("Estados").performClick();waitFor("Toca para ver")
   ui.onAllNodesWithText("Toca para ver").onFirst().performClick();waitFor(caption)
   Evidence.capture("20_visor_estado_imagen.png");ui.onNodeWithText("Cerrar").performClick()
   ui.onNodeWithContentDescription("Crear estado de texto").performClick()
   val text="Estado de revisión "+System.currentTimeMillis();ui.onNodeWithText("Escribe tu estado").performTextInput(text)
+  androidx.test.espresso.Espresso.closeSoftKeyboard()
   ui.onNodeWithText("Enviar estado").performScrollTo().performClick();waitFor("Pendiente de revisión")
   assertFalse(publisher.statuses().any{it.text==text})
   Evidence.capture("21_estado_pendiente.png")
@@ -58,13 +59,17 @@ class TeacherAndStatusUiTest {
     val label=asset+" "+System.currentTimeMillis();publisher.createStatus(UUID.randomUUID().toString(),label,"#087F68","CONTACTS",StatusAttachment(context.assets.open(asset).use{it.readBytes()},mime))
     val entry=publisher.statuses().first{it.text==label};ids+=entry.id
     val pending=admin.list("/api/admin/v1/moderation/statuses?limit=100");val row=(0 until pending.length()).map{pending.getJSONObject(it)}.first{it.getString("id")==entry.id}
-    admin.post("/api/admin/v1/moderation/statuses/"+entry.id+"/review",JSONObject().put("contentHash",row.getString("contentHash")).put("approved",true))
+    admin.post("/api/admin/v1/moderation/statuses/"+entry.id+"/review",JSONObject().put("contentHash",row.getString("contentHash")).put("approved",true).put("attachmentReviewed",true))
    }
    login("otro","MainDemo2026!");ui.onNodeWithContentDescription("Estados").performClick();waitFor("Toca para ver")
    val name=peer.statuses().first{it.owner=="vacio"}.name
    ui.onNodeWithText(name).performClick()
    ui.waitUntil(30000){ui.onAllNodesWithContentDescription("Video del estado").fetchSemanticsNodes().isNotEmpty()}
    Evidence.capture("22_estado_video.png")
+   // Los clips son muy breves: la captura puede durar más que el audio.
+   // Abrir el fixture concreto evita depender del instante de avance automático.
+   val audio=peer.statuses().first{it.id==ids[1]}
+   ui.runOnIdle{androidx.lifecycle.ViewModelProvider(ui.activity)[MainViewModel::class.java].openStatus(audio)}
    ui.waitUntil(30000){ui.onAllNodesWithContentDescription("Reproduciendo audio").fetchSemanticsNodes().isNotEmpty()}
    Evidence.capture("23_estado_audio.png")
   }finally{ids.forEach{publisher.deleteStatus(it)};publisher.logout();peer.logout()}

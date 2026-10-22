@@ -10,7 +10,8 @@ import org.json.JSONObject
 /** Synthetic credentials for the isolated loopback test server only; never included in the application APK. */
 internal class AdminTestApi {
  private val cookies=CookieManager(null,CookiePolicy.ACCEPT_ORIGINAL_SERVER)
- private val origin="http://127.0.0.1:8088"
+ private val origin=androidx.test.platform.app.InstrumentationRegistry.getArguments()
+  .getString("adminOrigin") ?: "http://127.0.0.1:8090"
  init{
   val csrf=get("/api/admin/csrf")
   val form=mapOf("username" to "android_test_admin","password" to "SyntheticAndroidTest2026!",csrf.getString("parameterName") to csrf.getString("token"))
