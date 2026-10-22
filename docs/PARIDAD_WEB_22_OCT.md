@@ -12,7 +12,7 @@ Trabajo asistido por indicación de Jery Becerra Ninaquispe. M21 conserva su asi
 | Privados y grupos | Conversaciones, invitaciones, roles, revisión y mensajes v1 | Implementados: búsqueda, privados, grupos, invitaciones, miembros, roles, salida, edición/corrección/cancelación; recorrido conjunto final pendiente |
 | Adjuntos | Imagen, video, audio y TXT; revisión previa | Interfaz implementada con subida, progreso, cancelación de espera, reintento idempotente y visor autorizado; recorrido conjunto final pendiente |
 | Estados | Texto/multimedia; audiencia y caducidad; familiar no publica | Creación, audiencia, visor/secuencia, vistos, eliminación y borrador implementados; recorrido real conjunto pendiente |
-| Asistente | Servicio existente y clave autorizada; cuota agotada en corte previo | Pendiente de interfaz y comprobación real del proveedor |
+| Asistente | Servicio existente y clave autorizada; cuota agotada en corte previo | Interfaz conectada, consulta/recuperación/cancelación y error real del servicio implementados; comprobación real pendiente |
 
 ## Primer incremento de perfil y sesión
 
@@ -38,3 +38,10 @@ Trabajo asistido por indicación de Jery Becerra Ninaquispe. M21 conserva su asi
 - Visor por contacto en orden temporal, anterior/siguiente, avance automático de texto/imagen con pausa, reproducción multimedia manual y detención al ocultar la pestaña. No se reproduce audio automáticamente durante el trabajo en segundo plano.
 - Listados periódicos respetan respuesta autorizada del servidor, audiencia/bloqueos y expiración; una actualización que desaparece deja de mostrarse. Eliminación propia requiere confirmación.
 - Verificación técnica: React compilado y 17 pruebas cliente aprobadas. No se declara aún probado el recorrido visual ni su sincronización Android en este corte.
+
+## Incremento del asistente
+
+- La web usa el servicio `/api/v1/assistant` existente, su contexto académico autorizado y la clave previamente creada/autorizada por Jery. No configura claves en el navegador ni crea un proveedor paralelo.
+- Pregunta de hasta 2000 caracteres, explicación de datos enviados a OpenAI y límite de 20 solicitudes por cuenta cada 24 horas, iguales a Android. Pregunta, respuesta y borrador permanecen únicamente en memoria de la página.
+- Cancelar la espera o perder conexión conserva la clave para recuperar una respuesta ya recibida por servidor, sin duplicar el consumo. Un error confirmado de cuota/acceso requiere una nueva solicitud explícita después de resolver el servicio; no se inventa ni se sustituye una respuesta del proveedor.
+- Verificación técnica: React compilado y 19 pruebas cliente aprobadas. La respuesta real del proveedor todavía debe comprobarse; el error de cuota del corte previo no se presenta como una consulta exitosa.
