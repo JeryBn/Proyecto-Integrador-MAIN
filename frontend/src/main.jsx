@@ -7,6 +7,7 @@ import {userApi} from './user-api.mjs';
 import {useResource} from './user-hooks.jsx';
 import './workspace.css';
 import {Messages} from './messages.jsx';
+import {Statuses,emptyStatusDraft} from './statuses.jsx';
 
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
@@ -73,6 +74,7 @@ function App() {
   const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
   const [preferences,setPreferences]=useState(null);
   const [chatDrafts,setChatDrafts]=useState({});
+  const [statusDraft,setStatusDraft]=useState(emptyStatusDraft);
   const openChat=id=>{location.hash=id?'chats/'+id:'chats';};
   const notices=useResource('/api/v1/notifications?limit=30',{enabled:!!profile,interval:5000});
   useResource('/api/perfil',{enabled:!!profile,interval:10000});
@@ -129,7 +131,7 @@ function App() {
       <aside className="sidebar">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
         <span className="workspace-label">ESPACIO ACADÉMICO</span>
-        {[['#inicio','Inicio'],['#chats','Chats'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio')||(route==='#chats'&&chatRoute))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
+        {[['#inicio','Inicio'],['#chats','Chats'],['#estados','Estados'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio')||(route==='#chats'&&chatRoute))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
         <div className="sidebar-bottom">
           <span className="sprint-badge">Tu comunidad académica</span>
           <p>Cursos, tareas y conversaciones<br/>con los mismos datos de tu app.</p>
@@ -148,7 +150,7 @@ function App() {
           </div>
         </header>
         <main className="content">
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>
               <span className="eyebrow">TU AGENDA ACADÉMICA</span>

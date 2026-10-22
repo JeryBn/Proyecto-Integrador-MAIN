@@ -11,7 +11,7 @@ Trabajo asistido por indicación de Jery Becerra Ninaquispe. M21 conserva su asi
 | Avisos | Lista y lectura paginadas por permisos | Implementados con actualización visible y paginación; recorrido real final pendiente |
 | Privados y grupos | Conversaciones, invitaciones, roles, revisión y mensajes v1 | Implementados: búsqueda, privados, grupos, invitaciones, miembros, roles, salida, edición/corrección/cancelación; recorrido conjunto final pendiente |
 | Adjuntos | Imagen, video, audio y TXT; revisión previa | Interfaz implementada con subida, progreso, cancelación de espera, reintento idempotente y visor autorizado; recorrido conjunto final pendiente |
-| Estados | Texto/multimedia; audiencia y caducidad; familiar no publica | Pendiente de interfaz web |
+| Estados | Texto/multimedia; audiencia y caducidad; familiar no publica | Creación, audiencia, visor/secuencia, vistos, eliminación y borrador implementados; recorrido real conjunto pendiente |
 | Asistente | Servicio existente y clave autorizada; cuota agotada en corte previo | Pendiente de interfaz y comprobación real del proveedor |
 
 ## Primer incremento de perfil y sesión
@@ -30,3 +30,11 @@ Trabajo asistido por indicación de Jery Becerra Ninaquispe. M21 conserva su asi
 - Archivos JPG/PNG, video, audio y TXT usan la misma subida multipart y los límites del servidor. Cancelar la espera no afirma que el servidor descartó el envío. El mismo contenido reintenta con la misma clave para no duplicarse; un contenido nuevo obtiene otra clave.
 - Nuevo GET `/api/v1/conversations/{id}` resuelve enlaces de avisos aunque el chat no esté en la página actual. Solo miembros activos/invitados reciben metadatos; un invitado aún no puede leer mensajes y una invitación rechazada deja de ser visible. Es una ampliación compatible del contrato v1.
 - Verificación técnica de este incremento: React compilado, 14 casos de cliente y 107 Maven aprobados. Las comprobaciones reales de UI y sincronización se registrarán tras la ronda conjunta.
+
+## Incremento de estados
+
+- Texto con fondo/contraste y multimedia de imagen, video o audio, con el mismo límite de 700 caracteres, 12 MB y 60 segundos aplicado por servidor. Borrador y clave idempotente conservados mientras la página permanece abierta.
+- Audiencia por estado y preferencia global, indicador pendiente/rechazado, razón privada y conteo de vistas del propietario. Solo estudiantes/docentes tienen creación; el servidor sigue rechazando publicación familiar.
+- Visor por contacto en orden temporal, anterior/siguiente, avance automático de texto/imagen con pausa, reproducción multimedia manual y detención al ocultar la pestaña. No se reproduce audio automáticamente durante el trabajo en segundo plano.
+- Listados periódicos respetan respuesta autorizada del servidor, audiencia/bloqueos y expiración; una actualización que desaparece deja de mostrarse. Eliminación propia requiere confirmación.
+- Verificación técnica: React compilado y 17 pruebas cliente aprobadas. No se declara aún probado el recorrido visual ni su sincronización Android en este corte.
