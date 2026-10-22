@@ -36,7 +36,8 @@ public class SecurityConfig {
     @Bean HttpSessionCsrfTokenRepository csrfRepository(){ return new HttpSessionCsrfTokenRepository(); }
     @Bean org.springframework.security.core.session.SessionRegistry sessionRegistry(){return new org.springframework.security.core.session.SessionRegistryImpl();}
     @Bean org.springframework.security.web.session.HttpSessionEventPublisher sessionEvents(){return new org.springframework.security.web.session.HttpSessionEventPublisher();}
-    @Bean @Order(1) SecurityFilterChain administrativeSecurity(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository) throws Exception {
+    @Bean @Order(1) SecurityFilterChain administrativeSecurity(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
+        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.access.intercept.AuthorizationFilter.class);
         http.securityMatcher("/api/admin/**","/moderation.html","/moderation.js","/moderation.css")
                 .csrf(c -> c.csrfTokenRepository(csrfRepository))
                 .authorizeHttpRequests(a -> a.requestMatchers("/api/admin/csrf", "/api/admin/login").permitAll().anyRequest().hasRole("ADMIN"))
@@ -65,7 +66,8 @@ public class SecurityConfig {
         res.setStatus(status); res.setContentType("application/json;charset=UTF-8");
         res.getWriter().write("{\"error\":{\"code\":\""+code+"\",\"message\":\"Acceso rechazado\"}}");
     }
-    @Bean @Order(2) SecurityFilterChain security(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository) throws Exception {
+    @Bean @Order(2) SecurityFilterChain security(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
+        http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.access.intercept.AuthorizationFilter.class);
         http.csrf(c -> c.csrfTokenRepository(csrfRepository));
         http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/error",
                         "/admin.html","/assets/admin.js","/assets/admin.css").permitAll()

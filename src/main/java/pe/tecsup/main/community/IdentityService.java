@@ -27,8 +27,8 @@ public class IdentityService implements UserDetailsService {
  public Account active(String username){var a=account(username);if(!a.enabled())throw DomainException.denied();return a;}
  public void admin(String username){if(!active(username).role().equals("ADMIN"))throw DomainException.denied();}
  @Override public UserDetails loadUserByUsername(String username){
-  var rows=db.query("SELECT * FROM main_user WHERE username=?",(r,n)->User.withUsername(r.getString("username")).password(r.getString("password_hash"))
-   .roles(r.getString("role")).disabled(!r.getBoolean("enabled")).build(),username);
+  var rows=db.query("SELECT * FROM main_user WHERE username=?",(r,n)->new SharedIdentity(r.getString("username"),r.getString("password_hash"),
+   r.getBoolean("enabled"),java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_"+r.getString("role")))),username);
   if(rows.isEmpty())throw new UsernameNotFoundException("Cuenta no disponible.");return rows.getFirst();
  }
  public Map<String,String> profile(String username){

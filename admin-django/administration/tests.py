@@ -18,14 +18,17 @@ class AdministrationTests(TransactionTestCase):
             for model in (Teacher, Course, Activity, SharedUser, Audit):
                 editor.create_model(model)
         with connection.cursor() as cursor:
-            cursor.execute('CREATE TABLE alumno(id BIGINT PRIMARY KEY, nombre VARCHAR(100) NOT NULL)')
+            cursor.execute('CREATE TABLE alumno(id BIGINT PRIMARY KEY, usuario VARCHAR(60) UNIQUE NOT NULL, nombre VARCHAR(100) NOT NULL)')
             cursor.execute('CREATE TABLE matricula(alumno_id BIGINT NOT NULL REFERENCES alumno(id), curso_id BIGINT NOT NULL REFERENCES curso(id), PRIMARY KEY(alumno_id,curso_id))')
             cursor.execute('CREATE TABLE timetable(id VARCHAR(36) PRIMARY KEY, curso_id BIGINT NOT NULL REFERENCES curso(id))')
+            cursor.execute('CREATE TABLE guardian_link(guardian VARCHAR(60), alumno_id BIGINT, verified_by VARCHAR(60), verified_at TIMESTAMP, PRIMARY KEY(guardian,alumno_id))')
+            cursor.execute('CREATE TABLE contact_link(user_a VARCHAR(60), user_b VARCHAR(60), approved_by VARCHAR(60), PRIMARY KEY(user_a,user_b))')
+            cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
 
     @classmethod
     def tearDownClass(cls):
         with connection.cursor() as cursor:
-            for table in ('timetable', 'matricula', 'alumno'):
+            for table in ('guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DROP TABLE ' + table)
         with connection.schema_editor() as editor:
             for model in (Audit, SharedUser, Activity, Course, Teacher):
@@ -35,7 +38,7 @@ class AdministrationTests(TransactionTestCase):
     def setUp(self):
         cache.clear()
         with connection.cursor() as cursor:
-            for table in ('timetable', 'matricula', 'alumno'):
+            for table in ('guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DELETE FROM ' + table)
         for model in (Audit, Activity, SharedUser, Course, Teacher):
             model.objects.all().delete()
@@ -155,7 +158,7 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.login().status_code,429)
 
     def test_react_assets_and_unsupported_operations(self):
-        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="academic"')
+        self.assertContains(self.client.get('/admin.html'), 'data-admin-scope="management"')
         self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
         self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
         self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)
@@ -199,7 +202,7 @@ class AdministrationTests(TransactionTestCase):
     def test_enrollment_idempotent_and_revoke_disabled_student(self):
         self.prepare_academic()
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO alumno VALUES(1,'Alumno sintético')")
+            cursor.execute("INSERT INTO alumno VALUES(1,'alumno','Alumno sintético')")
         SharedUser.objects.filter(pk='alumno').update(alumno_id=1)
         value = dict(username='alumno', enrolled=True)
         for _ in range(2):
@@ -228,3 +231,49 @@ class AdministrationTests(TransactionTestCase):
         with patch('administration.academic.record', side_effect=IntegrityError('synthetic')):
             self.assertEqual(self.academic_call('courses', dict(id=2,name='Nuevo',teacherUsername='teacher')).status_code, 409)
         self.assertFalse(Course.objects.filter(pk=2).exists())
+
+    def test_identity_creation_hashes_and_atomic_conflicts(self):
+        self.login()
+        value = dict(username='new_student', name='Sintético', role='ALUMNO', password=PASSWORD, alumnoId=77)
+        response = self.academic_call('users', value)
+        self.assertEqual(response.status_code, 201)
+        self.assertNotIn('password', str(response.json()))
+        self.assertTrue(bcrypt.checkpw(PASSWORD.encode(), SharedUser.objects.get(pk='new_student').password_hash.encode()))
+        self.assertEqual(self.academic_call('users', value).status_code, 409)
+        value.update(username='other_student')
+        self.assertEqual(self.academic_call('users', value).status_code, 400)
+        value.update(username='admin_injected', role='ADMIN')
+        self.assertEqual(self.academic_call('users', value).status_code, 400)
+        self.assertEqual(Audit.objects.count(), 1)
+
+    def test_identity_reset_disable_and_admin_protection(self):
+        self.login()
+        self.assertEqual(self.academic_call('users/admin_test/disable', {}).status_code, 403)
+        self.assertEqual(self.academic_call('users/admin_test/reset-password', {'password':PASSWORD}).status_code, 403)
+        self.assertEqual(self.academic_call('users/alumno/reset-password', {'password':'short'}).status_code, 400)
+        self.assertEqual(self.academic_call('users/alumno/reset-password', {'password':'ReplacementSynthetic2026!'}).status_code, 200)
+        self.assertEqual(self.academic_call('users/alumno/disable', {}).status_code, 200)
+        self.assertFalse(SharedUser.objects.get(pk='alumno').enabled)
+
+    def test_guardian_contact_idempotency_and_revocation(self):
+        self.login()
+        self.academic_call('users', dict(username='family_test',name='Familia',role='FAMILIAR',password=PASSWORD))
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO alumno VALUES(1,'alumno','Alumno')")
+        for _ in range(2):
+            self.assertEqual(self.academic_call('guardians', dict(guardian='family_test',studentId=1)).status_code, 200)
+            self.assertEqual(self.academic_call('contacts', dict(first='alumno',second='family_test')).status_code, 200)
+        self.assertEqual(Audit.objects.count(), 3)
+        self.assertEqual(self.academic_call('guardians/family_test/1', {}, 'delete').status_code, 200)
+        self.assertEqual(self.academic_call('contacts', dict(first='admin_test',second='family_test')).status_code, 400)
+        self.assertEqual(self.academic_call('contacts', dict(first='alumno',second='alumno')).status_code, 400)
+
+    def test_identity_creation_rolls_back_academic_row_when_audit_fails(self):
+        self.login()
+        with patch('administration.identity.record', side_effect=IntegrityError('synthetic')):
+            response = self.academic_call('users', dict(username='rollback_student',name='Prueba',role='ALUMNO',password=PASSWORD,alumnoId=99))
+        self.assertEqual(response.status_code, 409)
+        self.assertFalse(SharedUser.objects.filter(pk='rollback_student').exists())
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT COUNT(*) FROM alumno WHERE id=99')
+            self.assertEqual(cursor.fetchone()[0], 0)
