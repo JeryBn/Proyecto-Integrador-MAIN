@@ -24,20 +24,22 @@ export function Academic({profile}) {
   },[course,teacher,revision]);
   const list=gs=>gs.length?<ul>{gs.map(g=><li key={g.id}><strong>{g.assessment}</strong>: {g.score} / {g.maximum}</li>)}</ul>:<p>Aún no se registraron notas.</p>;
   return <section className="list-panel academic" aria-label="Cursos y notas"><h1>Cursos y notas</h1>
+    <button disabled={busy} onClick={()=>setRevision(v=>v+1)}>Actualizar cursos y notas</button>
     {error && <div role="alert"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Actualizar cursos</button></div>}
     {notice && <p role="status">{notice}</p>}
     {!agenda && !error && <p role="status">Cargando cursos…</p>}
     {agenda && <>
+      {profile?.rol==='Familiar'&&<><h2>Estudiantes vinculados</h2>{agenda.students.length?<ul>{agenda.students.map(s=><li key={s.id}>{s.name}</li>)}</ul>:<p>No tienes parentescos verificados.</p>}</>}
       {!agenda.courses.length && <p>No tienes cursos autorizados.</p>}
       {agenda.courses.map(c=><article className="activity-card" key={c.id}><div><h2>{c.name}</h2><p>Docente: {c.teacher}</p>
         {profile?.rol==='Alumno' && list(grades.find(g=>g.courseId===c.id)?.grades || [])}
-        {teacher && <button onClick={()=>{setCourse(String(c.id));setError('');setNotice('');}}>Registrar y editar notas de {c.name}</button>}
+        {teacher && <button disabled={busy} onClick={()=>{setCourse(String(c.id));setError('');setNotice('');}}>Registrar y editar notas de {c.name}</button>}
       </div></article>)}
       <h2>Horario</h2>{!agenda.timetable.length?<p>No hay horarios registrados.</p>:<ul>{agenda.timetable.map(t=><li key={t.id}>{['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][t.dayOfWeek]} {t.startsAt}–{t.endsAt} · {t.course} · {t.classroom}</li>)}</ul>}
       {teacher && course && <section><h2>Notas del curso seleccionado</h2>
         {roster.map(s=><article key={s.studentId} className="activity-card"><div><h3>{s.name}</h3>{list(s.grades)}
-          <button onClick={()=>setForm({studentId:String(s.studentId),assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'})}>Nueva nota para {s.name}</button>
-          {s.grades.map(g=><button key={g.id} onClick={()=>setForm({studentId:String(s.studentId),assessment:g.assessment,score:String(g.score),maximum:String(g.maximum),expectedRecordedAt:g.recordedAt})}>Editar {g.assessment} de {s.name}</button>)}
+          <button disabled={busy} onClick={()=>setForm({studentId:String(s.studentId),assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'})}>Nueva nota para {s.name}</button>
+          {s.grades.map(g=><button disabled={busy} key={g.id} onClick={()=>setForm({studentId:String(s.studentId),assessment:g.assessment,score:String(g.score),maximum:String(g.maximum),expectedRecordedAt:g.recordedAt})}>Editar {g.assessment} de {s.name}</button>)}
         </div></article>)}
         {!roster.length && <p>No hay estudiantes cargados. Actualiza para volver a consultar.</p>}
         {form.studentId && <form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');setNotice('');

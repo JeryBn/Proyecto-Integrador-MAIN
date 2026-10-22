@@ -142,8 +142,9 @@ function App() {
       <div className="main-area">
         <header className="topbar">
           <span className="breadcrumb">MAIN <span>/</span> {profile?.rol||'Mi espacio'}</span>
-          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a>{profile?.rol==='Alumno'&&<> · <a href="#actividades">Tareas</a></>} · <a href="#avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a></nav>
+          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a>{profile?.rol==='Alumno'&&<> · <a href="#actividades">Tareas</a></>}</nav>
           <div className="user-area">
+            <a className="notice-button" href="#avisos" aria-label="Ver avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a>
             <span>{profile?.nombre || 'Alumno'}</span>
             <form onSubmit={logout}>
               <button className="text-button" type="submit" disabled={signingOut}>{signingOut ? 'Cerrando…' : 'Salir ↗'}</button>
@@ -172,6 +173,7 @@ function App() {
                 <div>
                   <h2>Lo que tienes por hacer</h2>
                   <p>Ordenado por fecha límite</p>
+                  <button disabled={loading} onClick={load}>Actualizar actividades</button>
                 </div>
                 <label className="search-label">
                   <span className="sr-only">Buscar actividades</span>
