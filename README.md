@@ -4,6 +4,8 @@
 
 [Migración de la administración restante a Django](docs/MIGRACION_DJANGO_22_OCT.md): cuentas, parentescos, contactos/reportes, cursos/matrículas, horarios, notas, auditoría y moderación con adjuntos operan directamente sobre MySQL compartido. Spring mantiene usuarios y Android; el iniciador cierra su API administrativa histórica. Verificados 104 casos de servidor, 32 Django y recorridos HTTP reales por módulo. La aceptación del equipo, paridad web completa y despliegue público siguen pendientes.
 
+[Informe del 22 de octubre en Word](docs/informes/2026-10-22-django/MAIN_Migracion_Django_22_octubre_2026.docx) y [PDF de tres páginas](docs/informes/2026-10-22-django/MAIN_Migracion_Django_22_octubre_2026.pdf), con cambios, responsables originales, pruebas y pendientes. También pasaron 3 casos Android/MySQL y 4 del formulario web en este corte.
+
 ## Corte histórico del 21 de octubre de 2026
 
 [Regularización de las tareas del 12 de octubre](docs/REGULARIZACION_SPRINT_12_OCT.md): Django administrativo y React conectados a MySQL compartido con Spring Boot, según el diagrama confirmado por Jery. Se conservan los aportes anteriores y su autoría. El entorno local de usuarios está en 8088 y el administrativo Django en 8090. La base H2 previa se preservó; no se afirma migración de todos sus ensayos.
