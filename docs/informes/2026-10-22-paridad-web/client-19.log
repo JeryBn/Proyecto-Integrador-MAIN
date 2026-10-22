@@ -1,0 +1,27 @@
+✔ una espera cancelada o respuesta incierta recupera la misma clave (1.9712ms)
+✔ cuota agotada y errores confirmados requieren otra solicitud explícita (0.3505ms)
+✔ renueva el token al enviar una página que ya estaba abierta (6.5099ms)
+✔ fallo de red conserva el formulario y permite reintentar (2.7763ms)
+✔ fallo inicial del token no deja el acceso bloqueado (2.6891ms)
+✔ doble envío mientras se renueva el token hace una sola solicitud (2.7264ms)
+✔ los fondos claros y oscuros conservan contraste legible (1.3971ms)
+✔ la secuencia contiene únicamente los estados del contacto y no modifica la respuesta (1.0458ms)
+✔ solo estudiantes y docentes muestran la creación de estados (0.224ms)
+✔ renueva CSRF, protege identidad y no almacena respuestas privadas (2.1996ms)
+✔ sesión revocada redirige y no reintenta la mutación (0.6775ms)
+✔ cambio de cuenta descarta la operación antes de escribir (0.2674ms)
+✔ no reenvía automáticamente un POST con resultado incierto (0.2907ms)
+✔ clave idempotente se conserva solo para contenido idéntico (3.0137ms)
+✔ validación de archivos aplica límites distintos de mensajes y estados (0.3014ms)
+✔ fechas SQL Lima e instantes ISO representan el mismo momento (22.1608ms)
+✔ subida transmite CSRF e identidad y confirma progreso antes del resultado (19.0154ms)
+✔ cancelar subida conserva un resultado incierto sin reenvío automático (0.5981ms)
+✔ subida revocada no devuelve contenido ni anuncia éxito (0.4816ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.9226

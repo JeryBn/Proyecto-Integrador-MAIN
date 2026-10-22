@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-22",
+  "board": "https://trello.com/b/vrcqu5di/2026-2-c24-a-sprint-1",
+  "cards": [
+    {
+      "id": "M21",
+      "list": "PRUEBAS",
+      "url": "https://trello.com/c/nWNxf793",
+      "note": "Paridad implementada y verificada por módulos; aceptación/limitaciones pendientes."
+    },
+    {
+      "id": "M23",
+      "list": "PRUEBAS",
+      "url": "https://trello.com/c/pE3vpWEA",
+      "note": "Movimiento y cabecera PRUEBAS verificados al actualizar guía."
+    },
+    {
+      "id": "M24",
+      "list": "PRUEBAS",
+      "url": "https://trello.com/c/TiQ3ZIys",
+      "note": "Movimiento y cabecera PRUEBAS verificados tras pruebas cruzadas."
+    }
+  ],
+  "commentsUpdated": [
+    "M21",
+    "M22",
+    "M23",
+    "M24",
+    "M15",
+    "M18",
+    "M12"
+  ],
+  "limits": [
+    "No se reasignaron responsables",
+    "No se presume aceptación del equipo",
+    "IA real sin cuota/saldo"
+  ]
+}

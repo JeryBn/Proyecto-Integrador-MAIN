@@ -28,3 +28,5 @@ La fotografía enviada desde Android se comprobó cargada en Chrome con dimensio
 [Guía de pasos, contratos y fixtures](../../GUIA_PARIDAD_WEB_ANDROID.md). Soporte: `scripts/preparar_paridad_web.py`, `scripts/verificar_paridad_web.py` y `WebParityBridgeTest`. Las cuentas y textos usados son sintéticos. Las claves y cookies no se publican. Los mensajes y archivos pendientes no se entregan; la revisión se hizo solo sobre fixtures controlados.
 
 No incluye éxito de OpenAI, carga sostenida, teléfono físico, todos los navegadores, red móvil prolongada, captura cámara/micrófono web, push con la app cerrada o aceptación del equipo. La web sube archivos seleccionados; Android conserva captura nativa. El informe Word/PDF de migración Django es un corte histórico distinto y no contiene este incremento.
+
+Carpeta android/: diez capturas extraídas del último ciclo completo aprobado del emulador (notas, estados, adjuntos y detalle Django/MySQL). trello-corte.json registra M21, M23 y M24 en PRUEBAS y las siete tarjetas actualizadas. Los logs se incluyen expresamente porque la regla general de Git los ignora.

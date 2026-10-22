@@ -1,0 +1,592 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< pe.tecsup:main-sprint1 >-----------------------
+[INFO] Building MAIN Sprint 1 0.1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:properties (test-agent-path) @ main-sprint1 ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ main-sprint1 ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 23 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ main-sprint1 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ main-sprint1 ---
+[INFO] skip non existing resourceDirectory C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ main-sprint1 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.2:test (default-test) @ main-sprint1 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running pe.tecsup.main.ActividadFechaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.185 s -- in pe.tecsup.main.ActividadFechaTest
+[INFO] Running pe.tecsup.main.ActividadIntegrationTest
+12:33:02.267 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [pe.tecsup.main.ActividadIntegrationTest]: ActividadIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+12:33:02.452 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.ActividadIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:03.023-05:00  INFO 27592 --- [           main] p.tecsup.main.ActividadIntegrationTest   : Starting ActividadIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:03.026-05:00  INFO 27592 --- [           main] p.tecsup.main.ActividadIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:04.587-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-22T12:33:04.807-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:main user=SA
+2026-10-22T12:33:04.810-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-22T12:33:04.858-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:main (H2 2.3)
+2026-10-22T12:33:04.865-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:04.898-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:04.900-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.020s)
+2026-10-22T12:33:04.908-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:04.954-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:04.965-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:04.994-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:05.029-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:05.042-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:05.050-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:05.056-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:05.067-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:05.082-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:05.095-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:05.106-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.082s)
+2026-10-22T12:33:05.618-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:05.746-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:06.524-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:06.525-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:06.526-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T12:33:06.557-05:00  INFO 27592 --- [           main] p.tecsup.main.ActividadIntegrationTest   : Started ActividadIntegrationTest in 3.931 seconds (process running for 5.495)
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-22T12:33:07.648-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/actividades/1' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.068 s -- in pe.tecsup.main.ActividadIntegrationTest
+[INFO] Running pe.tecsup.main.AdminCredentialsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.955 s -- in pe.tecsup.main.AdminCredentialsTest
+[INFO] Running pe.tecsup.main.administracion.AdminIntegrationTest
+2026-10-22T12:33:09.147-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.administracion.AdminIntegrationTest]: AdminIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:09.168-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.administracion.AdminIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:09.263-05:00  INFO 27592 --- [           main] p.t.m.a.AdminIntegrationTest             : Starting AdminIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:09.263-05:00  INFO 27592 --- [           main] p.t.m.a.AdminIntegrationTest             : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:09.584-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-22T12:33:09.587-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:admin_tests user=SA
+2026-10-22T12:33:09.588-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-22T12:33:09.591-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:admin_tests (H2 2.3)
+2026-10-22T12:33:09.592-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:09.600-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:09.601-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.008s)
+2026-10-22T12:33:09.602-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:09.608-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:09.611-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:09.627-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:09.648-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:09.659-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:09.664-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:09.671-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:09.677-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:09.686-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:09.694-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:09.698-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.050s)
+2026-10-22T12:33:09.764-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:09.772-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:09.888-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:09.888-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:09.888-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T12:33:09.894-05:00  INFO 27592 --- [           main] p.t.m.a.AdminIntegrationTest             : Started AdminIntegrationTest in 0.66 seconds (process running for 8.831)
+2026-10-22T12:33:10.102-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/admin/actividades' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-10-22T12:33:10.616-05:00  WARN 27592 --- [           main] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.548 s -- in pe.tecsup.main.administracion.AdminIntegrationTest
+[INFO] Running pe.tecsup.main.community.AcademicAdministrationTest
+2026-10-22T12:33:10.699-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.AcademicAdministrationTest]: AcademicAdministrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:10.748-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.AcademicAdministrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:10.782-05:00  INFO 27592 --- [           main] p.t.m.c.AcademicAdministrationTest       : Starting AcademicAdministrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:10.783-05:00  INFO 27592 --- [           main] p.t.m.c.AcademicAdministrationTest       : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:11.155-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-22T12:33:11.157-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection conn20: url=jdbc:h2:mem:academic_admin user=SA
+2026-10-22T12:33:11.158-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-22T12:33:11.160-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:academic_admin (H2 2.3)
+2026-10-22T12:33:11.162-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:11.172-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:11.172-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.008s)
+2026-10-22T12:33:11.174-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:11.179-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:11.181-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:11.193-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:11.210-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:11.221-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:11.230-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:11.236-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:11.244-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:11.254-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:11.262-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:11.266-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.045s)
+2026-10-22T12:33:11.335-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:11.341-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:11.496-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:11.497-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:11.497-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T12:33:11.503-05:00  INFO 27592 --- [           main] p.t.m.c.AcademicAdministrationTest       : Started AcademicAdministrationTest in 0.751 seconds (process running for 10.44)
+2026-10-22T12:33:12.107-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/admin/v1/courses' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.871 s -- in pe.tecsup.main.community.AcademicAdministrationTest
+[INFO] Running pe.tecsup.main.community.AssistantIntegrationTest
+2026-10-22T12:33:12.573-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.AssistantIntegrationTest]: AssistantIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:12.580-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.AssistantIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:12.614-05:00  INFO 27592 --- [           main] p.t.m.c.AssistantIntegrationTest         : Starting AssistantIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:12.614-05:00  INFO 27592 --- [           main] p.t.m.c.AssistantIntegrationTest         : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:13.121-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-22T12:33:13.124-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection conn30: url=jdbc:h2:mem:assistant_tests user=SA
+2026-10-22T12:33:13.124-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-22T12:33:13.127-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:assistant_tests (H2 2.3)
+2026-10-22T12:33:13.128-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:13.137-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:13.137-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.008s)
+2026-10-22T12:33:13.139-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:13.145-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:13.148-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:13.162-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:13.179-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:13.192-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:13.197-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:13.202-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:13.210-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:13.221-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:13.229-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:13.234-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.048s)
+2026-10-22T12:33:13.366-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:13.380-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:13.581-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:13.581-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:13.584-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-10-22T12:33:13.597-05:00  INFO 27592 --- [           main] p.t.m.c.AssistantIntegrationTest         : Started AssistantIntegrationTest in 1.013 seconds (process running for 12.534)
+2026-10-22T12:33:14.018-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/assistant' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.580 s -- in pe.tecsup.main.community.AssistantIntegrationTest
+[INFO] Running pe.tecsup.main.community.CommunicationIntegrationTest
+2026-10-22T12:33:14.158-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.CommunicationIntegrationTest]: CommunicationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:14.163-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.CommunicationIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:14.202-05:00  INFO 27592 --- [           main] p.t.m.c.CommunicationIntegrationTest     : Starting CommunicationIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:14.202-05:00  INFO 27592 --- [           main] p.t.m.c.CommunicationIntegrationTest     : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:14.569-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-10-22T12:33:14.571-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection conn40: url=jdbc:h2:mem:communication_tests user=SA
+2026-10-22T12:33:14.571-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-10-22T12:33:14.573-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:communication_tests (H2 2.3)
+2026-10-22T12:33:14.574-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:14.582-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:14.582-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.007s)
+2026-10-22T12:33:14.583-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:14.587-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:14.589-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:14.599-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:14.613-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:14.621-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:14.626-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:14.630-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:14.635-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:14.644-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:14.651-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:14.654-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.034s)
+2026-10-22T12:33:14.719-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:14.724-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:14.852-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:14.852-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:14.853-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T12:33:14.860-05:00  INFO 27592 --- [           main] p.t.m.c.CommunicationIntegrationTest     : Started CommunicationIntegrationTest in 0.692 seconds (process running for 13.797)
+2026-10-22T12:33:15.292-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/conversations/1f7f7490-3f01-452b-96ea-d9dd6271ba96/messages' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.214 s -- in pe.tecsup.main.community.CommunicationIntegrationTest
+[INFO] Running pe.tecsup.main.community.GradeIntegrationTest
+2026-10-22T12:33:17.372-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.GradeIntegrationTest]: GradeIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:17.375-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.GradeIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:17.414-05:00  INFO 27592 --- [           main] p.t.main.community.GradeIntegrationTest  : Starting GradeIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:17.414-05:00  INFO 27592 --- [           main] p.t.main.community.GradeIntegrationTest  : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:17.665-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Starting...
+2026-10-22T12:33:17.667-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-6 - Added connection conn50: url=jdbc:h2:mem:grades_test user=SA
+2026-10-22T12:33:17.667-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Start completed.
+2026-10-22T12:33:17.668-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:grades_test (H2 2.3)
+2026-10-22T12:33:17.669-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:17.677-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:17.678-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.006s)
+2026-10-22T12:33:17.678-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:17.682-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:17.683-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:17.690-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:17.697-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:17.704-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:17.707-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:17.711-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:17.717-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:17.724-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:17.731-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:17.734-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.025s)
+2026-10-22T12:33:17.796-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:17.803-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:17.910-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:17.910-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:17.911-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T12:33:17.917-05:00  INFO 27592 --- [           main] p.t.main.community.GradeIntegrationTest  : Started GradeIntegrationTest in 0.539 seconds (process running for 16.853)
+2026-10-22T12:33:18.402-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/teaching/courses/1/grades' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.249 s -- in pe.tecsup.main.community.GradeIntegrationTest
+[INFO] Running pe.tecsup.main.community.IdentityIntegrationTest
+2026-10-22T12:33:18.623-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.IdentityIntegrationTest]: IdentityIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:18.625-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.IdentityIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:18.654-05:00  INFO 27592 --- [           main] p.t.m.community.IdentityIntegrationTest  : Starting IdentityIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:18.654-05:00  INFO 27592 --- [           main] p.t.m.community.IdentityIntegrationTest  : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:18.996-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Starting...
+2026-10-22T12:33:18.998-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-7 - Added connection conn60: url=jdbc:h2:mem:identity_tests user=SA
+2026-10-22T12:33:18.998-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Start completed.
+2026-10-22T12:33:19.000-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:identity_tests (H2 2.3)
+2026-10-22T12:33:19.001-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:19.014-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:19.014-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.011s)
+2026-10-22T12:33:19.016-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:19.020-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:19.021-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:19.028-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:19.038-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:19.046-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:19.051-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:19.056-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:19.060-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:19.068-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:19.074-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:19.077-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.025s)
+2026-10-22T12:33:19.119-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:19.123-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:19.196-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:19.196-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:19.197-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T12:33:19.202-05:00  INFO 27592 --- [           main] p.t.m.community.IdentityIntegrationTest  : Started IdentityIntegrationTest in 0.574 seconds (process running for 18.139)
+2026-10-22T12:33:19.592-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/login' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.685 s -- in pe.tecsup.main.community.IdentityIntegrationTest
+[INFO] Running pe.tecsup.main.community.MessageAttachmentIntegrationTest
+2026-10-22T12:33:21.309-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.MessageAttachmentIntegrationTest]: MessageAttachmentIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:21.311-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.MessageAttachmentIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:21.332-05:00  INFO 27592 --- [           main] p.t.m.c.MessageAttachmentIntegrationTest : Starting MessageAttachmentIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:21.332-05:00  INFO 27592 --- [           main] p.t.m.c.MessageAttachmentIntegrationTest : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:21.574-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Starting...
+2026-10-22T12:33:21.576-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-8 - Added connection conn70: url=jdbc:h2:mem:attachment_tests user=SA
+2026-10-22T12:33:21.576-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Start completed.
+2026-10-22T12:33:21.576-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:attachment_tests (H2 2.3)
+2026-10-22T12:33:21.577-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:21.583-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:21.583-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-10-22T12:33:21.584-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:21.587-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:21.588-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:21.593-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:21.603-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:21.609-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:21.613-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:21.616-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:21.621-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:21.628-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:21.634-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:21.638-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.024s)
+2026-10-22T12:33:21.687-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:21.690-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:21.762-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:21.762-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:21.762-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T12:33:21.770-05:00  INFO 27592 --- [           main] p.t.m.c.MessageAttachmentIntegrationTest : Started MessageAttachmentIntegrationTest in 0.456 seconds (process running for 20.707)
+2026-10-22T12:33:22.067-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/messages/d39ce9e9-6d94-4401-84f5-07ebcd1ea3ce/attachment' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.966 s -- in pe.tecsup.main.community.MessageAttachmentIntegrationTest
+[INFO] Running pe.tecsup.main.community.NotificationIntegrationTest
+2026-10-22T12:33:22.276-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.NotificationIntegrationTest]: NotificationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:22.278-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.NotificationIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:22.304-05:00  INFO 27592 --- [           main] p.t.m.c.NotificationIntegrationTest      : Starting NotificationIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:22.304-05:00  INFO 27592 --- [           main] p.t.m.c.NotificationIntegrationTest      : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:22.532-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-9 - Starting...
+2026-10-22T12:33:22.533-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-9 - Added connection conn80: url=jdbc:h2:mem:notice_tests user=SA
+2026-10-22T12:33:22.534-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-9 - Start completed.
+2026-10-22T12:33:22.534-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:notice_tests (H2 2.3)
+2026-10-22T12:33:22.535-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:22.542-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:22.542-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.006s)
+2026-10-22T12:33:22.543-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:22.545-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:22.547-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:22.553-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:22.560-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:22.567-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:22.571-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:22.574-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:22.579-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:22.585-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:22.589-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:22.592-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.020s)
+2026-10-22T12:33:22.638-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:22.642-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:22.715-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:22.716-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:22.716-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T12:33:22.721-05:00  INFO 27592 --- [           main] p.t.m.c.NotificationIntegrationTest      : Started NotificationIntegrationTest in 0.44 seconds (process running for 21.658)
+2026-10-22T12:33:23.038-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/notifications' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.794 s -- in pe.tecsup.main.community.NotificationIntegrationTest
+[INFO] Running pe.tecsup.main.community.OpenAiGatewayTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.256 s -- in pe.tecsup.main.community.OpenAiGatewayTest
+[INFO] Running pe.tecsup.main.community.PersistenceRestartTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:23.366-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.2 using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:23.366-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:23.749-05:00  INFO 27592 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-22T12:33:23.769-05:00  INFO 27592 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-22T12:33:23.770-05:00  INFO 27592 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-10-22T12:33:23.864-05:00  INFO 27592 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-22T12:33:23.864-05:00  INFO 27592 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 496 ms
+2026-10-22T12:33:23.946-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Starting...
+2026-10-22T12:33:23.993-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-10 - Added connection conn90: url=jdbc:h2:file:C:\Users\Chory\AppData\Local\Temp\junit-5385900786012958046\persistent user=SA
+2026-10-22T12:33:23.993-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Start completed.
+2026-10-22T12:33:23.994-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:file:C:\Users\Chory\AppData\Local\Temp\junit-5385900786012958046\persistent (H2 2.3)
+2026-10-22T12:33:23.995-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:24.001-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:24.001-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-10-22T12:33:24.001-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:24.007-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:24.008-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:24.014-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:24.023-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:24.030-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:24.033-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:24.036-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:24.041-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:24.046-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:24.052-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:24.054-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.022s)
+2026-10-22T12:33:24.088-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:24.092-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:24.177-05:00  INFO 27592 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 60868 (http) with context path '/'
+2026-10-22T12:33:24.182-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.842 seconds (process running for 23.118)
+2026-10-22T12:33:24.580-05:00  INFO 27592 --- [           main] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-22T12:33:24.584-05:00  INFO 27592 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-10-22T12:33:24.588-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Shutdown initiated...
+2026-10-22T12:33:24.596-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:24.626-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.2 using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:24.626-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:24.841-05:00  INFO 27592 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-22T12:33:24.841-05:00  INFO 27592 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-22T12:33:24.841-05:00  INFO 27592 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-10-22T12:33:24.877-05:00  INFO 27592 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-22T12:33:24.878-05:00  INFO 27592 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 249 ms
+2026-10-22T12:33:24.904-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-11 - Starting...
+2026-10-22T12:33:24.950-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-11 - Added connection conn100: url=jdbc:h2:file:C:\Users\Chory\AppData\Local\Temp\junit-5385900786012958046\persistent user=SA
+2026-10-22T12:33:24.951-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-11 - Start completed.
+2026-10-22T12:33:24.952-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:file:C:\Users\Chory\AppData\Local\Temp\junit-5385900786012958046\persistent (H2 2.3)
+2026-10-22T12:33:24.952-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:24.964-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.010s)
+2026-10-22T12:33:24.968-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": 9
+2026-10-22T12:33:24.969-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Schema "PUBLIC" is up to date. No migration necessary.
+2026-10-22T12:33:25.008-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:25.012-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:25.070-05:00  INFO 27592 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 60870 (http) with context path '/'
+2026-10-22T12:33:25.074-05:00  INFO 27592 --- [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.471 seconds (process running for 24.011)
+2026-10-22T12:33:25.394-05:00  INFO 27592 --- [           main] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-22T12:33:25.396-05:00  INFO 27592 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-10-22T12:33:25.398-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-11 - Shutdown initiated...
+2026-10-22T12:33:25.412-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-11 - Shutdown completed.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.092 s -- in pe.tecsup.main.community.PersistenceRestartTest
+[INFO] Running pe.tecsup.main.community.StatusIntegrationTest
+2026-10-22T12:33:25.423-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.community.StatusIntegrationTest]: StatusIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:25.426-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.community.StatusIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:25.461-05:00  INFO 27592 --- [           main] p.t.m.community.StatusIntegrationTest    : Starting StatusIntegrationTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:25.461-05:00  INFO 27592 --- [           main] p.t.m.community.StatusIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:25.656-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-12 - Starting...
+2026-10-22T12:33:25.657-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-12 - Added connection conn110: url=jdbc:h2:mem:statuses_test user=SA
+2026-10-22T12:33:25.658-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-12 - Start completed.
+2026-10-22T12:33:25.658-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:statuses_test (H2 2.3)
+2026-10-22T12:33:25.659-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:25.664-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+2026-10-22T12:33:25.664-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-10-22T12:33:25.664-05:00  INFO 27592 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+2026-10-22T12:33:25.668-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": << Empty Schema >>
+2026-10-22T12:33:25.669-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "1 - academic schema"
+2026-10-22T12:33:25.674-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "2 - identity privacy and timetable"
+2026-10-22T12:33:25.682-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "3 - moderated communication"
+2026-10-22T12:33:25.687-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "4 - assistant usage"
+2026-10-22T12:33:25.690-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "5 - notification inbox"
+2026-10-22T12:33:25.692-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "6 - course grades"
+2026-10-22T12:33:25.696-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "7 - status updates"
+2026-10-22T12:33:25.701-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "8 - administrative audit"
+2026-10-22T12:33:25.706-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "PUBLIC" to version "9 - private message attachments"
+2026-10-22T12:33:25.708-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "PUBLIC", now at version v9 (execution time 00:00.015s)
+2026-10-22T12:33:25.745-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:25.748-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:25.819-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:25.819-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:25.820-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T12:33:25.824-05:00  INFO 27592 --- [           main] p.t.m.community.StatusIntegrationTest    : Started StatusIntegrationTest in 0.395 seconds (process running for 24.761)
+2026-10-22T12:33:26.564-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/v1/statuses/x/delete' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.311 s -- in pe.tecsup.main.community.StatusIntegrationTest
+[INFO] Running pe.tecsup.main.DjangoAdministrationBoundaryTest
+2026-10-22T12:33:26.733-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.DjangoAdministrationBoundaryTest]: DjangoAdministrationBoundaryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:26.735-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.DjangoAdministrationBoundaryTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2026-10-22T12:33:26.758-05:00  INFO 27592 --- [           main] p.t.m.DjangoAdministrationBoundaryTest   : Starting DjangoAdministrationBoundaryTest using Java 21.0.12.1 with PID 27592 (started by Chory in C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery)
+2026-10-22T12:33:26.758-05:00  INFO 27592 --- [           main] p.t.m.DjangoAdministrationBoundaryTest   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T12:33:26.988-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-13 - Starting...
+2026-10-22T12:33:26.988-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-13 - Added connection conn120: url=jdbc:h2:mem:main user=SA
+2026-10-22T12:33:26.989-05:00  INFO 27592 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-13 - Start completed.
+2026-10-22T12:33:26.989-05:00  INFO 27592 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:main (H2 2.3)
+2026-10-22T12:33:26.990-05:00  WARN 27592 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.3.232 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.224.
+2026-10-22T12:33:26.998-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.007s)
+2026-10-22T12:33:27.000-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "PUBLIC": 9
+2026-10-22T12:33:27.000-05:00  INFO 27592 --- [           main] o.f.core.internal.command.DbMigrate      : Schema "PUBLIC" is up to date. No migration necessary.
+2026-10-22T12:33:27.045-05:00  INFO 27592 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name identityService
+2026-10-22T12:33:27.049-05:00  INFO 27592 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-10-22T12:33:27.123-05:00  INFO 27592 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T12:33:27.123-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T12:33:27.124-05:00  INFO 27592 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T12:33:27.128-05:00  INFO 27592 --- [           main] p.t.m.DjangoAdministrationBoundaryTest   : Started DjangoAdministrationBoundaryTest in 0.39 seconds (process running for 26.065)
+2026-10-22T12:33:27.350-05:00  WARN 27592 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/admin/v1/users' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.626 s -- in pe.tecsup.main.DjangoAdministrationBoundaryTest
+[INFO] Running pe.tecsup.main.PortalSessionTest
+2026-10-22T12:33:27.361-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.PortalSessionTest]: PortalSessionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:27.363-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.PortalSessionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.269 s -- in pe.tecsup.main.PortalSessionTest
+[INFO] Running pe.tecsup.main.SharedIdentitySessionTest
+2026-10-22T12:33:27.633-05:00  INFO 27592 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [pe.tecsup.main.SharedIdentitySessionTest]: SharedIdentitySessionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T12:33:27.635-05:00  INFO 27592 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration pe.tecsup.main.MainApplication for test class pe.tecsup.main.SharedIdentitySessionTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.366 s -- in pe.tecsup.main.SharedIdentitySessionTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 107, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ main-sprint1 ---
+[INFO] Building jar: C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery\target\main-sprint1-0.1.0.jar
+[INFO] 
+[INFO] --- spring-boot:3.4.1:repackage (repackage) @ main-sprint1 ---
+[INFO] Replacing main artifact C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery\target\main-sprint1-0.1.0.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to C:\Users\Chory\Documents\Codex\2026-10-18\referenced-chatgpt-conversation-this-is-an\work\main-trello-jery\target\main-sprint1-0.1.0.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  32.144 s
+[INFO] Finished at: 2026-10-22T12:33:30-05:00
+[INFO] ------------------------------------------------------------------------

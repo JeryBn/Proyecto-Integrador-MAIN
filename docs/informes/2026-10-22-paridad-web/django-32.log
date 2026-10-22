@@ -1,0 +1,51 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+Found 32 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: administration
+  Apply all migrations: sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+test_academic_access_pagination_and_audit_read_only (administration.tests.AdministrationTests.test_academic_access_pagination_and_audit_read_only) ... ok
+test_academic_audit_failure_rolls_back_course (administration.tests.AdministrationTests.test_academic_audit_failure_rolls_back_course) ... ok
+test_anonymous_cannot_read_or_create (administration.tests.AdministrationTests.test_anonymous_cannot_read_or_create) ... ok
+test_audit_failure_rolls_back_creation (administration.tests.AdministrationTests.test_audit_failure_rolls_back_creation) ... ok
+test_course_create_edit_and_stale_version (administration.tests.AdministrationTests.test_course_create_edit_and_stale_version) ... ok
+test_course_validation_teacher_and_timetable (administration.tests.AdministrationTests.test_course_validation_teacher_and_timetable) ... ok
+test_create_contract_audit_and_duplicate_do_not_overwrite (administration.tests.AdministrationTests.test_create_contract_audit_and_duplicate_do_not_overwrite) ... ok
+test_csrf_required_even_for_login (administration.tests.AdministrationTests.test_csrf_required_even_for_login) ... ok
+test_enrollment_idempotent_and_revoke_disabled_student (administration.tests.AdministrationTests.test_enrollment_idempotent_and_revoke_disabled_student) ... ok
+test_grade_contract_conflict_and_revoked_enrollment (administration.tests.AdministrationTests.test_grade_contract_conflict_and_revoked_enrollment) ... ok
+test_grade_rejects_invalid_numbers_and_rolls_back_audit_failure (administration.tests.AdministrationTests.test_grade_rejects_invalid_numbers_and_rolls_back_audit_failure) ... ok
+test_guardian_contact_idempotency_and_revocation (administration.tests.AdministrationTests.test_guardian_contact_idempotency_and_revocation) ... ok
+test_identity_creation_hashes_and_atomic_conflicts (administration.tests.AdministrationTests.test_identity_creation_hashes_and_atomic_conflicts) ... ok
+test_identity_creation_rolls_back_academic_row_when_audit_fails (administration.tests.AdministrationTests.test_identity_creation_rolls_back_academic_row_when_audit_fails) ... ok
+test_identity_reset_disable_and_admin_protection (administration.tests.AdministrationTests.test_identity_reset_disable_and_admin_protection) ... ok
+test_invalid_numbers_strings_unknown_fields_and_dates (administration.tests.AdministrationTests.test_invalid_numbers_strings_unknown_fields_and_dates) ... ok
+test_login_rotates_csrf_and_session_and_logout_invalidates_cookie (administration.tests.AdministrationTests.test_login_rotates_csrf_and_session_and_logout_invalidates_cookie) ... ok
+test_login_throttle (administration.tests.AdministrationTests.test_login_throttle) ... ok
+test_malformed_json_and_non_object (administration.tests.AdministrationTests.test_malformed_json_and_non_object) ... ok
+test_moderation_attachment_requires_review_and_integrity (administration.tests.AdministrationTests.test_moderation_attachment_requires_review_and_integrity) ... ok
+test_moderation_authentication_csrf_and_page_assets (administration.tests.AdministrationTests.test_moderation_authentication_csrf_and_page_assets) ... ok
+test_moderation_blocked_sender_stale_revision_and_audit_rollback (administration.tests.AdministrationTests.test_moderation_blocked_sender_stale_revision_and_audit_rollback) ... ok
+test_moderation_message_contract_publish_and_notification_once (administration.tests.AdministrationTests.test_moderation_message_contract_publish_and_notification_once) ... ok
+test_pagination_order_and_detail (administration.tests.AdministrationTests.test_pagination_order_and_detail) ... ok
+test_password_change_invalidates_session (administration.tests.AdministrationTests.test_password_change_invalidates_session) ... ok
+test_react_assets_and_unsupported_operations (administration.tests.AdministrationTests.test_react_assets_and_unsupported_operations) ... ok
+test_revoked_account_or_role_invalidates_session (administration.tests.AdministrationTests.test_revoked_account_or_role_invalidates_session) ... ok
+test_status_review_expiry_hash_and_explicit_attachment (administration.tests.AdministrationTests.test_status_review_expiry_hash_and_explicit_attachment) ... ok
+test_student_never_gets_admin_session (administration.tests.AdministrationTests.test_student_never_gets_admin_session) ... ok
+test_timetable_overlap_and_removal (administration.tests.AdministrationTests.test_timetable_overlap_and_removal) ... ok
+test_unknown_course_and_missing_fields (administration.tests.AdministrationTests.test_unknown_course_and_missing_fields) ... ok
+test_wrong_disabled_and_unknown_accounts (administration.tests.AdministrationTests.test_wrong_disabled_and_unknown_accounts) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 8.073s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).
