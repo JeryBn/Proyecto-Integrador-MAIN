@@ -1,0 +1,139 @@
+{
+  "timestampUTC": "2026-10-22T17:38:17.539497+00:00",
+  "checks": [
+    {
+      "name": "student_login",
+      "passed": true
+    },
+    {
+      "name": "peer_login",
+      "passed": true
+    },
+    {
+      "name": "teacher_login",
+      "passed": true
+    },
+    {
+      "name": "family_login",
+      "passed": true
+    },
+    {
+      "name": "outsider_login",
+      "passed": true
+    },
+    {
+      "name": "corrected_revision_persists",
+      "passed": true
+    },
+    {
+      "name": "correction_mark_persists",
+      "passed": true
+    },
+    {
+      "name": "cancelled_message_not_delivered",
+      "passed": true
+    },
+    {
+      "name": "android_photo_persists",
+      "passed": true
+    },
+    {
+      "name": "outsider_chat_denied",
+      "passed": true
+    },
+    {
+      "name": "outsider_messages_denied",
+      "passed": true
+    },
+    {
+      "name": "txt_download_authorized",
+      "passed": true
+    },
+    {
+      "name": "txt_bytes_persist",
+      "passed": true
+    },
+    {
+      "name": "outsider_file_denied",
+      "passed": true
+    },
+    {
+      "name": "revoked_group_denied",
+      "passed": true
+    },
+    {
+      "name": "promoted_group_admin_persists",
+      "passed": true
+    },
+    {
+      "name": "private_status_not_shared",
+      "passed": true
+    },
+    {
+      "name": "private_status_media_denied",
+      "passed": true
+    },
+    {
+      "name": "shared_text_persists",
+      "passed": true
+    },
+    {
+      "name": "shared_video_persists",
+      "passed": true
+    },
+    {
+      "name": "shared_audio_persists",
+      "passed": true
+    },
+    {
+      "name": "outsider_status_empty",
+      "passed": true
+    },
+    {
+      "name": "family_status_publish_denied",
+      "passed": true
+    },
+    {
+      "name": "web_grade_persists",
+      "passed": true
+    },
+    {
+      "name": "family_verified_student",
+      "passed": true
+    },
+    {
+      "name": "outsider_has_no_courses",
+      "passed": true
+    },
+    {
+      "name": "stale_identity_read_rejected",
+      "passed": true
+    },
+    {
+      "name": "stale_identity_write_rejected",
+      "passed": true
+    },
+    {
+      "name": "stale_identity_logout_rejected",
+      "passed": true
+    },
+    {
+      "name": "correct_session_survives_stale_logout",
+      "passed": true
+    },
+    {
+      "name": "preferences_not_changed_by_stale_tab",
+      "passed": true
+    },
+    {
+      "name": "packaged_asset_http_ok",
+      "passed": true
+    },
+    {
+      "name": "packaged_asset_equals_build",
+      "passed": true
+    }
+  ],
+  "passed": 33,
+  "limitation": "Solo entorno local y datos sintéticos; no incluye aceptación ni éxito del proveedor IA."
+}

@@ -1,8 +1,14 @@
 # Proyecto Integrador MAIN - seccion A
 
-## Actualización del 22 de octubre de 2026
+## Paridad web de usuarios — 22 de octubre de 2026
 
-[Migración de la administración restante a Django](docs/MIGRACION_DJANGO_22_OCT.md): cuentas, parentescos, contactos/reportes, cursos/matrículas, horarios, notas, auditoría y moderación con adjuntos operan directamente sobre MySQL compartido. Spring mantiene usuarios y Android; el iniciador cierra su API administrativa histórica. Verificados 104 casos de servidor, 32 Django y recorridos HTTP reales por módulo. La aceptación del equipo, paridad web completa y despliegue público siguen pendientes.
+La web ahora incluye Inicio académico, chats privados/grupos e invitaciones, adjuntos, estados multimedia con respuesta privada, IA, perfil/privacidad y avisos. Conserva cursos/notas: docente registra/edita y estudiante consulta. Comparte API y datos con Android; administración continúa en Django. [Matriz y límites de paridad](docs/PARIDAD_WEB_22_OCT.md), [guía de prueba y traspaso](docs/GUIA_PARIDAD_WEB_ANDROID.md) y [evidencias actuales](docs/informes/2026-10-22-paridad-web/LEEME.md).
+
+Verificados 107 Spring, 32 Django, 19 cliente, 9 Android/MySQL, 39 comprobaciones de navegador y 33 HTTP después de reiniciar. El cruce multimedia ampliado pasó en una repetición del mismo caso, sin inflar el número de pruebas distintas. IA responde con falta de cuota/saldo real; cámara web, dispositivo físico, push, carga sostenida y aceptación no están certificados. Los Word/PDF anteriores son cortes históricos de administración, no un informe de esta nueva paridad.
+
+## Corte administrativo del 22 de octubre de 2026
+
+[Migración de la administración restante a Django](docs/MIGRACION_DJANGO_22_OCT.md): cuentas, parentescos, contactos/reportes, cursos/matrículas, horarios, notas, auditoría y moderación con adjuntos operan directamente sobre MySQL compartido. Spring mantiene usuarios y Android; el iniciador cierra su API administrativa histórica. Verificados 104 casos de servidor, 32 Django y recorridos HTTP reales por módulo. Este corte precede la nueva paridad descrita arriba; aceptación del equipo y despliegue público siguen pendientes.
 
 [Informe del 22 de octubre en Word](docs/informes/2026-10-22-django/MAIN_Migracion_Django_22_octubre_2026.docx) y [PDF de tres páginas](docs/informes/2026-10-22-django/MAIN_Migracion_Django_22_octubre_2026.pdf), con cambios, responsables originales, pruebas y pendientes. También pasaron 3 casos Android/MySQL y 4 del formulario web en este corte.
 

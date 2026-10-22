@@ -1,0 +1,158 @@
+[
+  {
+    "name": "inicio_curso_nota_horario_y_tarea_autorizados",
+    "passed": true
+  },
+  {
+    "name": "busqueda_vacia_conserva_inicio",
+    "passed": true
+  },
+  {
+    "name": "detalle_autorizado_y_regreso",
+    "passed": true
+  },
+  {
+    "name": "perfil_tema_oscuro_confirmado_por_servidor",
+    "passed": true
+  },
+  {
+    "name": "mensaje_web_pendiente_oculto_al_receptor_y_sin_aviso_HTTP",
+    "passed": true
+  },
+  {
+    "name": "rechazo_visible_y_correccion_web_vuelve_a_revision",
+    "passed": true
+  },
+  {
+    "name": "version_aprobada_con_marca_y_respuesta_pendiente_oculta",
+    "passed": true
+  },
+  {
+    "name": "borrador_chat_conservado_al_navegar",
+    "passed": true
+  },
+  {
+    "name": "respuesta_aprobada_recibida_web",
+    "passed": true
+  },
+  {
+    "name": "aviso_aprobado_marcar_leido_y_abrir_chat",
+    "passed": true
+  },
+  {
+    "name": "adjunto_TXT_subido_por_selector_web_y_pendiente_privado_HTTP",
+    "passed": true
+  },
+  {
+    "name": "grupo_creado_invitaciones_y_ultimo_administrador_protegido",
+    "passed": true
+  },
+  {
+    "name": "estado_texto_y_foto_privada_creados_en_web_pendientes",
+    "passed": true
+  },
+  {
+    "check": "ia_real_cuota_agotada_sin_reintento_automatico",
+    "passed": true
+  },
+  {
+    "check": "grupo_invitado_sin_historial_acepta_en_web",
+    "passed": true
+  },
+  {
+    "check": "txt_aprobado_visible_al_receptor",
+    "passed": true
+  },
+  {
+    "check": "contacto_ve_solo_estado_aprobado_contactos_y_no_foto_privada",
+    "passed": true
+  },
+  {
+    "check": "visor_marca_estado_visto",
+    "passed": true
+  },
+  {
+    "check": "bloquear_contacto_revoca_estados_y_deshabilita_chat",
+    "passed": true
+  },
+  {
+    "check": "reporte_sintetico_enviado_desde_web_y_silencio_restaurado",
+    "passed": true
+  },
+  {
+    "check": "docente_edita_nota_18_a_19_desde_web",
+    "passed": true
+  },
+  {
+    "check": "docente_registra_nueva_nota_desde_web",
+    "passed": true
+  },
+  {
+    "check": "familiar_ve_estudiante_y_cursos_vinculados_sin_publicar_estados",
+    "passed": true
+  },
+  {
+    "check": "alumno_ve_nota_editada_por_docente_desde_web",
+    "passed": true
+  },
+  {
+    "check": "video_y_audio_reales_subidos_desde_web_para_revision",
+    "passed": true
+  },
+  {
+    "check": "grupo_promover_administrador_desde_web",
+    "passed": true
+  },
+  {
+    "check": "salir_grupo_despues_designar_otro_admin_revoca_acceso",
+    "passed": true
+  },
+  {
+    "check": "video_y_audio_aprobados_cargan_controles_y_metadatos_sin_autoplay",
+    "passed": true
+  },
+  {
+    "check": "ancho_390_chat_sin_desborde_avisos_y_cinco_secciones_visibles",
+    "passed": true
+  },
+  {
+    "check": "otra_pestana_cambia_cuenta_descarta_chat_borrador_y_datos_previos",
+    "passed": true
+  },
+  {
+    "check": "ajeno_enlace_directo_chat_muestra_recurso_no_disponible_sin_mensajes",
+    "passed": true
+  },
+  {
+    "check": "mensaje_creado_en_android_aprobado_django_recibido_en_ui_web",
+    "passed": true
+  },
+  {
+    "check": "estado_creado_android_aprobado_django_visible_en_visor_web",
+    "passed": true
+  },
+  {
+    "check": "foto_privada_propietario_carga_imagen_64px",
+    "passed": true
+  },
+  {
+    "check": "responder_estado_abre_chat_privado_con_autor",
+    "passed": true
+  },
+  {
+    "check": "confirmacion_main_cancelar_no_muta_confirmar_cancela_mensaje_pendiente",
+    "passed": true
+  },
+  {
+    "check": "confirmacion_bloqueo_escape_cancela_sin_modificar_contacto",
+    "passed": true
+  },
+  {
+    "check": "eliminar_estado_propio_desechable_confirmado_desde_web",
+    "passed": true
+  },
+  {
+    "check": "foto_android_aprobada_visible_en_chat_web_tras_reinicio",
+    "passed": true
+  }
+]

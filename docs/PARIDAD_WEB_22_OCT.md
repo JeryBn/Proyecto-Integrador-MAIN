@@ -6,13 +6,25 @@ Trabajo asistido por indicación de Jery Becerra Ninaquispe. M21 conserva su asi
 
 | Módulo | Android y API existentes | Web en este incremento |
 | --- | --- | --- |
-| Acceso, actividades, agenda y notas | Implementados; evidencia histórica y 3 Android/MySQL del corte anterior | Conservados; inicio agrupa tareas y cursos/notas; regresión visual final pendiente |
-| Perfil, ajustes y contactos | Preferencias y contactos en API v1 | Implementados: tema, avisos, audiencia, bloqueo/silencio y reportes; pruebas de cliente correctas; recorrido real final pendiente |
-| Avisos | Lista y lectura paginadas por permisos | Implementados con actualización visible y paginación; recorrido real final pendiente |
-| Privados y grupos | Conversaciones, invitaciones, roles, revisión y mensajes v1 | Implementados: búsqueda, privados, grupos, invitaciones, miembros, roles, salida, edición/corrección/cancelación; recorrido conjunto final pendiente |
-| Adjuntos | Imagen, video, audio y TXT; revisión previa | Interfaz implementada con subida, progreso, cancelación de espera, reintento idempotente y visor autorizado; recorrido conjunto final pendiente |
-| Estados | Texto/multimedia; audiencia y caducidad; familiar no publica | Creación, audiencia, visor/secuencia, vistos, eliminación y borrador implementados; recorrido real conjunto pendiente |
-| Asistente | Servicio existente y clave autorizada; cuota agotada en corte previo | Interfaz conectada, consulta/recuperación/cancelación y error real del servicio implementados; comprobación real pendiente |
+| Acceso, actividades, agenda y notas | Implementados; evidencia histórica y 3 Android/MySQL del corte anterior | Conservados; inicio agrupa tareas y cursos/notas; recorrido web real aprobado: tareas, búsqueda/detalle, nota 18→19 y horario; Android lee 19 tras guardar en web |
+| Perfil, ajustes y contactos | Preferencias y contactos en API v1 | Implementados: tema, avisos, audiencia, bloqueo/silencio y reportes; tema, bloqueo con revocación de estados, silencio/restauración y reporte sintético probados en navegador |
+| Avisos | Lista y lectura paginadas por permisos | Implementados con actualización visible y paginación; lista, lectura y enlace a conversación probados; avisos accesibles en 390 px |
+| Privados y grupos | Conversaciones, invitaciones, roles, revisión y mensajes v1 | Implementados: búsqueda, privados, grupos, invitaciones, miembros, roles, salida, edición/corrección/cancelación; grupo creado, invitación aceptada, promoción y salida probadas; Android respeta membresía revocada |
+| Adjuntos | Imagen, video, audio y TXT; revisión previa | Subida, progreso, cancelación/reintento idempotente y visor autorizado implementados. TXT web leído en Android; foto Android cargada en web; video/audio de estados web descargados en Android; los cuatro tipos de mensaje pasan la suite Android/API |
+| Estados | Texto/multimedia; audiencia y caducidad; familiar no publica | Creación, audiencia, visor/secuencia, vistos, eliminación y borrador implementados; texto/foto/video/audio subidos desde web; visor y privacidad, vistos, eliminación y respuesta privada probados; cruce Android aprobado |
+| Asistente | Servicio existente y clave autorizada; cuota agotada en corte previo | Interfaz conectada, consulta/recuperación/cancelación y error real del servicio implementados; consulta real devolvió cuota/saldo agotado; no hay respuesta generada verificada |
+
+## Resultado final de este incremento
+
+- 39 comprobaciones de navegador registradas en `browser-checks.json`; 33 HTTP tras reinicio en `after-restart.json`.
+- Regresión: 107 Spring, 32 Django, 19 cliente y 9 casos distintos Android/MySQL aprobados. El puente ampliado de grupos/medios se repitió aparte y también pasó; no se suma como décimo caso distinto.
+- En ambos sentidos: mensaje y estado creados en Android llegan a web tras moderación; mensaje corregido y TXT web se leen en Android. Video/audio web se descargan en Android; foto Android aparece con 8 px en web. Privacidad, usuario ajeno, familiar y grupo revocado conservan autorización del servidor.
+- Datos conservados tras reiniciar el JAR: notas, texto/medios, roles y preferencias. Los recursos HTTP coinciden por SHA-256 con la compilación empaquetada; no se depende del directorio externo de desarrollo.
+- Confirmaciones internas con Cancelar/Confirmar/Escape verificadas; un diálogo nativo bloqueó la pestaña de pruebas anterior. El flujo ahora evita ese bloqueo. Se corrigieron también avisos móviles, refresco académico e invitaciones duplicadas.
+- IA real bloqueada por falta de cuota/saldo del proyecto de OpenAI. Se conserva la clave autorizada; no se crea otra ni se informa éxito falso.
+- Límites: no se certifican cámara/micrófono de navegador (subida de archivo), teléfono físico, push con app cerrada, carga sostenida, red móvil prolongada o aceptación humana. Son pendientes separados; las tarjetas globales pasan a revisión, no a finalización total.
+
+[Guía de traspaso y repetición](GUIA_PARIDAD_WEB_ANDROID.md). [Resultados y capturas](informes/2026-10-22-paridad-web/LEEME.md). Los apartados siguientes describen la evidencia incremental en el momento de cada commit, anterior a la ronda final.
 
 ## Primer incremento de perfil y sesión
 
