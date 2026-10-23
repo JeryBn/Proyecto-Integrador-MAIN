@@ -1,0 +1,150 @@
+[
+  {
+    "screen": "Inicio",
+    "width": 320,
+    "height": 740,
+    "clientWidth": 305,
+    "documentWidth": 305,
+    "headings": [
+      "Tu espacio académico",
+      "Cursos y notas"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Chats",
+    "width": 320,
+    "height": 740,
+    "clientWidth": 320,
+    "documentWidth": 320,
+    "headings": [
+      "Chats"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Estados",
+    "width": 320,
+    "height": 740,
+    "clientWidth": 320,
+    "documentWidth": 320,
+    "headings": [
+      "Estados"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "IA",
+    "width": 320,
+    "height": 740,
+    "clientWidth": 305,
+    "documentWidth": 305,
+    "headings": [
+      "Asistente académico"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Perfil",
+    "width": 320,
+    "height": 740,
+    "clientWidth": 305,
+    "documentWidth": 305,
+    "headings": [
+      "Perfil y ajustes"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Inicio",
+    "width": 640,
+    "height": 800,
+    "clientWidth": 625,
+    "documentWidth": 625,
+    "headings": [
+      "Tu espacio académico",
+      "Cursos y notas"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Inicio",
+    "width": 768,
+    "height": 800,
+    "clientWidth": 753,
+    "documentWidth": 753,
+    "headings": [
+      "Tu espacio académico",
+      "Cursos y notas"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Inicio",
+    "width": 1280,
+    "height": 900,
+    "clientWidth": 1265,
+    "documentWidth": 1265,
+    "headings": [
+      "Tu espacio académico",
+      "Cursos y notas"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Chats",
+    "width": 1280,
+    "height": 900,
+    "clientWidth": 1280,
+    "documentWidth": 1280,
+    "headings": [
+      "Chats"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Estados",
+    "width": 1280,
+    "height": 900,
+    "clientWidth": 1280,
+    "documentWidth": 1280,
+    "headings": [
+      "Estados"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "IA",
+    "width": 1280,
+    "height": 900,
+    "clientWidth": 1280,
+    "documentWidth": 1280,
+    "headings": [
+      "Asistente académico"
+    ],
+    "menuFits": true,
+    "overflow": false
+  },
+  {
+    "screen": "Perfil",
+    "width": 1280,
+    "height": 900,
+    "clientWidth": 1265,
+    "documentWidth": 1265,
+    "headings": [
+      "Perfil y ajustes"
+    ],
+    "menuFits": true,
+    "overflow": false
+  }
+]

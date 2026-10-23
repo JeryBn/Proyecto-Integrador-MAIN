@@ -14,3 +14,38 @@
 @media(max-width:640px){.sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:20;display:flex;flex-direction:row;align-items:stretch;gap:2px;overflow-x:auto;width:100%;height:66px;padding:4px 6px;border-top:1px solid var(--border);border-right:0}.sidebar .brand,.sidebar .workspace-label,.sidebar-bottom{display:none}.sidebar .nav-item{padding:12px 8px;display:flex;align-items:center;justify-content:center;min-width:64px;flex:1;font-size:12px;text-align:center}.main-area{padding-bottom:76px;width:100%}.topbar nav{display:none}.topbar{min-height:64px}.content{padding:18px 12px}.user-panel{padding:18px 14px}.user-panel h1{font-size:27px}.row-actions button{flex:1}.contact-list>li{align-items:flex-start}.profile-heading{gap:12px}.settings-list,.card-form{padding:14px}.summary-grid small{font-size:11px}.summary-grid span{font-size:11px}.summary-grid article{padding:12px 8px}.summary-grid strong{font-size:25px}.activity-body h3{font-size:15px}.course-label,.deadline{font-size:12px}.user-area{font-size:13px}.text-button{font-size:13px;min-height:42px}.activity-card{padding:14px 10px}.activity-side{padding-left:0}.detail-button{font-size:13px}.badge{font-size:12px}.card-form button{max-width:100%;overflow-wrap:anywhere}}
 
 .confirmation-dialog{max-width:min(480px,calc(100vw - 32px));border:1px solid var(--border);border-radius:16px;padding:24px;background:var(--surface);color:var(--ink)}.confirmation-dialog::backdrop{background:#10182099}.confirmation-dialog h2{margin-top:0}.confirmation-dialog p{overflow-wrap:anywhere}
+
+/* M04: allow narrow screens and enlarged text to reflow without hiding controls. */
+.content{width:100%;min-width:0}
+.page-heading,.list-heading,.topbar,.user-area,.filter-row,.metadata{flex-wrap:wrap}
+.page-heading>div,.list-heading>div,.user-area>span{min-width:0;overflow-wrap:anywhere}
+.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.summary-grid article,.list-panel,.detail-panel,.user-panel{min-width:0}
+.summary-grid span,.summary-grid small,.activity-body,.instructions,.metadata{overflow-wrap:anywhere}
+.search-label{max-width:100%;min-width:0}
+.breadcrumb{white-space:normal}
+.user-area{max-width:100%;gap:12px}
+.app-shell .chip,.app-shell .detail-button,.app-shell .back-button,.app-shell .text-button{min-height:44px}
+.app-shell button,.nav-item,.notice-button{overflow-wrap:anywhere}
+.skip-link{position:fixed;top:8px;left:8px;z-index:100;padding:12px 16px;background:var(--surface);color:var(--ink);border:2px solid var(--purple);border-radius:8px;transform:translateY(-200%)}
+.skip-link:focus{transform:translateY(0);outline:3px solid var(--purple)}
+@media(max-width:640px){
+  .sidebar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:auto;min-height:66px;overflow:visible;padding:4px}
+  .sidebar .nav-item{min-width:0;padding:10px 2px;font-size:.75rem;min-height:54px;white-space:normal}
+  .main-area{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  .sidebar{padding-bottom:calc(4px + env(safe-area-inset-bottom))}
+  .topbar .user-area{margin-left:0;width:100%;justify-content:space-between}
+  .summary-grid span,.summary-grid small{font-size:.8125rem}
+  .activity-body h3{font-size:1rem}
+  .course-label,.deadline,.badge{font-size:.8125rem}
+  .activity-side{padding-left:0;gap:8px;flex-wrap:wrap}
+}
+@media(max-width:400px){
+  .summary-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .summary-grid article{padding:14px 16px}
+  .summary-grid strong{margin:5px 0}
+  .filter-row{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell *,.app-shell *::before,.app-shell *::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}

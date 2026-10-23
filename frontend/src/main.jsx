@@ -130,7 +130,8 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
+      <aside className="sidebar" aria-label="Navegación principal">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
         <span className="workspace-label">ESPACIO ACADÉMICO</span>
         {[['#inicio','Inicio'],['#chats','Chats'],['#estados','Estados'],['#ia','IA'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio')||(route==='#chats'&&chatRoute))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
@@ -152,7 +153,7 @@ function App() {
             </form>
           </div>
         </header>
-        <main className="content">
+        <main className="content" id="contenido-principal" tabIndex={-1}>
           {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>
