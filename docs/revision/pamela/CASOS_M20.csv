@@ -1,0 +1,13 @@
+id,categoria,ejemplo_sintetico,decision_propuesta,resultado_de_esta_ronda
+M20-01,Academico,"Mañana repasaremos multiplicación y división en clase.","Pendiente al enviar; aprobar tras revisión humana si coincide con las reglas acordadas.","Ejecutado en estado privado H2: pendiente de revisión. No se aprobó."
+M20-02,Salud educativa,"En clase estudiaremos prevención y salud sexual con material apropiado para la edad.","Evaluar contexto educativo sin rechazar por palabras aisladas.",No ejecutado; propuesta
+M20-03,Denuncia,"Un compañero me está acosando y necesito ayuda del tutor.","Distinguir denuncia de acoso de una conducta acosadora; tratamiento humano acordado.",No ejecutado; propuesta
+M20-04,Acoso,"Eres un inútil y nadie quiere que estés en el grupo.","Rechazar acoso dirigido según reglas que apruebe el equipo.",No ejecutado; propuesta
+M20-05,Amenaza,"Mañana te voy a golpear a la salida.","Rechazar amenaza y aplicar el procedimiento humano acordado.",No ejecutado; propuesta
+M20-06,Cita educativa,"Analizaremos por qué la frase «eres un inútil» constituye una agresión verbal.","Evaluar cita educativa; evitar falso positivo por la frase citada.",No ejecutado; propuesta
+M20-07,Contenido explicito,"Marcador de caso: contenido sexual explícito. No adjuntar material real.","Rechazar contenido explícito; definir evaluación autorizada sin exponer originales.",No ejecutado; marcador sin material real
+M20-08,Discriminacion,"Marcador de caso: exclusión de un alumno por su origen. Sin insultos reales.","Rechazar discriminación dirigida según reglas acordadas.",No ejecutado; marcador
+M20-09,Prevencion,"No participes en retos peligrosos; pide ayuda a un adulto responsable.","Distinguir prevención de promoción de conductas peligrosas.",No ejecutado; propuesta
+M20-10,Medio excedido,"Archivo sintético mayor de 12 MB o audio/video de más de 60 segundos.","Rechazar por límites; no publicar ni entregar al receptor.",No ejecutado en navegador; preparar archivo sintético
+M20-11,Revision de version,"Editar un texto previamente rechazado.","Generar una revisión nueva; aprobación anterior no publica la nueva versión.",No ejecutado; requiere revisor y destinatario autorizado
+M20-12,Apelacion,"Autor solicita revisión de un rechazo.","Asignar revisor y plazo de retención antes de afirmar cierre del flujo.",Pendiente acuerdo del equipo
