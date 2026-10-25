@@ -158,6 +158,11 @@ def notify(m):
 @mutation
 def review(request, kind, item_id):
     value=body(request, {'revision','contentHash','approved','reason','attachmentReviewed'})
+    return review_value(request,kind,item_id,value)
+
+
+def review_value(request,kind,item_id,value):
+    """Shared publication path; caller owns transaction and authorized identity."""
     if type(value.get('approved')) is not bool or not isinstance(value.get('contentHash'),str):
         raise ValueError('Decisión explícita y huella del contenido requeridas.')
     approved=value['approved'];state='APPROVED' if approved else 'REJECTED'

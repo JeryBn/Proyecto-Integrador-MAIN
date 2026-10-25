@@ -13,7 +13,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
-    moderation_tables=('notification','message_attachment_chunk','message_attachment','message_revision','message',
+    moderation_tables=('automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
     def setUpClass(cls):
@@ -32,7 +32,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -424,3 +424,72 @@ class AdministrationTests(TransactionTestCase):
         for path in ('/moderation.html','/moderation.js','/moderation.css'):
             self.assertEqual(self.client.get(path).status_code,200)
         self.assertEqual(self.client.post('/api/admin/v1/moderation/messages/msg/review','{}',content_type='application/json').status_code,403)
+
+    def test_automatic_clear_shadow_never_publishes_and_is_cached(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('messages','msg',provider),'CLEAR_SHADOW')
+        self.assertEqual(process('messages','msg',provider),'CACHED_SHADOW')
+        self.assertIsNone(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'])
+        self.assertEqual(len(rows('SELECT id FROM notification')),0);self.assertEqual(provider.assess.call_count,1)
+
+    def test_automatic_apply_uses_shared_review_and_notifies_once(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('messages','msg',provider,True),'APPROVED')
+        self.assertEqual(process('messages','msg',provider,True),'STALE')
+        self.assertEqual(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'],1)
+        self.assertEqual(len(rows('SELECT id FROM notification')),1)
+        self.assertEqual(rows("SELECT reviewed_by FROM message_revision WHERE message_id='msg'")[0]['reviewed_by'],'MAIN_AUTOMATION')
+
+    def test_automatic_flagged_content_remains_private_for_human(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','synthetic',('harassment',))
+        self.assertEqual(process('messages','msg',provider,True),'HUMAN_REQUIRED')
+        self.assertEqual(rows("SELECT state FROM message_revision WHERE message_id='msg'")[0]['state'],'PENDING')
+        self.assertEqual(len(rows('SELECT id FROM notification')),0)
+
+    def test_automatic_provider_outage_is_bounded_and_fail_closed(self):
+        from .automatic_moderation import process,ProviderUnavailable
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.side_effect=ProviderUnavailable('QUOTA')
+        self.assertEqual(process('messages','msg',provider,True),'PROVIDER_UNAVAILABLE')
+        self.assertEqual(process('messages','msg',provider,True),'WAITING_OR_LIMITED')
+        self.assertEqual(provider.assess.call_count,1)
+
+    def test_automatic_video_audio_are_never_partially_approved(self):
+        from .automatic_moderation import process
+        from unittest.mock import Mock
+        self.status_fixture('VIDEO');provider=Mock()
+        self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED');provider.assess.assert_not_called()
+
+    def test_automatic_changed_revision_cannot_be_published(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import execute,rows
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock()
+        def changed(*args):
+            execute("UPDATE message_revision SET content_hash='changed' WHERE message_id='msg'")
+            return Assessment('CLEAR','synthetic')
+        provider.assess.side_effect=changed
+        self.assertEqual(process('messages','msg',provider,True),'STALE_OR_FORBIDDEN')
+        self.assertIsNone(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'])
+
+    def test_automatic_requires_approved_policy_and_authorized_reviewer(self):
+        from .automatic_moderation import run_batch
+        from unittest.mock import Mock
+        provider=Mock()
+        with self.assertRaisesMessage(ValueError,'POLICY_NOT_APPROVED'):run_batch(provider,env={})
+        env=dict(MAIN_MODERATION_POLICY_APPROVED='true',MAIN_MODERATION_POLICY_VERSION='test',MAIN_MODERATION_REVIEWER='alumno',MAIN_MODERATION_RETENTION_DAYS='30')
+        with self.assertRaisesMessage(ValueError,'REVIEWER_NOT_AUTHORIZED'):run_batch(provider,env=env)
+        provider.assess.assert_not_called()
+
+    def test_automatic_parser_rejects_incomplete_provider_response(self):
+        from .automatic_moderation import parse_assessment,ProviderUnavailable
+        with self.assertRaises(ProviderUnavailable):parse_assessment({'results':[{'flagged':False,'categories':{}}]},'TEXT')
