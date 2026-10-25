@@ -16,7 +16,7 @@ Python 3.12, dependencias fijadas en `requirements.txt` y MySQL compatible con D
 
 Variables obligatorias: `MAIN_DJANGO_SECRET_KEY`, `MAIN_DB_NAME`, `MAIN_DB_USER`, `MAIN_DB_PASSWORD`. Opcionales: `MAIN_DB_HOST` (127.0.0.1), `MAIN_DB_PORT` (3306), `MAIN_DJANGO_HOSTS` (127.0.0.1,localhost), `MAIN_HTTPS` (false para pruebas locales). No guardar credenciales en Git.
 
-Primero iniciar Spring con perfil `mysql` para aplicar Flyway V1–V9. Después ejecutar `python manage.py migrate --noinput` usando una cuenta de migraciones: Django solo añade `django_session` y su registro `django_migrations`. Ejecutar con una cuenta limitada por tabla, según [el contrato de permisos](../docs/MIGRACION_DJANGO_22_OCT.md). No conceder DDL ni permisos globales al proceso web.
+Primero iniciar Spring con perfil `mysql` para aplicar Flyway V1–V11. Después ejecutar `python manage.py migrate --noinput` usando una cuenta de migraciones: Django solo añade `django_session` y su registro `django_migrations`. Ejecutar con una cuenta limitada por tabla, según [el contrato de permisos](../docs/MIGRACION_DJANGO_22_OCT.md). No conceder DDL ni permisos globales al proceso web. El trabajador de moderación necesita SELECT/INSERT/UPDATE en `automatic_assessment` (V11); [configuración, política y límites del incremento del 25/10](../docs/PUSH_Y_MODERACION_25_OCT.md). Push usa las tablas V10 exclusivamente desde Spring.
 
 Arranque local: `python -m waitress --listen=127.0.0.1:8090 --threads=4 main_admin.wsgi:application`. Las cuentas ADMIN deben existir en `main_user`, creadas por el arranque configurado de Spring; Django no crea una identidad paralela ni eleva alumnos. Las sesiones son independientes de Spring y revalidan rol, activación y versión de contraseña.
 

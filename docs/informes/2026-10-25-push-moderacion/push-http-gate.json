@@ -1,0 +1,26 @@
+{
+  "realFcmSend": false,
+  "passed": 5,
+  "checks": [
+    {
+      "name": "anonymous_push_blocked",
+      "passed": true
+    },
+    {
+      "name": "synthetic_login",
+      "passed": true
+    },
+    {
+      "name": "push_disabled_until_configured",
+      "passed": true
+    },
+    {
+      "name": "registration_requires_csrf",
+      "passed": true
+    },
+    {
+      "name": "missing_credentials_fail_closed",
+      "passed": true
+    }
+  ]
+}
