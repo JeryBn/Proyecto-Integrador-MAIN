@@ -1,0 +1,40 @@
+{
+  "controlledProvider": true,
+  "realOpenAiRequest": false,
+  "productionPolicyEnabled": false,
+  "passed": 8,
+  "checks": [
+    {
+      "name": "pending_hidden",
+      "passed": true
+    },
+    {
+      "name": "shadow_clear",
+      "passed": true
+    },
+    {
+      "name": "shadow_not_published",
+      "passed": true
+    },
+    {
+      "name": "apply_shared_path",
+      "passed": true
+    },
+    {
+      "name": "spring_sees_approved",
+      "passed": true
+    },
+    {
+      "name": "notification_once",
+      "passed": true
+    },
+    {
+      "name": "repeated_apply_stale",
+      "passed": true
+    },
+    {
+      "name": "notification_not_duplicated",
+      "passed": true
+    }
+  ]
+}

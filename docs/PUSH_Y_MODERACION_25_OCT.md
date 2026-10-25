@@ -65,6 +65,7 @@ Prueba real sin datos reales y sin cambios de BD: `manage.py moderate_pending --
 
 - Spring: **127 ejecuciones aprobadas**, 118 casos distintos; nueve ejecuciones adicionales repiten el caso de retry push diez veces en total. Cero fallos/errores/omitidas en la última ronda. Una ronda anterior detectó carrera de precisión temporal en la cola; corregida y repetida.
 - Django: **43 pruebas aprobadas**, incluidas once nuevas de moderación automática sobre las 32 anteriores.
+- MySQL/Django/Spring reales en loopback: **8 comprobaciones nuevas** con proveedor controlado y contenido sintético; shadow no publica, apply usa el flujo compartido, Spring ve la revisión aprobada y el aviso no se duplica. Esta prueba no habilitó política de producción ni llamó a OpenAI.
 - Android: **4 pruebas unitarias** y compilación/lint con Firebase configurado. Lint: cero errores, once advertencias y cuatro sugerencias en ese corte. SDK marca métodos de Messaging como deprecados, sin impedir compilación; una futura migración no cambia el resultado actual.
 - Android instrumentado: **2/2 aprobadas**, cero omitidas, con `realPushProbe=true`: token Firebase real y descarte local tras logout. No es prueba de entrega FCM de servidor a teléfono.
 - OpenAI: dos consultas reales sintéticas, texto e imagen, con salida estructurada válida. La moderación funcionó; eso no prueba que el asistente académico tenga cuota disponible ni una exactitud del 100 %.
