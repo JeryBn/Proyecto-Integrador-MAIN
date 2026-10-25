@@ -3,6 +3,7 @@ import {userApi,enc,fileError,submissionKey,localDate} from './user-api.mjs';
 import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {PrivateMedia} from './private-media.jsx';
 import {canPublish,ownerPlaylist,statusTextColor} from './status-model.mjs';
+import {MediaCapture} from './media-capture.jsx';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
 export function Statuses({profile,preferences,draft,setDraft,onChat}){
@@ -48,6 +49,7 @@ function StatusComposer({draft,setDraft,preferences,onSaved}){
   <div className="toolbar"><label>Color del fondo<input type="color" value={draft.background} onChange={e=>update({background:e.target.value})}/></label><label>Audiencia<select value={draft.audience} onChange={e=>update({audience:e.target.value})}><option value="CONTACTS">Mis contactos autorizados</option><option value="PRIVATE">Solo yo</option></select></label></div>
   {preferences?.statusAudience==='PRIVATE'&&<p>Tu ajuste global es Solo yo. Tus contactos no verán este estado mientras mantengas esa privacidad.</p>}
   <label>Imagen, video o audio<input ref={input} type="file" accept="image/jpeg,image/png,video/*,audio/*" onChange={e=>{const file=e.target.files?.[0]||null,invalid=fileError(file,{status:true});if(invalid){setError(invalid);e.target.value='';return;}setError('');update({file,attempt:null});}}/></label>
+  <MediaCapture disabled={busy} onFile={file=>{setError('');update({file,attempt:null});}}/>
   {preview&&(draft.file.type.startsWith('image/')?<img className="private-media" src={preview} alt="Vista previa del estado"/>:draft.file.type.startsWith('video/')?<video className="private-media" src={preview} controls preload="metadata"/>:<audio className="private-media" src={preview} controls preload="metadata"/>)}
   {draft.file&&<p>{draft.file.name} · {Math.ceil(draft.file.size/1024)} KB <button type="button" onClick={()=>{update({file:null,attempt:null});if(input.current)input.current.value='';}}>Quitar archivo del estado</button></p>}
   <p>Hasta 12 MB; video y audio de hasta 60 segundos. El servidor valida y procesa el archivo antes de guardarlo para revisión.</p><button disabled={!draft.text.trim()&&!draft.file}>Guardar estado para revisión</button>

@@ -81,9 +81,11 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
   <form className="message-composer" onSubmit={e=>{e.preventDefault();send();}}><fieldset disabled={busy||contact?.blocked}><legend>{draft.edit?'Editar mensaje':'Escribir mensaje'}</legend>
    <label>Mensaje<textarea maxLength={4000} value={draft.text} onChange={e=>update({text:e.target.value})} placeholder="Escribe un mensaje"/></label>
    {draft.edit?<><p>El archivo existente no cambia al editar. La nueva versión será revisada.</p><button type="button" onClick={()=>setDraft(emptyDraft())}>Descartar edición</button></>:<label>Adjuntar imagen, video, audio o TXT<input ref={fileInput} type="file" accept="image/jpeg,image/png,video/*,audio/*,text/plain" onChange={e=>{const file=e.target.files?.[0]||null;const invalid=fileError(file);if(invalid){setError(invalid);e.target.value='';return;}update({file,attempt:null});setError('');}}/></label>}
+   {!draft.edit&&<MediaCapture disabled={busy} onFile={file=>{update({file,attempt:null});setError('');}}/>}
    {draft.file&&<p>{draft.file.name} · {Math.ceil(draft.file.size/1024)} KB <button type="button" onClick={()=>{update({file:null,attempt:null});if(fileInput.current)fileInput.current.value='';}}>Quitar adjunto</button></p>}
    <button disabled={!draft.text.trim()&&!draft.file&&(!draft.edit||draft.edit.attachmentKind==='NONE')}>{busy?'Esperando confirmación…':draft.edit?'Guardar edición':'Enviar mensaje'}</button>
   </fieldset>{busy&&<div role="status"><p>{draft.file?(progress<100?`Subiendo archivo: ${progress}%`:'Esperando confirmación del servidor…'):'Guardando…'}</p><button type="button" onClick={()=>control.current?.abort()}>Cancelar espera</button></div>}
   <p>La revisión previa aplica a todos los emisores. Solo las versiones aprobadas llegan a los demás.</p></form></>}
  </article>;
 }
+import {MediaCapture} from './media-capture.jsx';
