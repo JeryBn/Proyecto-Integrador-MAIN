@@ -1,5 +1,7 @@
 # Regularización de MAIN al 25 de octubre de 2026
 
+Incremento posterior de la misma fecha: [push Android y moderación automática](PUSH_Y_MODERACION_25_OCT.md). El informe Word/PDF conserva el corte previo y no incorpora ese incremento posterior.
+
 Informe para Jery Becerra Ninaquispe. El corte previsto del sprint 2 era el 20 de octubre. Los cambios del 22 y 25 son posteriores a ese plazo; su integración no acredita entrega puntual ni aceptación del docente. Se preservan autores y fechas de Git, asignaciones históricas de Trello y los informes anteriores.
 
 ## Cambios integrados

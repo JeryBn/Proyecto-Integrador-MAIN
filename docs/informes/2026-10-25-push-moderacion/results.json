@@ -1,0 +1,16 @@
+{
+  "androidUnitTests": 4,
+  "springExecutions": 127,
+  "retryRepetitions": 10,
+  "automaticPublicationOnRealContent": "DISABLED",
+  "springFailures": 0,
+  "videoAudioAutomaticAssessment": "NOT_IMPLEMENTED",
+  "djangoTests": 43,
+  "androidInstrumentedTests": 2,
+  "pushLiveDelivery": "PENDING",
+  "androidInstrumentedResult": "PASS",
+  "distinctSpringCases": 118,
+  "djangoFailures": 0,
+  "androidSkipped": 0,
+  "imageAutoPublication": "DISABLED_HUMAN_REQUIRED"
+}
