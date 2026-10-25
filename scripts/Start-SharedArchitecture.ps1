@@ -28,12 +28,25 @@ function Get-ListenerProcess([int]$Port){
   $listener=Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue | Select-Object -First 1
   if($listener){return Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"}
 }
+function Wait-LocalPort([int]$Port,[int]$Seconds=60){
+  $deadline=[DateTime]::UtcNow.AddSeconds($Seconds)
+  do {
+    $client=[Net.Sockets.TcpClient]::new()
+    try {
+      $attempt=$client.ConnectAsync('127.0.0.1',$Port)
+      if($attempt.Wait(500) -and $client.Connected){return}
+    } catch { } finally { $client.Dispose() }
+    Start-Sleep -Milliseconds 250
+  } while([DateTime]::UtcNow -lt $deadline)
+  throw "No abrió el puerto local $Port en $Seconds segundos; revisa los logs. No se detienen procesos ajenos."
+}
 $databaseProcess=Get-ListenerProcess ([int]$configuration.port)
 if($databaseProcess){
   if($databaseProcess.CommandLine -notlike "*$MySqlDataDirectory*"){throw 'El puerto MySQL lo ocupa otra instancia; no se modifica'}
 } else {
   Start-Process -FilePath $MySqlExecutable -ArgumentList @('--no-defaults',"--datadir=`"$MySqlDataDirectory`"","--port=$($configuration.port)",'--bind-address=127.0.0.1','--mysqlx=0','--console') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'mysql.stdout.log') -RedirectStandardError (Join-Path $logs 'mysql.stderr.log') | Out-Null
 }
+Wait-LocalPort ([int]$configuration.port)
 $env:MAIN_DB_URL="jdbc:mysql://127.0.0.1:$($configuration.port)/$($configuration.database)?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Lima&sessionVariables=time_zone=%27-05:00%27"
 $env:MAIN_DB_USER='main_spring'
 $env:MAIN_DB_PASSWORD=$configuration.spring_password
@@ -53,6 +66,7 @@ if($springProcess){
 } else {
   Start-Process -FilePath $JavaExecutable -ArgumentList @('-jar',"`"$JarPath`"") -WorkingDirectory $repository -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'spring.stdout.log') -RedirectStandardError (Join-Path $logs 'spring.stderr.log') | Out-Null
 }
+Wait-LocalPort 8088
 $env:MAIN_DB_NAME=$configuration.database
 $env:MAIN_DB_HOST='127.0.0.1'
 $env:MAIN_DB_PORT=[string]$configuration.port
@@ -65,5 +79,6 @@ if($djangoProcess){
 } else {
   Start-Process -FilePath $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8090','--threads=4','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repository 'admin-django') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'django.stdout.log') -RedirectStandardError (Join-Path $logs 'django.stderr.log') | Out-Null
 }
+Wait-LocalPort 8090
 Write-Host 'MAIN: usuarios http://127.0.0.1:8088/ y administración http://127.0.0.1:8090/admin.html'
 Write-Host 'Los procesos continúan en segundo plano. Verificar su arranque en var/shared-architecture-logs.'
