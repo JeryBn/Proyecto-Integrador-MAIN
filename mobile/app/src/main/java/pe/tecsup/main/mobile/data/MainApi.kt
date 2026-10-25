@@ -120,6 +120,8 @@ class MainApi(val endpoint: String) {
     }
 
     fun clearSession() { cancelAttachmentUpload(); cookies.cookieStore.removeAll() }
+    fun registerPush(device:String,token:String):String = mutate("/api/v1/push/devices",JSONObject().put("deviceId",device).put("token",token),"POST").getString("binding")
+    fun disablePush(device:String) { mutate("/api/v1/push/devices/"+device,JSONObject(),"DELETE") }
     fun cancelAttachmentUpload(){attachmentUpload.getAndSet(null)?.disconnect()}
 
     fun askAssistant(key:String,question:String):String = mutate("/api/v1/assistant",

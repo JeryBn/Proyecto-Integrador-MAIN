@@ -5,6 +5,7 @@ plugins {
 }
 
 val deliveryStore = System.getenv("MAIN_SIGNING_STORE_FILE")
+if (file("google-services.json").isFile) apply(plugin = "com.google.gms.google-services")
 val deliveryStorePassword = System.getenv("MAIN_SIGNING_STORE_PASSWORD")
 val deliveryAlias = System.getenv("MAIN_SIGNING_KEY_ALIAS")
 val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
@@ -49,6 +50,8 @@ tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")

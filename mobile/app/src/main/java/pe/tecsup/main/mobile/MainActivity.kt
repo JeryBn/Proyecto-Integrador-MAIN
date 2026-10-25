@@ -86,6 +86,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable fun MainApp(model: MainViewModel = viewModel()) {
+    val pushContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
+    LaunchedEffect(model.profile?.usuario) { PushLocal.clear(pushContext) }
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (model.profile == null) LoginScreen(model)
         else MainNavigationScreen(model)

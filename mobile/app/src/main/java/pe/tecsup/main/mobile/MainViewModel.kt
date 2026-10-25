@@ -61,6 +61,12 @@ class MainViewModel : ViewModel() {
         private set
     private var detailRequest = 0L
     private var api: MainApi? = null
+    private var pushDevice=java.util.UUID.randomUUID().toString()
+    fun registerPush(token:String,onResult:(String?,String?)->Unit){
+        val client=api?:return
+        viewModelScope.launch{try{val binding=withContext(Dispatchers.IO){client.registerPush(pushDevice,token)};if(api===client)onResult(binding,null)}catch(error:Exception){if(api===client)onResult(null,friendly(error))}}
+    }
+    fun disablePush(){val client=api?:return;val device=pushDevice;viewModelScope.launch{try{withContext(Dispatchers.IO){client.disablePush(device)}}catch(_:Exception){}}}
     var notices by mutableStateOf<List<Notice>>(emptyList())
         private set
     var noticePage by mutableStateOf(0)
@@ -190,6 +196,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun clearAccount() {
+        pushDevice=java.util.UUID.randomUUID().toString()
         uploadJob?.cancel();uploadJob=null
         showChatPicker=false;contactProfile=null;settingsPage="MAIN"
         grades=emptyList(); teachingCourse=null; teachingGrades=emptyList(); statuses=emptyList(); statusViewer=null; statusBytes=null; statusComposer=false; statusBusy=false; statusError=""

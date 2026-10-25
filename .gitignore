@@ -6,6 +6,8 @@ var/
 .env.local
 *.jks
 *.keystore
+**/google-services.json
+**/*firebase-adminsdk*.json
 *.log
 *.jar
 !mobile/gradle/wrapper/gradle-wrapper.jar

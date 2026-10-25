@@ -49,6 +49,7 @@ import pe.tecsup.main.mobile.data.ContactUser
     Column(Modifier.padding(horizontal=20.dp,vertical=10.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
      PreferenceSwitch("Tema oscuro","Apariencia de MAIN",model.darkTheme,!model.accountBusy){model.savePreferences(model.preferences.copy(darkTheme=it))}
      PreferenceSwitch("Avisos en MAIN","Mensajes e invitaciones",model.preferences.notifications,!model.accountBusy){model.savePreferences(model.preferences.copy(notifications=it))}
+     PushSettings(model)
     }
     HorizontalDivider()
     SettingsRow(Icons.AutoMirrored.Outlined.Logout,"Cerrar sesión",danger=true,onClick={if(!model.busy)model.logout()})
