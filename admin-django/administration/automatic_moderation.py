@@ -62,10 +62,13 @@ class OpenAiModerator:
 def approved_policy(env):
     return env.get('MAIN_MODERATION_POLICY_APPROVED')=='true' and 1<=len(env.get('MAIN_MODERATION_POLICY_VERSION','').strip())<=80 and env.get('MAIN_MODERATION_REVIEWER','').strip() and env.get('MAIN_MODERATION_RETENTION_DAYS','').isdigit() and 1<=int(env['MAIN_MODERATION_RETENTION_DAYS'])<=3650
 
-def pending(limit):
-    messages=human.rows("SELECT m.id FROM message m JOIN message_revision r ON r.message_id=m.id WHERE r.state='PENDING' AND r.revision=(SELECT MAX(revision) FROM message_revision WHERE message_id=m.id) ORDER BY m.created_at LIMIT %s",[limit])
-    statuses=human.rows("SELECT id FROM status_update WHERE state='PENDING' AND expires_at>%s ORDER BY created_at LIMIT %s",[human.now(),limit])
-    return [('messages',r['id']) for r in messages]+[('statuses',r['id']) for r in statuses]
+def pending(limit,policy,apply):
+    final="('HUMAN_REQUIRED','APPROVED')" if apply else "('HUMAN_REQUIRED','APPROVED','CLEAR_SHADOW')"
+    def excluded(kind,item,content):
+        return f"NOT EXISTS(SELECT 1 FROM automatic_assessment a WHERE a.subject_kind='{kind}' AND a.subject_id={item} AND a.content_hash={content} AND a.policy_version=%s AND (a.outcome IN {final} OR (a.outcome IN ('RUNNING','PROVIDER_UNAVAILABLE') AND (a.attempts>=3 OR a.lease_until>%s))))"
+    messages=human.rows("SELECT m.id FROM message m JOIN message_revision r ON r.message_id=m.id WHERE r.state='PENDING' AND r.revision=(SELECT MAX(revision) FROM message_revision WHERE message_id=m.id) AND "+excluded('messages','m.id','r.content_hash')+" ORDER BY m.created_at LIMIT %s",[policy,human.now(),limit])
+    statuses=human.rows("SELECT s.id FROM status_update s WHERE s.state='PENDING' AND s.expires_at>%s AND "+excluded('statuses','s.id','s.content_hash')+" ORDER BY s.created_at LIMIT %s",[human.now(),policy,human.now(),limit])
+    return ([('messages',r['id']) for r in messages]+[('statuses',r['id']) for r in statuses])[:limit]
 
 def snapshot(kind,item):
     if kind=='messages':
@@ -83,19 +86,24 @@ def snapshot(kind,item):
 def process(kind,item,provider,apply=False,policy='test-only'):
     content=snapshot(kind,item)
     if not content:return 'STALE'
+    key=hashlib.sha256((kind+'\n'+item+'\n'+content['hash']+'\n'+policy).encode()).hexdigest()
+    def defer_human():
+        try:
+            with transaction.atomic():human.execute("INSERT INTO automatic_assessment(id,policy_version,subject_kind,subject_id,content_hash,outcome,attempts,lease_until,updated_at) VALUES(%s,%s,%s,%s,%s,'HUMAN_REQUIRED',0,%s,%s)",[key,policy,kind,item,content['hash'],human.now(),human.now()])
+        except IntegrityError:pass
+        return 'HUMAN_REQUIRED'
     media_kind=content['kind']
-    if media_kind in ('VIDEO','AUDIO'):return 'HUMAN_REQUIRED'
+    if media_kind in ('VIDEO','AUDIO'):return defer_human()
     text=content['text'];image=None
     if media_kind=='FILE':
         try:text+='\n'+content['media'].decode('utf-8',errors='strict')
-        except UnicodeError:return 'HUMAN_REQUIRED'
+        except UnicodeError:return defer_human()
     elif media_kind=='IMAGE':image=content['media']
-    elif media_kind not in ('TEXT','NONE'):return 'HUMAN_REQUIRED'
-    if len(text)>20000:return 'HUMAN_REQUIRED'
-    key=hashlib.sha256((kind+'\n'+item+'\n'+content['hash']+'\n'+policy).encode()).hexdigest()
+    elif media_kind not in ('TEXT','NONE'):return defer_human()
+    if len(text)>20000:return defer_human()
     lease=human.now()+timedelta(minutes=5)
     try:
-        with transaction.atomic():human.execute("INSERT INTO automatic_assessment(id,policy_version,outcome,attempts,lease_until,updated_at) VALUES(%s,%s,'WAITING',0,%s,%s)",[key,policy,human.now(),human.now()])
+        with transaction.atomic():human.execute("INSERT INTO automatic_assessment(id,policy_version,subject_kind,subject_id,content_hash,outcome,attempts,lease_until,updated_at) VALUES(%s,%s,%s,%s,%s,'WAITING',0,%s,%s)",[key,policy,kind,item,content['hash'],human.now(),human.now()])
     except IntegrityError:pass
     previous=human.rows('SELECT outcome FROM automatic_assessment WHERE id=%s',[key])[0]['outcome']
     if previous=='HUMAN_REQUIRED':return previous
@@ -106,8 +114,9 @@ def process(kind,item,provider,apply=False,policy='test-only'):
         claimed=human.execute("UPDATE automatic_assessment SET outcome='RUNNING',attempts=attempts+1,lease_until=%s,updated_at=%s WHERE id=%s AND attempts<3 AND lease_until<=%s AND outcome IN ('WAITING','RUNNING','PROVIDER_UNAVAILABLE')",[lease,human.now(),key,human.now()])
         if not claimed:return 'WAITING_OR_LIMITED'
         try:result=provider.assess(text,image)
-        except ProviderUnavailable:
-            human.execute("UPDATE automatic_assessment SET outcome='PROVIDER_UNAVAILABLE',updated_at=%s WHERE id=%s",[human.now(),key]);return 'PROVIDER_UNAVAILABLE'
+        except ProviderUnavailable as error:
+            state='HUMAN_REQUIRED' if str(error)=='HUMAN_REQUIRED' else 'PROVIDER_UNAVAILABLE'
+            human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key]);return state
         state='HUMAN_REQUIRED' if result.outcome!='CLEAR' or media_kind=='IMAGE' else 'CLEAR_SHADOW'
         human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key])
         if state=='HUMAN_REQUIRED':return state
@@ -128,7 +137,7 @@ def run_batch(provider,limit=10,apply=False,env=None):
     if not SharedUser.objects.filter(username=env['MAIN_MODERATION_REVIEWER'],role='ADMIN',enabled=True).exists():raise ValueError('REVIEWER_NOT_AUTHORIZED')
     if not 1<=limit<=50:raise ValueError('LIMIT_INVALID')
     summary={}
-    for kind,item in pending(limit):
+    for kind,item in pending(limit,env['MAIN_MODERATION_POLICY_VERSION'],apply):
         try:result=process(kind,item,provider,apply,env['MAIN_MODERATION_POLICY_VERSION'])
         except (ValueError,UnicodeError):result='CONTENT_INTEGRITY'
         summary[result]=summary.get(result,0)+1

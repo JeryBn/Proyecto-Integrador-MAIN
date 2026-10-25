@@ -493,3 +493,27 @@ class AdministrationTests(TransactionTestCase):
     def test_automatic_parser_rejects_incomplete_provider_response(self):
         from .automatic_moderation import parse_assessment,ProviderUnavailable
         with self.assertRaises(ProviderUnavailable):parse_assessment({'results':[{'flagged':False,'categories':{}}]},'TEXT')
+
+    def test_automatic_shadow_can_be_applied_without_second_provider_call(self):
+        from .automatic_moderation import process,Assessment
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('messages','msg',provider),'CLEAR_SHADOW')
+        self.assertEqual(process('messages','msg',provider,True),'APPROVED')
+        self.assertEqual(provider.assess.call_count,1)
+
+    def test_automatic_completed_assessment_does_not_starve_other_queue_items(self):
+        from .automatic_moderation import process,pending,Assessment
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','synthetic')
+        process('messages','msg',provider)
+        self.status_fixture()
+        self.assertEqual(pending(1,'test-only',False),[('statuses','status')])
+
+    def test_automatic_image_never_releases_with_partial_modality_coverage(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.status_fixture('IMAGE');provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED')
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
