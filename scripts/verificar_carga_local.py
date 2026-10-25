@@ -10,7 +10,8 @@ from urllib.parse import urlencode
 from urllib.error import HTTPError
 from pathlib import Path
 from datetime import datetime, timezone
-import json, math, statistics, sys, time
+import argparse, json, math, statistics, sys, time
+from urllib.parse import urlsplit
 
 ORIGIN='http://127.0.0.1:8088'
 WORKERS=8
@@ -43,7 +44,17 @@ def worker(_):
     return results
 
 if __name__=='__main__':
-    target=Path(sys.argv[1] if len(sys.argv)>1 else 'rendimiento-local.json')
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('result',nargs='?',type=Path,default=Path('rendimiento-local.json'))
+    parser.add_argument('--workers',type=int,choices=range(1,17),default=8)
+    parser.add_argument('--reads',type=int,choices=range(1,1001),default=20)
+    parser.add_argument('--base',default=ORIGIN)
+    parser.add_argument('--environment',required=True,help='Describe la base y procesos realmente usados; no incluye secretos.')
+    args=parser.parse_args()
+    origin=urlsplit(args.base)
+    if origin.scheme!='http' or origin.hostname not in ('127.0.0.1','localhost') or origin.path not in ('','/') or origin.username or origin.password or origin.query or origin.fragment:
+        parser.error('Esta prueba solo permite el servidor sintético HTTP en loopback, sin rutas ni credenciales.')
+    ORIGIN=args.base.rstrip('/');WORKERS=args.workers;READS=args.reads;target=args.result
     start=time.perf_counter()
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         batches=list(pool.map(worker,range(WORKERS)))
@@ -51,7 +62,7 @@ if __name__=='__main__':
     results=[r for batch in batches for r in batch];latencies=sorted(r[1] for r in results)
     summary={
       'measuredAtUtc':datetime.now(timezone.utc).isoformat(),
-      'environment':'Isolated synthetic H2 server on Windows loopback; Android Studio and emulator running',
+      'environment':args.environment,
       'endpoint':'GET /api/actividades/pendientes','workers':WORKERS,'requests':len(results),
       'http200':sum(s==200 for s,_ in results),'errors':sum(s!=200 for s,_ in results),
       'medianMs':round(statistics.median(latencies),2),'p95Ms':round(latencies[math.ceil(.95*len(latencies))-1],2),
