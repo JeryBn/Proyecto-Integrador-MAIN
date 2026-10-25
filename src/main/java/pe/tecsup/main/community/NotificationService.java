@@ -36,4 +36,7 @@ public class NotificationService {
   if(db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=?",Long.class,actor,id)==0)throw DomainException.missing();
   db.update("UPDATE notification SET read_at=COALESCE(read_at,?) WHERE recipient=? AND id=?",Timestamp.valueOf(LocalDateTime.now(clock)),actor,id);
  }
+ public boolean pushVisible(String actor,String id){
+  users.active(actor);return users.preferences(actor).notifications()&&db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=? AND n.read_at IS NULL",Long.class,actor,id)>0;
+ }
 }
