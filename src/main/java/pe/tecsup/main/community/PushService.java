@@ -12,7 +12,7 @@ public class PushService {
  public PushService(JdbcTemplate db,IdentityService users,NotificationService notices,SessionRegistry sessions,PushTokenCipher cipher,FcmGateway gateway,@Value("${MAIN_PUSH_ENABLED:false}") boolean enabled,Clock clock){this.db=db;this.users=users;this.notices=notices;this.sessions=sessions;this.cipher=cipher;this.gateway=gateway;this.enabled=enabled;this.clock=clock;}
  public boolean configured(){return enabled&&cipher.ready()&&gateway.ready();}
  public static String digest(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException();}}
- private Timestamp now(){return Timestamp.valueOf(LocalDateTime.now(clock));}
+ private Timestamp now(){return Timestamp.valueOf(LocalDateTime.now(clock).truncatedTo(java.time.temporal.ChronoUnit.MILLIS));}
  public record Registration(String deviceId,String token){}
  @Transactional public Map<String,String> register(String owner,String session,int timeout,Registration value){
   users.active(owner);if(!configured())throw new DomainException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,"PUSH_NOT_CONFIGURED","Push aún no está configurado en el servidor.");
