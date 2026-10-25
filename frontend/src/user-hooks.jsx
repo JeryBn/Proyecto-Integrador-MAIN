@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {userApi} from './user-api.mjs';
+import {createReadPoller} from './read-poller.mjs';
 
 export function useResource(path,{enabled=true,interval=0}={}){
   const [state,setState]=useState({data:null,error:'',loading:true});
@@ -13,14 +14,14 @@ export function useResource(path,{enabled=true,interval=0}={}){
     async function load(){
       if(pending||disposed)return;pending=true;
       try{const data=await userApi.call(path,{signal:controller.signal});if(!disposed&&current===serial.current)setState({data,error:'',loading:false});}
-      catch(e){if(!disposed&&current===serial.current)setState(old=>({data:[401,403,404].includes(e.status)?null:old.data,error:e.message,loading:false}));}
+      catch(e){if(!disposed&&current===serial.current)setState(old=>({data:[401,403,404].includes(e.status)||e.code==='ACCOUNT_CHANGED'?null:old.data,error:e.message,loading:false}));throw e;}
       finally{pending=false;}
     }
-    load();
-    const visible=()=>{if(!document.hidden)load();};
-    if(interval){document.addEventListener('visibilitychange',visible);window.addEventListener('focus',visible);}
-    const timer=interval?setInterval(visible,interval):null;
-    return ()=>{disposed=true;controller.abort();clearInterval(timer);document.removeEventListener('visibilitychange',visible);window.removeEventListener('focus',visible);};
+    const poller=interval?createReadPoller({read:load,interval,available:()=>!document.hidden&&navigator.onLine!==false}):null;
+    const visible=()=>poller?.wake();
+    if(poller){document.addEventListener('visibilitychange',visible);window.addEventListener('focus',visible);window.addEventListener('online',visible);poller.start();}
+    else load().catch(()=>{});
+    return ()=>{disposed=true;poller?.stop();controller.abort();document.removeEventListener('visibilitychange',visible);window.removeEventListener('focus',visible);window.removeEventListener('online',visible);};
   },[path,enabled,interval,revision]);
   return {...state,reload};
 }
