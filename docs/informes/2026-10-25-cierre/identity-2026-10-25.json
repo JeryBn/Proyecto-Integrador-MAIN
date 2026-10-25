@@ -1,0 +1,74 @@
+{
+  "syntheticAccount": "family_1792916241088",
+  "passed": 17,
+  "checks": [
+    {
+      "name": "create_family",
+      "passed": true
+    },
+    {
+      "name": "no_admin_creation",
+      "passed": true
+    },
+    {
+      "name": "spring_login_django_account",
+      "passed": true
+    },
+    {
+      "name": "family_initially_private",
+      "passed": true
+    },
+    {
+      "name": "guardian_granted",
+      "passed": true
+    },
+    {
+      "name": "guardian_visible_in_spring",
+      "passed": true
+    },
+    {
+      "name": "guardian_revoked",
+      "passed": true
+    },
+    {
+      "name": "guardian_revocation_immediate",
+      "passed": true
+    },
+    {
+      "name": "approve_contact",
+      "passed": true
+    },
+    {
+      "name": "contact_visible",
+      "passed": true
+    },
+    {
+      "name": "password_reset",
+      "passed": true
+    },
+    {
+      "name": "old_spring_cookie_revoked",
+      "passed": true
+    },
+    {
+      "name": "replacement_login",
+      "passed": true
+    },
+    {
+      "name": "disable_django",
+      "passed": true
+    },
+    {
+      "name": "disabled_cookie_revoked",
+      "passed": true
+    },
+    {
+      "name": "admin_account_protected",
+      "passed": true
+    },
+    {
+      "name": "reports_available",
+      "passed": true
+    }
+  ]
+}

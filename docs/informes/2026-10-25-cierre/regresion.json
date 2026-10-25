@@ -1,0 +1,10 @@
+{
+  "webTests": 30,
+  "djangoFailures": 0,
+  "djangoTests": 32,
+  "notes": "Primer intento Spring con Java 25 fallo por Mockito; repeticion con Java 21 aprobada. Captura web controlada; captura fisica pendiente.",
+  "java": "21.0.12.1",
+  "springTests": 107,
+  "webFailures": 0,
+  "springFailures": 0
+}

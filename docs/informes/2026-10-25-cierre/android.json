@@ -1,0 +1,66 @@
+{
+  "lintWarnings": 9,
+  "errors": 0,
+  "date": "2026-10-25",
+  "failures": 0,
+  "skipped": 0,
+  "unitTests": 3,
+  "api": 37,
+  "device": "Medium_Phone",
+  "instrumentedTests": [
+    {
+      "class": "pe.tecsup.main.mobile.NavigationUiTest",
+      "seconds": "65.767",
+      "failed": false,
+      "name": "homeModulesAndProfileAreReachableWithoutInventedData"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.PendingUiTest",
+      "seconds": "21.763",
+      "failed": false,
+      "name": "failedPendingRequestShowsRetryThenRecoversFromRealBackend"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.PendingUiTest",
+      "seconds": "14.217",
+      "failed": false,
+      "name": "unreachableServerShowsRecoverableLoginError"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.PendingUiTest",
+      "seconds": "7.469",
+      "failed": false,
+      "name": "emptyAccountHasExplicitEmptyState"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.PendingUiTest",
+      "seconds": "10.125",
+      "failed": false,
+      "name": "alumnoListSearchAndEmptyFilterThenLogout"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.DetailUiTest",
+      "seconds": "13.425",
+      "failed": false,
+      "name": "expiredDetailClearsPreviousStudentDataAndAllowsNewLogin"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.DetailUiTest",
+      "seconds": "16.586",
+      "failed": false,
+      "name": "unavailableActivityHasClearMessageAndReturn"
+    },
+    {
+      "class": "pe.tecsup.main.mobile.DetailUiTest",
+      "seconds": "36.266",
+      "failed": false,
+      "name": "openDetailRotateAndReturnPreservesSearchAndFilter"
+    }
+  ],
+  "android": "17",
+  "tests": 8,
+  "build": "SUCCESS",
+  "lintErrors": 0,
+  "limitation": "Emulador; no telefono fisico ni release firmada",
+  "lintHints": 4
+}

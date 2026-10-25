@@ -1,0 +1,9 @@
+{
+  "measuredAtUtc": "2026-10-25T08:20:20.754379+00:00",
+  "source": "main_architecture_review",
+  "tables": 29,
+  "rows": 618,
+  "contentVerified": true,
+  "dumpSha256": "8a8994f0714d0b3e9ab81accd4b57be29bfc8124dbb5ebe70bc36190ca87ec3e",
+  "limitation": "Ensayo local de base sint\u00e9tica; no acredita hosting, cifrado, custodia ni restauraci\u00f3n de producci\u00f3n."
+}

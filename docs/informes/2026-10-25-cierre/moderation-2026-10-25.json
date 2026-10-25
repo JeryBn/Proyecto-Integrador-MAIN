@@ -1,0 +1,162 @@
+{
+  "accounts": [
+    "modsender_1792916180458",
+    "modrecipient_1792916180458"
+  ],
+  "conversationId": "9da4bf2c-f644-4d10-be52-006a613b1459",
+  "passed": 38,
+  "checks": [
+    {
+      "name": "admin_login",
+      "passed": true
+    },
+    {
+      "name": "synthetic_account_0",
+      "passed": true
+    },
+    {
+      "name": "spring_login_0",
+      "passed": true
+    },
+    {
+      "name": "synthetic_account_1",
+      "passed": true
+    },
+    {
+      "name": "spring_login_1",
+      "passed": true
+    },
+    {
+      "name": "contact_authorized",
+      "passed": true
+    },
+    {
+      "name": "private_conversation",
+      "passed": true
+    },
+    {
+      "name": "pending_message",
+      "passed": true
+    },
+    {
+      "name": "pending_hidden",
+      "passed": true
+    },
+    {
+      "name": "reject_django",
+      "passed": true
+    },
+    {
+      "name": "rejected_hidden",
+      "passed": true
+    },
+    {
+      "name": "correct_message",
+      "passed": true
+    },
+    {
+      "name": "old_review_conflict",
+      "passed": true
+    },
+    {
+      "name": "approve_current_revision",
+      "passed": true
+    },
+    {
+      "name": "corrected_message_visible",
+      "passed": true
+    },
+    {
+      "name": "notification_generated",
+      "passed": true
+    },
+    {
+      "name": "pending_attachment",
+      "passed": true
+    },
+    {
+      "name": "admin_download",
+      "passed": true
+    },
+    {
+      "name": "attachment_bytes",
+      "passed": true
+    },
+    {
+      "name": "no_store",
+      "passed": true
+    },
+    {
+      "name": "anonymous_no_attachment",
+      "passed": true
+    },
+    {
+      "name": "explicit_attachment_required",
+      "passed": true
+    },
+    {
+      "name": "approve_attachment",
+      "passed": true
+    },
+    {
+      "name": "recipient_attachment_visible",
+      "passed": true
+    },
+    {
+      "name": "pending_status_TEXT",
+      "passed": true
+    },
+    {
+      "name": "pending_status_hidden_TEXT",
+      "passed": true
+    },
+    {
+      "name": "status_approve_TEXT",
+      "passed": true
+    },
+    {
+      "name": "approved_status_shared_TEXT",
+      "passed": true
+    },
+    {
+      "name": "repeat_status_conflict_TEXT",
+      "passed": true
+    },
+    {
+      "name": "review_media_hidden_after_decision_TEXT",
+      "passed": true
+    },
+    {
+      "name": "pending_status_IMAGE",
+      "passed": true
+    },
+    {
+      "name": "pending_status_hidden_IMAGE",
+      "passed": true
+    },
+    {
+      "name": "status_media_download",
+      "passed": true
+    },
+    {
+      "name": "status_explicit_review_required",
+      "passed": true
+    },
+    {
+      "name": "status_approve_IMAGE",
+      "passed": true
+    },
+    {
+      "name": "approved_status_shared_IMAGE",
+      "passed": true
+    },
+    {
+      "name": "repeat_status_conflict_IMAGE",
+      "passed": true
+    },
+    {
+      "name": "review_media_hidden_after_decision_IMAGE",
+      "passed": true
+    }
+  ]
+}

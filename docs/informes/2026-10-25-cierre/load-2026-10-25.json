@@ -1,0 +1,15 @@
+{
+  "measuredAtUtc": "2026-10-25T08:16:24.645380+00:00",
+  "environment": "MySQL aislado main_architecture_review loopback 3307; Spring 8088 Django 8090; Windows; sin telefono fisico",
+  "endpoint": "GET /api/actividades/pendientes",
+  "workers": 8,
+  "requests": 800,
+  "http200": 800,
+  "errors": 0,
+  "medianMs": 14.88,
+  "p95Ms": 21.12,
+  "maximumMs": 39.55,
+  "wallSecondsIncludingLoginAndLogout": 2.02,
+  "latencyScope": "Authenticated read latency excludes login and logout. Wall time includes both.",
+  "limitations": "Local baseline only. No production capacity claim; no media uploads, AI provider, long disconnection, or physical devices measured."
+}

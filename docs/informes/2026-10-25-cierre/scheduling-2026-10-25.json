@@ -1,0 +1,66 @@
+{
+  "courseId": 1792916266053,
+  "passed": 15,
+  "checks": [
+    {
+      "name": "teacher_created",
+      "passed": true
+    },
+    {
+      "name": "course_created",
+      "passed": true
+    },
+    {
+      "name": "enroll",
+      "passed": true
+    },
+    {
+      "name": "timetable_create",
+      "passed": true
+    },
+    {
+      "name": "overlap_rejected",
+      "passed": true
+    },
+    {
+      "name": "student_login",
+      "passed": true
+    },
+    {
+      "name": "schedule_shared",
+      "passed": true
+    },
+    {
+      "name": "grade_create",
+      "passed": true
+    },
+    {
+      "name": "stale_grade_conflict",
+      "passed": true
+    },
+    {
+      "name": "grade_edit",
+      "passed": true
+    },
+    {
+      "name": "student_reads_django_grade",
+      "passed": true
+    },
+    {
+      "name": "timetable_remove",
+      "passed": true
+    },
+    {
+      "name": "schedule_revocation_shared",
+      "passed": true
+    },
+    {
+      "name": "enrollment_cleanup",
+      "passed": true
+    },
+    {
+      "name": "grade_hidden_after_revocation",
+      "passed": true
+    }
+  ]
+}
