@@ -32,7 +32,7 @@ export function CommunityAdmin({api, onExpire, currentUser}) {
     {loading ? <p role="status">Cargando comunidad…</p> : <>
       <div className="scroll"><table><caption>Cuentas registradas</caption><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead>
         <tbody>{users.map(u=><tr key={u.username}><td>{u.username}</td><td>{u.name}</td><td>{u.role}</td><td>{u.enabled?'Activa':'Deshabilitada'}</td><td>
-          <button disabled={busy || !u.enabled || u.username === currentUser} onClick={()=>{
+          <button disabled={busy || !u.enabled || ['ADMIN','REVIEWER'].includes(u.role) || u.username === currentUser} onClick={()=>{
             if(window.confirm(`¿Deshabilitar la cuenta ${u.username}? Se cerrarán sus sesiones.`))
               save(()=>api(`/v1/users/${encodeURIComponent(u.username)}/disable`,{method:'POST'}),'Cuenta deshabilitada.');
           }}>Deshabilitar</button></td></tr>)}</tbody></table></div>

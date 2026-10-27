@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
+import {ReviewerPortal} from './reviewer-portal.jsx';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -55,7 +56,7 @@ function Login({notice, onOk}) {
       await api('/login', {method: 'POST', form: {username: u, password: p}});
       await loadCsrf(); // la sesión cambió: hay que pedir un token nuevo
       const perfil = await api('/perfil');
-      onOk(perfil.usuario);
+      onOk(perfil);
     } catch (x) {
       setErr(x.status === 401 ? 'Usuario o contraseña incorrectos.'
         : x.status === 403 ? 'Esta cuenta no tiene acceso de administración.' : x.message);
@@ -255,7 +256,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      try { await loadCsrf(); const p = await api('/perfil'); setUser(p.usuario); setAuth('in'); }
+      try { await loadCsrf(); const p = await api('/perfil'); setUser(p); setAuth('in'); }
       catch { setAuth('out'); }
     })();
   }, []);
@@ -283,6 +284,7 @@ function App() {
 
   if (auth === 'checking') return <p role="status" className="card narrow">Cargando…</p>;
   if (auth === 'out') return <Login notice={notice} onOk={u => { setUser(u); setNotice(''); setAuth('in'); }} />;
+  if (user.rol==='REVIEWER'||user.mustChangePassword) return <ReviewerPortal profile={user} api={api} onUpdated={setUser} onLogout={logout} notice={notice}/>;
 
   return (
     <>
@@ -295,13 +297,13 @@ function App() {
           <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
           <a href="/moderation.html">Revisar contenido</a>
         </nav>
-        <span>{user}</span>
+        <span>{user.usuario}</span>
         <button onClick={logout}>Cerrar sesión</button>
       </header>
       <main>
         {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
         {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
-        {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user} />}
+        {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user.usuario} />}
         {view.name === 'list' && <Lista reload={reload} onExpire={expire} onOpen={id => { setNotice(''); setView({name: 'detail', id}); }} />}
         {view.name === 'detail' && <Detalle id={view.id} notice={notice} onExpire={expire} onBack={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }} />}
         {view.name === 'new' && <Formulario onExpire={expire} onBack={() => setView({name: 'list'})}
