@@ -13,7 +13,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
-    moderation_tables=('moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
+    moderation_tables=('moderation_appeal','moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
     def setUpClass(cls):
@@ -32,7 +32,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -671,3 +671,74 @@ class AdministrationTests(TransactionTestCase):
         result=batch(apply=True,instant=instant)['counts']
         self.assertEqual(result['assessmentsPurged'],1);self.assertEqual(result['closedHoldsPurged'],1)
         self.assertFalse(rows('SELECT * FROM moderation_retention_hold'))
+
+    def appeal_fixture(self, status=False):
+        from .moderation import execute,now
+        value=self.status_fixture('IMAGE') if status else self.moderation_fixture(media=True)
+        kind,item,revision=('statuses','status',0) if status else ('messages','msg',1)
+        table,col=('status_update','id') if status else ('message_revision','message_id')
+        execute(f"UPDATE {table} SET state='REJECTED',reviewed_by='admin_test',reviewed_at=%s WHERE {col}=%s",[now(),item])
+        execute("INSERT INTO moderation_appeal(id,owner,subject_kind,subject_id,revision,content_hash,request_reason,state,created_at) VALUES('appeal','alumno',%s,%s,%s,%s,'Contexto educativo','OPEN',%s)",[kind,item,revision,value['contentHash'],now()])
+        SharedUser.objects.create(username='reviewer_test',display_name='Revisor sintético',role='ADMIN',password_hash=HASH,enabled=True)
+        return dict(outcome='RETURNED',reason='Requiere una segunda revisión del contexto.',contentHash=value['contentHash'])
+
+    def test_appeal_independent_resolution_returns_to_review_without_publication(self):
+        from .moderation import rows
+        value=self.appeal_fixture()
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,403)
+        self.login('reviewer_test')
+        response=self.academic_call('appeals/appeal/resolve',value)
+        self.assertEqual(response.status_code,200);self.assertFalse(response.json()['published'])
+        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'PENDING')
+        self.assertIsNone(rows('SELECT published_revision FROM message')[0]['published_revision'])
+        self.assertFalse(rows('SELECT * FROM notification'))
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
+
+    def test_open_appeal_protects_content_audit_and_cannot_be_removed_as_manual_hold(self):
+        from .moderation import execute,rows,now
+        from .retention import batch
+        self.appeal_fixture();instant=now()
+        execute('UPDATE message_revision SET submitted_at=%s,reviewed_at=%s',[instant-timedelta(days=100)]*2)
+        execute("INSERT INTO administrative_audit VALUES('audit','admin_test','APPEAL_OPENED','msg',%s)",[instant-timedelta(days=100)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        self.assertTrue(rows("SELECT id FROM administrative_audit WHERE id='audit'"))
+        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',{'active':False,'reason':'No puede cerrar apelación'}).status_code,409)
+
+    def test_appeal_detail_media_auth_csrf_and_hash_integrity(self):
+        from .moderation import execute
+        value=self.appeal_fixture()
+        self.assertEqual(Client().get('/api/admin/v1/appeals').status_code,401)
+        self.assertEqual(self.client.get('/api/admin/v1/appeals').json()[0]['reason'],'Contexto educativo')
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal').json()['text'],'hola')
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').content,b'archivo')
+        self.assertEqual(self.client.post('/api/admin/v1/appeals/appeal/resolve',json.dumps(value),content_type='application/json').status_code,403)
+        execute("UPDATE message_attachment_chunk SET payload=%s",[b'bad'])
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').status_code,409)
+
+    def test_appeal_stale_revision_cannot_return_and_closes_as_superseded(self):
+        from .moderation import execute,rows,now
+        value=self.appeal_fixture();self.login('reviewer_test')
+        execute("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES('msg',2,'nuevo','PENDING','new')")
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='SUPERSEDED')).status_code,200)
+        self.assertEqual(rows('SELECT state FROM message_revision WHERE revision=2')[0]['state'],'PENDING')
+
+    def test_expired_status_appeal_can_close_without_extending_lifetime(self):
+        from .moderation import execute,rows,now
+        value=self.appeal_fixture(status=True);self.login('reviewer_test')
+        expired=now()-timedelta(days=1);execute('UPDATE status_update SET expires_at=%s',[expired])
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='SUPERSEDED')).status_code,200)
+        self.assertEqual(rows('SELECT expires_at,state FROM status_update')[0],{'expires_at':expired,'state':'REJECTED'})
+
+    def test_appeal_resolution_rolls_back_and_resolved_history_expires(self):
+        from .moderation import rows,execute,now
+        from .retention import batch
+        value=self.appeal_fixture();self.login('reviewer_test')
+        with patch('administration.retention.event',side_effect=IntegrityError('synthetic')):
+            self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
+        self.assertEqual(rows('SELECT state FROM moderation_appeal')[0]['state'],'OPEN')
+        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'REJECTED')
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='UPHELD')).status_code,200)
+        old=now()-timedelta(days=90);execute('UPDATE moderation_appeal SET decided_at=%s',[old])
+        self.assertEqual(batch(apply=True)['counts']['appealsPurged'],1)

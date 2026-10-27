@@ -5,8 +5,13 @@ from administration import identity
 from administration import scheduling, grades
 from administration import moderation
 from administration import retention
+from administration import appeals
 
 urlpatterns = [
+    path('api/admin/v1/appeals', appeals.queue),
+    path('api/admin/v1/appeals/<str:appeal_id>', appeals.detail),
+    path('api/admin/v1/appeals/<str:appeal_id>/media', appeals.download),
+    path('api/admin/v1/appeals/<str:appeal_id>/resolve', appeals.resolve),
     path('api/admin/v1/retention-holds', retention.holds),
     path('api/admin/v1/moderation/<str:kind>/<str:item_id>/retention-hold', retention.hold),
     path('moderation.html', moderation.page),

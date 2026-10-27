@@ -32,7 +32,7 @@ def parent(kind, item):
     return bool(locked('SELECT id FROM status_update WHERE id=%s', [item]))
 
 def held(kind, item):
-    return bool(human.rows('SELECT subject_id FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s AND active=TRUE', [kind, item]))
+    return bool(human.rows('SELECT subject_id FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s AND active=TRUE', [kind, item]) or human.rows("SELECT id FROM moderation_appeal WHERE subject_kind=%s AND subject_id=%s AND state='OPEN'",[kind,item]))
 
 def event(action, subject, instant, actor='retention-worker'):
     human.execute('INSERT INTO administrative_audit(id,actor,action,subject,occurred_at) VALUES(%s,%s,%s,%s,%s)',
@@ -57,7 +57,10 @@ def hold(request, kind, item_id):
     if active and not human.rows(f'SELECT {column} FROM {table} WHERE {column}=%s AND purged_at IS NULL', [item_id]):
         return error(409, 'CONTENT_PURGED', 'El contenido ya fue eliminado; una protección no lo recupera.')
     # The same parent lock serializes hold changes, human review and purge.
-    if held(kind, item_id) == active:
+    manual = bool(human.rows('SELECT subject_id FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s AND active=TRUE',[kind,item_id]))
+    if not active and human.rows("SELECT id FROM moderation_appeal WHERE subject_kind=%s AND subject_id=%s AND state='OPEN'",[kind,item_id]):
+        return error(409,'OPEN_APPEAL','Resuelve primero la apelación desde su cola; esta protección no puede quitarse manualmente.')
+    if manual == active:
         return JsonResponse({'active': active, 'changed': False})
     existing = human.rows('SELECT subject_id FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s', [kind, item_id])
     if existing:
@@ -86,7 +89,7 @@ def eligible(value, start, instant):
 def selection(table, start, instant, limit):
     kind, key = ('messages', 'message_id') if table == 'message_revision' else ('statuses', 'id')
     published = ' AND NOT EXISTS(SELECT 1 FROM message m WHERE m.id=t.message_id AND m.published_revision=t.revision)' if kind == 'messages' else ''
-    return human.rows(f"SELECT t.* FROM {table} t WHERE purged_at IS NULL AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.subject_kind='{kind}' AND h.subject_id=t.{key} AND h.active=TRUE){published} AND ((state='PENDING' AND {start}<=%s) OR (state='REJECTED' AND reviewed_at<=%s AND {start}<=%s)) ORDER BY {start},t.{key} LIMIT %s",
+    return human.rows(f"SELECT t.* FROM {table} t WHERE purged_at IS NULL AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.subject_kind='{kind}' AND h.subject_id=t.{key} AND h.active=TRUE) AND NOT EXISTS(SELECT 1 FROM moderation_appeal a WHERE a.subject_kind='{kind}' AND a.subject_id=t.{key} AND a.state='OPEN'){published} AND ((state='PENDING' AND {start}<=%s) OR (state='REJECTED' AND reviewed_at<=%s AND {start}<=%s)) ORDER BY {start},t.{key} LIMIT %s",
                       [instant-timedelta(days=PENDING_DAYS), instant-timedelta(days=REJECTED_DAYS), instant-timedelta(days=REJECTED_DAYS), limit])
 
 def minimize(kind, selected, instant, apply):
@@ -130,13 +133,14 @@ def batch(limit=100, apply=False, instant=None):
     if type(limit) is not int or not 1 <= limit <= 500:
         raise ValueError('Lote entre 1 y 500.')
     instant = instant or human.now()
-    counts = dict(eligible=0, purged=0, protected=0, changed=0, auditEligible=0, auditPurged=0, closedHoldsEligible=0, closedHoldsPurged=0, assessmentsEligible=0, assessmentsPurged=0)
+    counts = dict(eligible=0, purged=0, protected=0, changed=0, auditEligible=0, auditPurged=0, closedHoldsEligible=0, closedHoldsPurged=0, assessmentsEligible=0, assessmentsPurged=0,appealsEligible=0,appealsPurged=0)
     for kind, table, start in [('messages', 'message_revision', 'submitted_at'), ('statuses', 'status_update', 'retention_started_at')]:
         for value in selection(table, start, instant, limit):
             outcome = minimize(kind, value, instant, apply); counts[outcome] += 1
     # Only moderation/retention audit. Other administrative history is outside this policy.
     suffix = "(h.subject_id || ':')" if connection.vendor == 'sqlite' else "CONCAT(h.subject_id,':')"
-    audits = human.rows(f"SELECT a.* FROM administrative_audit a WHERE occurred_at<=%s AND action IN ('MESSAGE_APPROVED','MESSAGE_REJECTED','STATUS_APPROVED','STATUS_REJECTED','RETENTION_CONTENT_PURGED','RETENTION_HOLD_OPENED','RETENTION_HOLD_CLOSED') AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.active=TRUE AND (a.subject=h.subject_id OR SUBSTR(a.subject,1,LENGTH(h.subject_id)+1)={suffix})) ORDER BY occurred_at,id LIMIT %s", [instant-timedelta(days=AUDIT_DAYS), limit])
+    appeal_suffix="(p.subject_id || ':')" if connection.vendor=='sqlite' else "CONCAT(p.subject_id,':')"
+    audits = human.rows(f"SELECT a.* FROM administrative_audit a WHERE occurred_at<=%s AND action IN ('MESSAGE_APPROVED','MESSAGE_REJECTED','STATUS_APPROVED','STATUS_REJECTED','RETENTION_CONTENT_PURGED','RETENTION_HOLD_OPENED','RETENTION_HOLD_CLOSED','APPEAL_OPENED','APPEAL_RESOLVED') AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.active=TRUE AND (a.subject=h.subject_id OR SUBSTR(a.subject,1,LENGTH(h.subject_id)+1)={suffix})) AND NOT EXISTS(SELECT 1 FROM moderation_appeal p WHERE p.state='OPEN' AND (a.subject=p.subject_id OR SUBSTR(a.subject,1,LENGTH(p.subject_id)+1)={appeal_suffix})) ORDER BY occurred_at,id LIMIT %s", [instant-timedelta(days=AUDIT_DAYS), limit])
     for audit in audits:
         item = audit['subject'].split(':', 1)[0]
         # Serialize with both possible parent kinds; UUIDs share the namespace.
@@ -148,7 +152,7 @@ def batch(limit=100, apply=False, instant=None):
             if apply:
                 counts['auditPurged'] += human.execute('DELETE FROM administrative_audit WHERE id=%s AND occurred_at<=%s', [audit['id'], instant-timedelta(days=AUDIT_DAYS)])
     cutoff = instant-timedelta(days=AUDIT_DAYS)
-    assessments = human.rows('SELECT a.* FROM automatic_assessment a WHERE updated_at<=%s AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.subject_kind=a.subject_kind AND h.subject_id=a.subject_id AND h.active=TRUE) ORDER BY updated_at,id LIMIT %s', [cutoff, limit])
+    assessments = human.rows("SELECT a.* FROM automatic_assessment a WHERE updated_at<=%s AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.subject_kind=a.subject_kind AND h.subject_id=a.subject_id AND h.active=TRUE) AND NOT EXISTS(SELECT 1 FROM moderation_appeal p WHERE p.subject_kind=a.subject_kind AND p.subject_id=a.subject_id AND p.state='OPEN') ORDER BY updated_at,id LIMIT %s", [cutoff, limit])
     for value in assessments:
         with transaction.atomic():
             parent(value['subject_kind'], value['subject_id'])
@@ -164,4 +168,11 @@ def batch(limit=100, apply=False, instant=None):
             counts['closedHoldsEligible'] += 1
             if apply:
                 counts['closedHoldsPurged'] += human.execute('DELETE FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s AND active=FALSE AND closed_at<=%s', [value['subject_kind'], value['subject_id'], cutoff])
+    resolved=human.rows("SELECT * FROM moderation_appeal p WHERE state<>'OPEN' AND decided_at<=%s AND NOT EXISTS(SELECT 1 FROM moderation_appeal a WHERE a.subject_kind=p.subject_kind AND a.subject_id=p.subject_id AND a.state='OPEN') AND NOT EXISTS(SELECT 1 FROM moderation_retention_hold h WHERE h.subject_kind=p.subject_kind AND h.subject_id=p.subject_id AND h.active=TRUE) ORDER BY decided_at,id LIMIT %s",[cutoff,limit])
+    for value in resolved:
+        with transaction.atomic():
+            parent(value['subject_kind'],value['subject_id'])
+            if held(value['subject_kind'],value['subject_id']):continue
+            counts['appealsEligible']+=1
+            if apply:counts['appealsPurged']+=human.execute("DELETE FROM moderation_appeal WHERE id=%s AND state<>'OPEN' AND decided_at<=%s",[value['id'],cutoff])
     return dict(policy=POLICY, evaluatedAt=instant.isoformat(), mode='apply' if apply else 'preview', counts=counts)
