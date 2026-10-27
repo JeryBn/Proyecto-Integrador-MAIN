@@ -5,6 +5,11 @@ from . import media_assessment as media
 from .automatic_moderation import Assessment,ProviderUnavailable,OpenAiModerator
 
 class MediaAssessmentTests(SimpleTestCase):
+    def test_quota_is_distinct_from_rate_limit_without_logging_response(self):
+        from .automatic_moderation import provider_http_error
+        for code,expected in [('insufficient_quota','QUOTA_EXHAUSTED'),('rate_limit_exceeded','RATE_LIMITED'),('unknown','RATE_OR_QUOTA')]:
+            error=urllib.error.HTTPError('fixed',429,'private',{},io.BytesIO(json.dumps({'error':{'code':code,'message':'not retained'}}).encode()))
+            self.assertEqual(provider_http_error(error),expected)
     def test_size_rejected_before_decoder(self):
         with patch.object(media,'_run') as run:
             for kind,raw in [('TEXT',b'x'),('AUDIO',b''),('VIDEO',b'x'*(12*1024*1024+1))]:

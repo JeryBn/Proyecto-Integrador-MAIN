@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "realProvider": true,
+  "databaseChanged": false,
+  "personalRecording": false,
+  "outcome": "BLOCKED",
+  "error": "RATE_OR_QUOTA",
+  "transcriptionSucceeded": 0,
+  "moderationSucceeded": 0
+}

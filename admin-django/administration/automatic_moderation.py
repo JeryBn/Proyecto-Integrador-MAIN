@@ -14,6 +14,15 @@ from .models import SharedUser
 class ProviderUnavailable(Exception):
     pass
 
+def provider_http_error(error):
+    if error.code==429:
+        try:
+            raw=error.read(65537)
+            code=json.loads(raw)['error']['code'] if len(raw)<=65536 else None
+        except Exception:code=None
+        return {'insufficient_quota':'QUOTA_EXHAUSTED','rate_limit_exceeded':'RATE_LIMITED'}.get(code,'RATE_OR_QUOTA')
+    return 'ACCESS_DENIED' if error.code in (401,403) else 'PROVIDER_UNAVAILABLE'
+
 @dataclass(frozen=True)
 class Assessment:
     outcome: str
@@ -58,8 +67,7 @@ class OpenAiModerator:
                 if len(data)>1024*1024:raise ProviderUnavailable('INVALID_RESPONSE')
                 return parse_assessment(json.loads(data),'IMAGE' if image else 'TEXT')
         except urllib.error.HTTPError as exc:
-            code='RATE_OR_QUOTA' if exc.code==429 else 'ACCESS_DENIED' if exc.code in (401,403) else 'PROVIDER_UNAVAILABLE'
-            raise ProviderUnavailable(code) from None
+            raise ProviderUnavailable(provider_http_error(exc)) from None
         except ProviderUnavailable:raise
         except Exception:raise ProviderUnavailable('CONNECTION_OR_INVALID_RESPONSE') from None
 

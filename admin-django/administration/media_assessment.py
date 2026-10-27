@@ -31,10 +31,10 @@ def extract(kind,content):
         root=Path(folder);source=root/'input.bin';source.write_bytes(content)
         # Fixed local input; manifests and network protocols are not accepted.
         formats='mov,matroska,webm,wav,mp3,ogg,flac,aac'
-        common=['-protocol_whitelist','file,pipe','-format_whitelist',formats]
+        common=['-max_alloc','67108864','-protocol_whitelist','file,pipe','-format_whitelist',formats]
         try:
             probe=json.loads(_run([ffprobe,'-v','error',*common,'-show_entries',
-                'format=duration:stream=codec_type,width,height','-of','json',str(source)],10))
+                'format=duration:stream=codec_type,width,height,sample_rate,channels','-of','json',str(source)],10))
             duration=float(probe['format']['duration']);streams=probe['streams']
             audio=[s for s in streams if s['codec_type']=='audio']
             video=[s for s in streams if s['codec_type']=='video']
@@ -44,6 +44,7 @@ def extract(kind,content):
             if kind=='VIDEO' and (not video or any(not 0<int(s['width'])<=4096 or not 0<int(s['height'])<=4096 for s in video)):
                 raise MediaUnavailable('MEDIA_LIMIT')
             if any(s['codec_type'] not in ('audio','video') for s in streams):raise MediaUnavailable('MEDIA_INVALID')
+            if any(not 1<=int(s['channels'])<=8 or not 1<=int(s['sample_rate'])<=192000 for s in audio):raise MediaUnavailable('MEDIA_LIMIT')
         except (KeyError,TypeError,ValueError):raise MediaUnavailable('MEDIA_INVALID') from None
         base=[ffmpeg,'-v','error','-nostdin','-threads','1',*common,'-i',str(source),'-t','60']
         normalized=None;frames=()
@@ -61,7 +62,7 @@ def extract(kind,content):
         return ExtractedMedia(duration,normalized,frames)
 
 def transcribe(key,audio):
-    from .automatic_moderation import NoRedirect,ProviderUnavailable
+    from .automatic_moderation import NoRedirect,ProviderUnavailable,provider_http_error
     if not key:raise ProviderUnavailable('NOT_CONFIGURED')
     if not audio or len(audio)>2000000:raise MediaUnavailable('MEDIA_LIMIT')
     boundary='MAIN'+uuid.uuid4().hex
@@ -78,7 +79,7 @@ def transcribe(key,audio):
         if not isinstance(text,str) or len(text)>20000:raise ProviderUnavailable('INVALID_RESPONSE')
         return text
     except urllib.error.HTTPError as error:
-        raise ProviderUnavailable('RATE_OR_QUOTA' if error.code==429 else 'ACCESS_DENIED' if error.code in (401,403) else 'PROVIDER_UNAVAILABLE') from None
+        raise ProviderUnavailable(provider_http_error(error)) from None
     except ProviderUnavailable:raise
     except Exception:raise ProviderUnavailable('CONNECTION_OR_INVALID_RESPONSE') from None
 

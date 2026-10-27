@@ -19,11 +19,15 @@ La caché de derivaciones previas se conserva; para revaluar con la cobertura nu
 
 ## Pruebas
 
-52 pruebas Django aprobadas: se añadieron nueve sobre límites, tracks, timeout, contrato de transcripción, cuota, categorías y protección contra publicación incluso si un proveedor controlado devuelve CLEAR. Comando: `manage.py test administration --settings=main_admin.test_settings` desde admin-django. Un primer comando desde la raíz no descubrió pruebas y no se contabiliza como aprobado.
+53 pruebas Django aprobadas: se añadieron diez sobre límites, tracks, timeout, contrato de transcripción, clasificación de errores de cuota/límite, categorías y protección contra publicación incluso si un proveedor controlado devuelve CLEAR. Comando: `manage.py test administration --settings=main_admin.test_settings` desde admin-django. Un primer comando desde la raíz no descubrió pruebas y no se contabiliza como aprobado.
 
 `scripts/verificar_medios_local.py` genera tono WAV y video de color con audio, comprueba FFmpeg real, normalización, fotogramas y derivación humana con transcripción/clasificador controlados. No realiza solicitudes OpenAI ni cambia BD. El ensayo encontró dos problemas reales de FFmpeg: rango YUV de JPEG y ausencia de muestra en clips cortos; se corrigieron usando PNG RGB y redondeo del muestreo. Ambos medios pasaron el ensayo posterior. Evidencia en docs/informes/2026-10-27-multimedia/.
 
-Quedan evaluación representativa humana y del proveedor real de transcripción, cobertura de OCR/escenas breves/sonidos no verbales, configuración institucional y aceptación. M19/M09/M11/M20 no están completas por este incremento.
+Se intentó además el proveedor real con una frase educativa generada por voz sintética local y video de color, sin micrófono ni personas. Transcripción respondió HTTP 429, clasificado RATE_OR_QUOTA; no se obtuvo una transcripción ni se ejecutaron las moderaciones posteriores. Se repitió una vez tras mejorar el diagnóstico; siguió 429 sin código reconocido para distinguir saldo de límite temporal. No se presume cuota agotada con certeza ni se creó otra clave. Evidencia metadata sin transcripción ni token en provider.json. No continuar reintentando hasta revisar límites/acceso del proyecto de la clave existente.
+
+Se limitaron también asignaciones individuales del decodificador a 64 MB, pistas de audio a ocho canales y frecuencia a 192 kHz; se repitieron las pruebas y extracción sintética real con esos límites.
+
+Quedan evaluación representativa humana y éxito del proveedor real de transcripción, cobertura de OCR/escenas breves/sonidos no verbales, configuración institucional y aceptación. M19/M09/M11/M20 no están completas por este incremento.
 
 ## Fuentes oficiales consultadas
 
