@@ -1,6 +1,8 @@
 import {useState} from 'react';
 import {userApi,enc} from './user-api.mjs';
 import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
+import {ReminderSettings} from './reminder-settings.jsx';
+import {noticeLabel,noticeTarget} from './notice-model.mjs';
 
 export function Profile({profile,preferences,onPreferences,active,onChat}){
   const {confirm,confirmation}=useConfirmation();
@@ -10,6 +12,7 @@ export function Profile({profile,preferences,onPreferences,active,onChat}){
   return <section className="user-panel" aria-label="Perfil y privacidad">{confirmation}<h1>Perfil y ajustes</h1>
     <div className="profile-heading"><span className="avatar">{profile.nombre?.slice(0,1)}</span><div><h2>{profile.nombre}</h2><p>{profile.rol} · {profile.usuario}</p></div></div>
     {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
+    <ReminderSettings active={active&&profile.rol==='Alumno'}/>
     <h2>Ajustes</h2>{preferences?<fieldset disabled={busy} className="settings-list"><legend>Preferencias de tu cuenta</legend>
       <label><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/> Tema oscuro</label>
       <label><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/> Avisos dentro de MAIN</label>
@@ -34,7 +37,7 @@ export function Notifications({active,onChat,onUpdated}){
   async function mark(n){setBusy(true);setError('');try{await userApi.call('/api/v1/notifications/'+enc(n.id)+'/read',{method:'POST',json:{}});notices.reload();onUpdated();}catch(e){setError(e.message);}finally{setBusy(false);}}
   return <section className="user-panel" aria-label="Avisos"><h1>Avisos</h1><button onClick={notices.reload}>Actualizar avisos</button><Feedback resource={notices}/>{error&&<p role="alert">{error}</p>}
     {notices.data?.length===0&&<p>No hay avisos visibles. Los mensajes pendientes de revisión no generan avisos de entrega.</p>}
-    <ul className="contact-list">{notices.data?.map(n=><li key={n.id}><div className="grow"><strong>{n.kind==='MESSAGE'?'Mensaje aprobado disponible':'Invitación a grupo'}</strong><small>{n.read?'Leído':'Sin leer'}</small></div>{onChat&&<button disabled={busy} onClick={()=>onChat(n.conversationId)}>Abrir conversación</button>}{!n.read&&<button disabled={busy} onClick={()=>mark(n)}>Marcar leído</button>}</li>)}</ul>
+    <ul className="contact-list">{notices.data?.map(n=><li key={n.id}><div className="grow"><strong>{noticeLabel(n)}</strong><small>{n.read?'Leído':'Sin leer'}</small></div>{noticeTarget(n)&&<a href={noticeTarget(n)}>{n.kind==='REMINDER'?'Ver actividad':'Abrir conversación'}</a>}{!n.read&&<button disabled={busy} onClick={()=>mark(n)}>Marcar leído</button>}</li>)}</ul>
     <div className="pager"><button disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-30))}>Avisos anteriores</button><span>Página {offset/30+1}</span><button disabled={notices.data?.length!==30} onClick={()=>setOffset(offset+30)}>Más avisos</button></div>
   </section>;
 }
