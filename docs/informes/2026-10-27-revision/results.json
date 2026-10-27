@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-27",
+  "spring": {
+    "executions": 133,
+    "retryExtraExecutions": 9,
+    "skipped": 0,
+    "database": "H2",
+    "errors": 0,
+    "failures": 0
+  },
+  "roleMatrix": {
+    "includedInSpringTotal": true,
+    "unorderedPairs": 6,
+    "bothDirections": true
+  },
+  "web": {
+    "outage": "two hours simulated with controlled clock",
+    "build": "passed",
+    "tests": 34,
+    "passed": 34
+  },
+  "physicalAndroid": "not connected; no new physical test",
+  "androidAndDjangoRerun": false,
+  "providerRealRerun": false,
+  "initialTrello": {
+    "completed": 19,
+    "overdue": 23,
+    "open": 32,
+    "total": 51,
+    "dueToday": 9
+  },
+  "afterTrackingClose": {
+    "dueToday": 8,
+    "open": 31,
+    "completed": 20,
+    "card": "S3-09",
+    "scope": "tracking review only",
+    "overdue": 23
+  }
+}

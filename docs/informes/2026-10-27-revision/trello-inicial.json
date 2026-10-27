@@ -1,0 +1,162 @@
+[
+  {
+    "title": "EQUIPO — Acordar objetivo, alcance y definición de terminado del Sprint 1",
+    "url": "https://trello.com/c/URfwP3H0/3-equipo-acordar-objetivo-alcance-y-definici%C3%B3n-de-terminado-del-sprint-1",
+    "list": "LISTA DE TAREAS"
+  },
+  {
+    "title": "M18 [Equipo] Documentación, evidencias y cierre del proyecto",
+    "url": "https://trello.com/c/8EMiZ9A7/36-m18-equipo-documentaci%C3%B3n-evidencias-y-cierre-del-proyecto",
+    "list": "EN PROGRESO"
+  },
+  {
+    "title": "M19 [App/API/IA] Moderación previa de mensajes y estados",
+    "url": "https://trello.com/c/qeft1Wx1/37-m19-app-api-ia-moderaci%C3%B3n-previa-de-mensajes-y-estados",
+    "list": "EN PROGRESO"
+  },
+  {
+    "title": "HU06 — Consultar actividades pendientes (web: validación del equipo)",
+    "url": "https://trello.com/c/SMdNcZir/1-hu06-consultar-actividades-pendientes-web-validaci%C3%B3n-del-equipo",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "HU07 — Consultar detalle de actividad (web: validación del equipo)",
+    "url": "https://trello.com/c/ZKdBi06d/2-hu07-consultar-detalle-de-actividad-web-validaci%C3%B3n-del-equipo",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "JERY — Planificar cliente Kotlin para HU06/HU07 (alcance por confirmar)",
+    "url": "https://trello.com/c/ZeMd6ERh/4-jery-planificar-cliente-kotlin-para-hu06-hu07-alcance-por-confirmar",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "T09 [Spring Boot] Implementar operación administrativa acordada — Michael",
+    "url": "https://trello.com/c/u1qzmlpS/16-t09-spring-boot-implementar-operaci%C3%B3n-administrativa-acordada-michael",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "MICHAEL — Preparar backend Spring Boot de administración (alcance por confirmar)",
+    "url": "https://trello.com/c/AUDiCQlt/5-michael-preparar-backend-spring-boot-de-administraci%C3%B3n-alcance-por-confirmar",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "T11 [React administrativo] Integrar pantalla con Spring Boot — Pamela",
+    "url": "https://trello.com/c/UKnyGWj2/18-t11-react-administrativo-integrar-pantalla-con-spring-boot-pamela",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "PAMELA — Verificar paquete local y preparar interfaz administrativa",
+    "url": "https://trello.com/c/BOS5TEcL/6-pamela-verificar-paquete-local-y-preparar-interfaz-administrativa",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "M15 [Equipo] Pruebas completas, seguridad y rendimiento",
+    "url": "https://trello.com/c/JjlG2EqD/33-m15-equipo-pruebas-completas-seguridad-y-rendimiento",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "T10 [Datos] Acordar base compartida y migraciones — Jery + Michael",
+    "url": "https://trello.com/c/XuViw9V6/17-t10-datos-acordar-base-compartida-y-migraciones-jery-michael",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "M02 [Equipo] Arquitectura, contratos y persistencia compartida",
+    "url": "https://trello.com/c/RnkwF0eI/20-m02-equipo-arquitectura-contratos-y-persistencia-compartida",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "M10 [App/API] Notificaciones y sincronización fiable",
+    "url": "https://trello.com/c/Sp0H59Ki/28-m10-app-api-notificaciones-y-sincronizaci%C3%B3n-fiable",
+    "list": "PRUEBAS"
+  },
+  {
+    "title": "M01 [Equipo] Consolidar alcance, historias y plan de entregas",
+    "url": "https://trello.com/c/eqleey71/19-m01-equipo-consolidar-alcance-historias-y-plan-de-entregas",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M04 [Jery/App] Sistema visual profesional con Material 3",
+    "url": "https://trello.com/c/PQFqc1Dh/22-m04-jery-app-sistema-visual-profesional-con-material-3",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M06 [App/API] Conversaciones privadas y mensajes en tiempo real",
+    "url": "https://trello.com/c/ayO8UuLc/24-m06-app-api-conversaciones-privadas-y-mensajes-en-tiempo-real",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M09 [App/API] Estados multimedia y privacidad de audiencia",
+    "url": "https://trello.com/c/SFeqNex6/27-m09-app-api-estados-multimedia-y-privacidad-de-audiencia",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M11 [Equipo/IA] Definir asistente académico y proveedor",
+    "url": "https://trello.com/c/NdK02gB6/29-m11-equipo-ia-definir-asistente-acad%C3%A9mico-y-proveedor",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M12 [Jery/App + API] Integrar asistente IA funcional",
+    "url": "https://trello.com/c/7Qn9shZI/30-m12-jery-app-api-integrar-asistente-ia-funcional",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M16 [Equipo] Servidor compartido, despliegue y operación",
+    "url": "https://trello.com/c/tWfZ3s43/34-m16-equipo-servidor-compartido-despliegue-y-operaci%C3%B3n",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M20 [Equipo] Normas de contenido y evaluación de moderación",
+    "url": "https://trello.com/c/gF9ubXm5/38-m20-equipo-normas-de-contenido-y-evaluaci%C3%B3n-de-moderaci%C3%B3n",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "M17 [Jery/App] APK de entrega, teléfono físico y aceptación",
+    "url": "https://trello.com/c/OipuXCub/35-m17-jery-app-apk-de-entrega-tel%C3%A9fono-f%C3%ADsico-y-aceptaci%C3%B3n",
+    "list": "BACKLOG MAIN COMPLETO"
+  },
+  {
+    "title": "S3-01 [Jery/P0] Confirmar alcance, prioridades y acuerdos del sprint 3",
+    "url": "https://trello.com/c/HBzxEtFy/43-s3-01-jery-p0-confirmar-alcance-prioridades-y-acuerdos-del-sprint-3",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-02 [Jery/P0] Habilitar cuota IA y verificar una respuesta real",
+    "url": "https://trello.com/c/PeooJXUB/44-s3-02-jery-p0-habilitar-cuota-ia-y-verificar-una-respuesta-real",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-03 [Jery/P0] Definir revisor de apelaciones y plazo de retención",
+    "url": "https://trello.com/c/BIuVcJmO/45-s3-03-jery-p0-definir-revisor-de-apelaciones-y-plazo-de-retenci%C3%B3n",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-04 [Jery/P0] Elegir destino HTTPS y presupuesto para la entrega",
+    "url": "https://trello.com/c/pXEPBIu3/46-s3-04-jery-p0-elegir-destino-https-y-presupuesto-para-la-entrega",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-05 [Jery/Android] Preparar configuración y firma de entrega",
+    "url": "https://trello.com/c/nZ3IMpQT/47-s3-05-jery-android-preparar-configuraci%C3%B3n-y-firma-de-entrega",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-06 [Jery/Android] Ejecutar pruebas en teléfono físico",
+    "url": "https://trello.com/c/l5NcWVvY/48-s3-06-jery-android-ejecutar-pruebas-en-tel%C3%A9fono-f%C3%ADsico",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-07 [Jery/Android] Integrar el cliente con el entorno y contrato entregados",
+    "url": "https://trello.com/c/KdGEqBrI/49-s3-07-jery-android-integrar-el-cliente-con-el-entorno-y-contrato-entregados",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-08 [Jery/Entrega] Preparar demostración, aceptación e informe Word/PDF",
+    "url": "https://trello.com/c/074Rokuf/50-s3-08-jery-entrega-preparar-demostraci%C3%B3n-aceptaci%C3%B3n-e-informe-word-pdf",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  },
+  {
+    "title": "S3-09 [Jery/Coordinación] Revisar avances del equipo y dependencias del sprint 3",
+    "url": "https://trello.com/c/Vwee2x06/51-s3-09-jery-coordinaci%C3%B3n-revisar-avances-del-equipo-y-dependencias-del-sprint-3",
+    "list": "SPRINT 3 — 27 OCT 2026"
+  }
+]
