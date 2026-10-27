@@ -5,6 +5,14 @@
 <body><main><header><p>MAIN · Administración</p><h1>Revisión de mensajes</h1><a href="/admin.html">Volver a Administración</a></header>
 <p>Solo la versión que revisas puede ser aprobada. Los borradores pendientes o rechazados permanecen privados.</p>
 <p id="notice" role="status"></p><button id="refresh">Actualizar cola</button>
+<section aria-labelledby="retentionTitle"><h2 id="retentionTitle">Protección por apelación</h2>
+<p>La limpieza conserva pendientes siete días y rechazados treinta días. Una protección activa suspende la eliminación del contenido y su historial de revisión. Resolverla inicia un plazo nuevo; no recupera contenido ya eliminado.</p>
+<form id="retentionForm"><label>Contenido<select id="retentionKind"><option value="messages">Mensaje</option><option value="statuses">Estado</option></select></label>
+<label>Identificador del contenido<input id="retentionId" maxlength="36" required></label>
+<label>Motivo de la protección o resolución<input id="retentionReason" maxlength="300" required></label>
+<button type="submit" id="protectContent">Proteger contenido</button><button type="button" id="releaseContent">Resolver protección</button></form>
+<h3>Protecciones activas</h3><section id="retentionHolds"></section>
+<button id="holdsPrevious">Protecciones anteriores</button><button id="holdsNext">Más protecciones</button></section>
 <h2>Estados pendientes</h2><p>Revisa el texto completo y reproduce todo el video o audio, incluida su pista sonora, antes de aprobar. La validación técnica no evalúa las reglas de contenido.</p><section id="statusQueue"></section><h2>Mensajes pendientes</h2><section id="queue" aria-label="Mensajes pendientes"></section>
 <nav><button id="previous">Página anterior</button><button id="next">Página siguiente</button></nav>
 </main><script src="/moderation.js"></script></body></html>

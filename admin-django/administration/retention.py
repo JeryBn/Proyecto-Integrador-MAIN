@@ -7,11 +7,20 @@ from django.views.decorators.http import require_http_methods
 from . import moderation as human
 from .academic import body
 from .identity import mutation, text
-from .views import admin_only, error
+from .views import admin_only, error, pagination
 
 POLICY = 'jery-2026-10-27-v1'
 PENDING_DAYS, REJECTED_DAYS, AUDIT_DAYS = 7, 30, 90
 REASON = 'Contenido eliminado por plazo de conservación.'
+
+@require_http_methods(['GET'])
+@admin_only
+def holds(request):
+    page = pagination(request)
+    if page is None: return error(400, 'VALIDATION_ERROR', 'Paginación inválida.')
+    offset, limit = page
+    values = human.rows('SELECT subject_kind,subject_id,reason,opened_by,opened_at FROM moderation_retention_hold WHERE active=TRUE ORDER BY opened_at,subject_kind,subject_id LIMIT %s OFFSET %s', [limit, offset])
+    return JsonResponse([dict(kind=v['subject_kind'], id=v['subject_id'], reason=v['reason'], openedBy=v['opened_by'], openedAt=v['opened_at'].isoformat()) for v in values], safe=False)
 
 def locked(sql, args):
     return human.rows(sql + (' FOR UPDATE' if connection.vendor != 'sqlite' else ''), args)

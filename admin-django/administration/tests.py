@@ -647,3 +647,27 @@ class AdministrationTests(TransactionTestCase):
         with patch.dict('os.environ',{'MAIN_RETENTION_APPLY':''}):
             with self.assertRaises(CommandError): call_command('retain_content',apply=True,stdout=StringIO())
         with self.assertRaises(CommandError): call_command('retain_content',limit=501,stdout=StringIO())
+
+    def test_retention_hold_listing_is_admin_only_and_paginated(self):
+        self.moderation_fixture()
+        self.assertEqual(Client().get('/api/admin/v1/retention-holds').status_code,401)
+        self.assertEqual(self.client.get('/api/admin/v1/retention-holds?limit=1000').status_code,400)
+        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',{'active':True,'reason':'Apelación de prueba'}).status_code,200)
+        self.assertEqual(self.client.get('/api/admin/v1/retention-holds').json()[0]['id'],'msg')
+        self.assertEqual(self.client.get('/api/admin/v1/retention-holds?offset=1').json(),[])
+
+    def test_retention_old_assessments_and_closed_holds_expire(self):
+        from .retention import batch
+        from .moderation import execute, rows, now
+        self.moderation_fixture(); instant=now(); old=instant-timedelta(days=90)
+        execute("UPDATE message_revision SET state='APPROVED'")
+        execute("INSERT INTO automatic_assessment(id,policy_version,subject_kind,subject_id,content_hash,outcome,attempts,lease_until,updated_at) VALUES('assessment','synthetic','messages','msg','hash','HUMAN_REQUIRED',1,%s,%s)",[old,old])
+        execute("INSERT INTO moderation_retention_hold VALUES('messages','msg',TRUE,'Apelación','admin_test',%s,NULL,NULL)",[old])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['assessmentsPurged'],0)
+        execute("UPDATE moderation_retention_hold SET active=FALSE,closed_at=%s",[old])
+        preview=batch(instant=instant)['counts']
+        self.assertEqual(preview['assessmentsEligible'],1);self.assertEqual(preview['closedHoldsEligible'],1)
+        self.assertTrue(rows('SELECT * FROM automatic_assessment'))
+        result=batch(apply=True,instant=instant)['counts']
+        self.assertEqual(result['assessmentsPurged'],1);self.assertEqual(result['closedHoldsPurged'],1)
+        self.assertFalse(rows('SELECT * FROM moderation_retention_hold'))

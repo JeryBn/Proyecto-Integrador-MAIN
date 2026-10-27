@@ -1,5 +1,6 @@
 'use strict';
 let offset=0;
+let holdsOffset=0;
 const queue=document.getElementById('queue'),notice=document.getElementById('notice');
 async function request(path,options={}){
  const response=await fetch(path,{...options,credentials:'same-origin',headers:{Accept:'application/json',...options.headers}});
@@ -37,6 +38,7 @@ async function review(message,approved,reason,button,attachmentReviewed=false){
 async function load(){
  notice.textContent='Cargando…';
  try{
+  await loadHolds();
   await loadStatuses();
   const messages=await request('/api/admin/v1/moderation/messages?offset='+offset+'&limit=20');
   queue.replaceChildren();
@@ -68,7 +70,7 @@ async function load(){
    }
    approve.addEventListener('click',()=>review(message,true,'',approve,attachmentReviewed?.checked||false));
    reject.addEventListener('click',()=>{if(!reason.value.trim()){reason.focus();notice.textContent='Indica la norma que explica el rechazo.';return;}review(message,false,reason.value.trim(),reject);});
-   card.append(label,approve,reject);queue.append(card);
+   card.append(label,approve,reject,protectButton('messages',message.id));queue.append(card);
   }
   notice.textContent=messages.length?'Revisa el contenido antes de decidir.':'No hay mensajes pendientes en esta página.';
   document.getElementById('previous').disabled=offset===0;document.getElementById('next').disabled=messages.length<20;
@@ -105,6 +107,34 @@ async function loadStatuses(){
    try{const csrf=await request('/api/admin/csrf');await request('/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/review',{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({contentHash:status.contentHash,approved,reason:reason.value.trim(),attachmentReviewed:mediaReviewed?.checked||false})});await load();}
    catch(error){notice.textContent=error.message;approve.disabled=!!mediaReviewed&&!mediaReviewed.checked;reject.disabled=false;}
   }
-  approve.addEventListener('click',()=>decide(true));reject.addEventListener('click',()=>decide(false));card.append(reason,approve,reject);target.append(card);
+  approve.addEventListener('click',()=>decide(true));reject.addEventListener('click',()=>decide(false));card.append(reason,approve,reject,protectButton('statuses',status.id));target.append(card);
  }
 }
+
+function selectProtection(kind,id){
+ document.getElementById('retentionKind').value=kind;document.getElementById('retentionId').value=id;
+ document.getElementById('retentionReason').value='';document.getElementById('retentionReason').focus();
+ notice.textContent='Indica el motivo y confirma la protección o su resolución.';
+}
+function protectButton(kind,id){const button=element('button','Gestionar protección por apelación');button.addEventListener('click',()=>selectProtection(kind,id));return button;}
+async function loadHolds(){
+ const values=await request('/api/admin/v1/retention-holds?offset='+holdsOffset+'&limit=20');
+ const target=document.getElementById('retentionHolds');target.replaceChildren();
+ if(!values.length)target.append(element('p','No hay protecciones activas en esta página.'));
+ for(const value of values){const row=element('article');row.append(element('p',(value.kind==='messages'?'Mensaje':'Estado')+' · '+value.id),element('p',value.reason),protectButton(value.kind,value.id));target.append(row);}
+ document.getElementById('holdsPrevious').disabled=holdsOffset===0;document.getElementById('holdsNext').disabled=values.length<20;
+}
+async function changeProtection(active){
+ const form=document.getElementById('retentionForm');if(!form.reportValidity())return;
+ const protect=document.getElementById('protectContent'),release=document.getElementById('releaseContent');protect.disabled=release.disabled=true;
+ try{
+  const csrf=await request('/api/admin/csrf');
+  const path='/api/admin/v1/moderation/'+document.getElementById('retentionKind').value+'/'+encodeURIComponent(document.getElementById('retentionId').value.trim())+'/retention-hold';
+  await request(path,{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({active,reason:document.getElementById('retentionReason').value.trim()})});
+  await loadHolds();notice.textContent=active?'Protección activa. La limpieza conservará este contenido.':'Protección resuelta. Comienza un plazo nuevo de conservación.';
+ }catch(error){notice.textContent=error.message;}finally{protect.disabled=release.disabled=false;}
+}
+document.getElementById('retentionForm').addEventListener('submit',event=>{event.preventDefault();changeProtection(true);});
+document.getElementById('releaseContent').addEventListener('click',()=>changeProtection(false));
+document.getElementById('holdsPrevious').addEventListener('click',()=>{holdsOffset=Math.max(0,holdsOffset-20);loadHolds().catch(error=>{notice.textContent=error.message;});});
+document.getElementById('holdsNext').addEventListener('click',()=>{holdsOffset+=20;loadHolds().catch(error=>{notice.textContent=error.message;});});

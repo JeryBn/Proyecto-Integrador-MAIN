@@ -7,6 +7,7 @@ from administration import moderation
 from administration import retention
 
 urlpatterns = [
+    path('api/admin/v1/retention-holds', retention.holds),
     path('api/admin/v1/moderation/<str:kind>/<str:item_id>/retention-hold', retention.hold),
     path('moderation.html', moderation.page),
     path('moderation.js', moderation.page, {'name':'moderation.js'}),
