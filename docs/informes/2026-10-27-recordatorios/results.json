@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-27",
+  "spring": {
+    "failures": 0,
+    "controlledFcmGateway": true,
+    "executions": 141,
+    "errors": 0,
+    "skipped": 0,
+    "distinctCases": 132
+  },
+  "django": {
+    "passed": 53,
+    "tests": 53
+  },
+  "web": {
+    "browserPreferencePersisted": true,
+    "build": "passed",
+    "passed": 37,
+    "syntheticPreferenceRestored": true,
+    "tests": 37
+  },
+  "android": {
+    "newProfileInstrumentationTests": 1,
+    "newContractInstrumentationTests": 2,
+    "lint": "passed",
+    "physicalPhoneTested": false,
+    "build": "passed",
+    "unitTests": 4,
+    "skipped": 0,
+    "environment": "emulator Android17 API37"
+  },
+  "mysql": {
+    "realSchedulerHttpChecks": 18,
+    "fcmSent": false,
+    "schemaVersion": 13
+  },
+  "media": {
+    "syntheticInputOnly": true,
+    "automaticPublication": false,
+    "realFfmpegExtraction": "passed for generated audio and video",
+    "realQueueEnabled": false,
+    "realTranscription": "blocked HTTP429 RATE_OR_QUOTA"
+  },
+  "trello": {
+    "historicalDueDatesChanged": false,
+    "reminderIncrementCriteriaCompleted": 3,
+    "cardsUpdated": [
+      "M10",
+      "M19",
+      "M09",
+      "M11",
+      "M20",
+      "M15",
+      "M18"
+    ],
+    "globalCardsClosed": 0
+  }
+}
