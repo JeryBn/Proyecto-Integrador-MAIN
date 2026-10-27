@@ -1,0 +1,19 @@
+{
+  "djangoTests": 78,
+  "spring": {
+    "tests": 149,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "webTests": 37,
+  "httpChecks": 41,
+  "realAccounts": [
+    "jery.revision",
+    "michael.revision"
+  ],
+  "realPasswordsChanged": false,
+  "personalFirstLoginPending": true,
+  "syntheticReviewersDisabled": true,
+  "windowsViewerConstructionChecked": true
+}

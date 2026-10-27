@@ -1,4 +1,4 @@
-param([string]$VaultDirectory=(Join-Path $env:LOCALAPPDATA 'MAIN-private\reviewers'))
+param([string]$VaultDirectory=(Join-Path $env:LOCALAPPDATA 'MAIN-private\reviewers'),[switch]$ValidateOnly)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -23,5 +23,7 @@ $show.Add_CheckedChanged({$secret.UseSystemPasswordChar=!$show.Checked})
 $copy.Add_Click({[Windows.Forms.Clipboard]::SetText($secret.Text);$state.copied=$secret.Text;$state.copiedAt=[DateTime]::UtcNow})
 $timer=New-Object Windows.Forms.Timer;$timer.Interval=1000
 $timer.Add_Tick({if($state.copied -and [DateTime]::UtcNow.Subtract($state.copiedAt).TotalSeconds -ge 60){if([Windows.Forms.Clipboard]::GetText() -ceq $state.copied){[Windows.Forms.Clipboard]::Clear()};$state.copied=$null}})
-$form.Controls.AddRange(@($label,$choice,$username,$secret,$show,$copy,$info));$choice.SelectedIndex=0;$timer.Start()
+$form.Controls.AddRange(@($label,$choice,$username,$secret,$show,$copy,$info))
+if($ValidateOnly){$timer.Dispose();$form.Dispose();Write-Output 'Interfaz de accesos cargada; no se mostró ni descifró ninguna clave.';return}
+$choice.SelectedIndex=0;$timer.Start()
 try{[void]$form.ShowDialog()}finally{$timer.Stop();$timer.Dispose();if($state.copied -and [Windows.Forms.Clipboard]::GetText() -ceq $state.copied){[Windows.Forms.Clipboard]::Clear()};$secret.Text='';$state.copied=$null;$form.Dispose()}

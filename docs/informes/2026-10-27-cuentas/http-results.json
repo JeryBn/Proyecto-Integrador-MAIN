@@ -1,0 +1,172 @@
+{
+  "syntheticReviewWorkflow": true,
+  "realAccountsPasswordChanged": false,
+  "syntheticReviewersDisabled": true,
+  "passed": 41,
+  "checks": [
+    {
+      "name": "jery.revision_initial_login",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_content_locked_until_personal_password",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_denied_users",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_denied_courses",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_denied_audit",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_denial_does_not_destroy_session",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_password_still_initial",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_initial_login",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_content_locked_until_personal_password",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_denied_users",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_denied_courses",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_denied_audit",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_denial_does_not_destroy_session",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_password_still_initial",
+      "passed": true
+    },
+    {
+      "name": "first_password_requires_csrf",
+      "passed": true
+    },
+    {
+      "name": "synthetic_personal_password_saved",
+      "passed": true
+    },
+    {
+      "name": "old_session_revoked",
+      "passed": true
+    },
+    {
+      "name": "second_synthetic_personal_password_saved",
+      "passed": true
+    },
+    {
+      "name": "first_can_read_review",
+      "passed": true
+    },
+    {
+      "name": "first_no_account_creation",
+      "passed": true
+    },
+    {
+      "name": "first_no_grade_mutation",
+      "passed": true
+    },
+    {
+      "name": "first_no_general_audit",
+      "passed": true
+    },
+    {
+      "name": "first_denial_preserves_profile",
+      "passed": true
+    },
+    {
+      "name": "second_can_read_review",
+      "passed": true
+    },
+    {
+      "name": "second_no_account_creation",
+      "passed": true
+    },
+    {
+      "name": "second_no_grade_mutation",
+      "passed": true
+    },
+    {
+      "name": "second_no_general_audit",
+      "passed": true
+    },
+    {
+      "name": "second_denial_preserves_profile",
+      "passed": true
+    },
+    {
+      "name": "synthetic_student_created",
+      "passed": true
+    },
+    {
+      "name": "limited_reviewer_can_reject",
+      "passed": true
+    },
+    {
+      "name": "student_can_appeal_limited_review",
+      "passed": true
+    },
+    {
+      "name": "original_limited_reviewer_cannot_resolve",
+      "passed": true
+    },
+    {
+      "name": "second_limited_reviewer_can_resolve",
+      "passed": true
+    },
+    {
+      "name": "return_keeps_unpublished",
+      "passed": true
+    },
+    {
+      "name": "human_approval_still_required",
+      "passed": true
+    },
+    {
+      "name": "published_after_human_approval",
+      "passed": true
+    },
+    {
+      "name": "student_history_private_resolution",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_student_portal_denied",
+      "passed": true
+    },
+    {
+      "name": "jery.revision_student_api_denied",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_student_portal_denied",
+      "passed": true
+    },
+    {
+      "name": "michael.revision_student_api_denied",
+      "passed": true
+    }
+  ]
+}
