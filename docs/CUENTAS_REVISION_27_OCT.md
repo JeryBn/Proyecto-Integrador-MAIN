@@ -38,3 +38,5 @@ Evidencia sin secretos: docs/informes/2026-10-27-cuentas. scripts/verificar_cuen
 ## Pendientes que conservan su estado real
 
 Cada titular debe configurar su contraseña y confirmar su propio ingreso. Provisionar y comprobar técnicamente sus cuentas no acredita ese acto personal ni la lectura de Michael. La evaluación de moderación automática sigue bloqueada por cuota/proveedor y no se activó al crear los accesos. Permanecen también los bloqueos previos de FCM, HTTPS y teléfono físico. No se declaran M19/M20 terminadas globalmente por este incremento.
+
+Trello M20 distingue ahora siete avances verificados y dos pendientes: la provisión y permisos de las cuentas se marcaron hechos; el criterio anterior de cuentas se concretó como cambio personal y confirmación del primer ingreso de ambos titulares. La evaluación del proveedor continúa sin marcar. Se conserva la fecha histórica. La pantalla de revisión también conserva el motivo real de una denegación 403 (por ejemplo, necesitar otro revisor), en lugar de pedir erróneamente una cuenta administradora a un REVIEWER válido.

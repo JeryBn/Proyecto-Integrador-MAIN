@@ -1,5 +1,7 @@
 # Circuito de apelaciones de MAIN — 27 octubre 2026
 
+Actualización posterior: Jery y Michael ya tienen cuentas limitadas REVIEWER provisionadas; su primer cambio personal de contraseña sigue pendiente. Ver CUENTAS_REVISION_27_OCT.md. Ese rol puede revisar y resolver sin permisos académicos ni administrativos generales. Las referencias a cuentas ADMIN pendientes de este corte se conservan como antecedentes.
+
 Implementación técnica comprobada con datos sintéticos en web, Android y administración Django. No depende de cuota OpenAI ni de Firebase. No acredita revisión de contenido real por un proveedor externo ni despliegue público.
 
 ## Recorrido disponible

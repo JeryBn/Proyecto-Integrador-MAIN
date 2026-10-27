@@ -5,7 +5,7 @@ let appealsOffset=0;
 const queue=document.getElementById('queue'),notice=document.getElementById('notice');
 async function request(path,options={}){
  const response=await fetch(path,{...options,credentials:'same-origin',headers:{Accept:'application/json',...options.headers}});
- if(response.status===401||response.status===403)throw Error('Inicia sesión con una cuenta administradora desde Administración.');
+ if(response.status===401)throw Error('Tu sesión terminó. Ingresa nuevamente desde el acceso de MAIN.');
  const value=await response.json();
  if(!response.ok)throw Error(value.error?.message||'No se pudo completar la operación.');
  return value;
