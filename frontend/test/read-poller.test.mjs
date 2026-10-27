@@ -30,3 +30,16 @@ test('desmontar durante una petición no programa otra',async()=>{
  let release;const f=fixture(()=>new Promise(resolve=>{release=resolve;}));
  const waiting=f.poller.start();f.poller.stop();release();await waiting;assert.equal(f.timers.size,0);
 });
+
+test('dos horas simuladas sin servidor conservan una sola consulta pendiente y recuperan',async()=>{
+ let restored=false,calls=0,elapsed=0;
+ const f=fixture(async()=>{calls++;if(!restored)throw Error('servidor sin respuesta');});
+ await f.poller.start();
+ while(elapsed<2*60*60*1000){
+  assert.equal(f.timers.size,1);const delay=[...f.timers.values()][0].ms;
+  assert.ok(delay>=10000&&delay<=60000);elapsed+=delay;await f.next();
+ }
+ assert.ok(calls<130);restored=true;await f.poller.wake();
+ assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].ms,5000);
+ f.poller.stop();assert.equal(f.timers.size,0);
+});

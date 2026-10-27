@@ -1,3 +1,4 @@
+import {boundedRead} from './bounded-read.mjs';
 export class ApiError extends Error {
   constructor(message,status=0,code='NETWORK_ERROR'){super(message);this.status=status;this.code=code;}
 }
@@ -33,9 +34,11 @@ export function createUserApi({fetcher=(...args)=>fetch(...args),expired=()=>{lo
         headers[token.headerName||'X-CSRF-TOKEN']=token.token;
       }
       if(json!==undefined)headers['Content-Type']='application/json';
-      return await readResponse(await fetcher(path,{method,headers,credentials:'same-origin',cache:'no-store',signal,body:json!==undefined?JSON.stringify(json):form}));
+      const request=async requestSignal=>readResponse(await fetcher(path,{method,headers,credentials:'same-origin',cache:'no-store',signal:requestSignal,body:json!==undefined?JSON.stringify(json):form}));
+      return await (method==='GET'?boundedRead(request,{signal}):request(signal));
     }catch(e){
       if(e instanceof ApiError)throw e;
+      if(e.name==='TimeoutError')throw new ApiError('El servidor tarda en responder. Volveremos a consultar; también puedes reintentar.',0,'READ_TIMEOUT');
       if(e.name==='AbortError')throw new ApiError('Se canceló la espera. El servidor puede haber recibido el envío; actualiza antes de reintentar con el mismo contenido.',0,'CANCELLED');
       throw new ApiError('No hay conexión con el servidor. Conservamos tu borrador para reintentar.');
     }
