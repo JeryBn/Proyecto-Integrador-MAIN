@@ -4,8 +4,10 @@ from administration import academic
 from administration import identity
 from administration import scheduling, grades
 from administration import moderation
+from administration import retention
 
 urlpatterns = [
+    path('api/admin/v1/moderation/<str:kind>/<str:item_id>/retention-hold', retention.hold),
     path('moderation.html', moderation.page),
     path('moderation.js', moderation.page, {'name':'moderation.js'}),
     path('moderation.css', moderation.page, {'name':'moderation.css'}),

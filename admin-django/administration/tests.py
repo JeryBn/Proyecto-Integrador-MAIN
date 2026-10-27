@@ -13,7 +13,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
-    moderation_tables=('automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
+    moderation_tables=('moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
     def setUpClass(cls):
@@ -32,7 +32,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -555,3 +555,95 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(summary['sampledFrames'],2);self.assertEqual(summary['durationSeconds'],7.25)
         self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
         self.assertEqual(len(rows('SELECT id FROM notification')),0)
+
+    def test_retention_preview_boundary_apply_and_idempotency(self):
+        from .retention import batch
+        from .moderation import execute, rows, now
+        self.moderation_fixture(media=True); instant=now()
+        execute('UPDATE message_revision SET submitted_at=%s',[instant-timedelta(days=7)+timedelta(seconds=1)])
+        self.assertEqual(batch(instant=instant)['counts']['eligible'],0)
+        execute('UPDATE message_revision SET submitted_at=%s',[instant-timedelta(days=7)])
+        self.assertEqual(batch(instant=instant)['counts']['eligible'],1)
+        self.assertEqual(rows('SELECT body FROM message_revision')[0]['body'],'hola')
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],1)
+        self.assertEqual(rows('SELECT body,state FROM message_revision')[0],{'body':'','state':'REJECTED'})
+        self.assertFalse(rows('SELECT * FROM message_attachment_chunk'))
+        self.assertFalse(rows('SELECT * FROM message_attachment'))
+        self.assertFalse(rows('SELECT * FROM notification'))
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        self.assertEqual(len(rows("SELECT id FROM administrative_audit WHERE action='RETENTION_CONTENT_PURGED'")),1)
+
+    def test_retention_keeps_published_attachment_and_fresh_edit(self):
+        from .retention import batch
+        from .moderation import execute, rows, now
+        self.moderation_fixture(media=True); instant=now()
+        execute("UPDATE message_revision SET state='APPROVED',submitted_at=%s",[instant-timedelta(days=100)])
+        execute('UPDATE message SET published_revision=1,created_at=%s',[instant-timedelta(days=100)])
+        execute("INSERT INTO message_revision(message_id,revision,body,state,content_hash,submitted_at) VALUES('msg',2,'edición','PENDING','new',%s)",[instant])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        execute('UPDATE message_revision SET submitted_at=%s WHERE revision=2',[instant-timedelta(days=8)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],1)
+        self.assertEqual(rows('SELECT body FROM message_revision WHERE revision=1')[0]['body'],'hola')
+        self.assertEqual(len(rows('SELECT * FROM message_attachment_chunk')),1)
+        self.assertEqual(rows('SELECT published_revision FROM message')[0]['published_revision'],1)
+
+    def test_retention_rejected_uses_decision_and_migration_floor(self):
+        from .retention import batch
+        from .moderation import execute, now
+        self.moderation_fixture(); instant=now()
+        execute("UPDATE message_revision SET state='REJECTED',submitted_at=%s,reviewed_at=%s",[instant,instant-timedelta(days=100)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        execute('UPDATE message_revision SET submitted_at=%s,reviewed_at=%s',[instant-timedelta(days=100),instant-timedelta(days=29)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        execute('UPDATE message_revision SET reviewed_at=%s',[instant-timedelta(days=30)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],1)
+
+    def test_retention_hold_auth_csrf_audit_and_release_grace(self):
+        from .retention import batch
+        from .moderation import execute, rows, now
+        self.moderation_fixture(); instant=now()
+        path='/api/admin/v1/moderation/messages/msg/retention-hold'
+        value={'active':True,'reason':'Apelación sintética abierta'}
+        self.assertEqual(Client().get(path).status_code,401)
+        self.assertEqual(self.client.post(path,json.dumps(value),content_type='application/json').status_code,403)
+        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',value).status_code,200)
+        execute('UPDATE message_revision SET submitted_at=%s',[instant-timedelta(days=100)])
+        execute('UPDATE administrative_audit SET occurred_at=%s',[instant-timedelta(days=100)])
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        self.assertTrue(rows('SELECT id FROM administrative_audit'))
+        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',dict(value,active=False)).status_code,200)
+        self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
+        self.login('alumno')
+        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',value).status_code,401)
+
+    def test_retention_status_media_audit_scope_and_rollback(self):
+        from .retention import batch, event
+        from .moderation import execute, rows, now
+        self.status_fixture('VIDEO'); instant=now()
+        execute('UPDATE status_update SET retention_started_at=%s',[instant-timedelta(days=8)])
+        with patch('administration.retention.event',side_effect=IntegrityError('synthetic')):
+            with self.assertRaises(IntegrityError): batch(apply=True,instant=instant)
+        self.assertEqual(rows('SELECT body FROM status_update')[0]['body'],'hola')
+        self.assertTrue(rows('SELECT * FROM status_media_chunk'))
+        event('STATUS_REJECTED','status',instant-timedelta(days=90))
+        event('COURSE_CREATED','1',instant-timedelta(days=100))
+        result=batch(apply=True,instant=instant)['counts']
+        self.assertEqual(result['purged'],1); self.assertEqual(result['auditPurged'],1)
+        self.assertFalse(rows('SELECT * FROM status_media_chunk'))
+        self.assertEqual(rows('SELECT body,state FROM status_update')[0],{'body':'','state':'DELETED'})
+        self.assertTrue(rows("SELECT id FROM administrative_audit WHERE action='COURSE_CREATED'"))
+
+    def test_retention_rechecks_stale_hash_and_command_gate(self):
+        from .retention import minimize
+        from .moderation import execute, rows, now
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        from io import StringIO
+        self.moderation_fixture(); instant=now()
+        execute('UPDATE message_revision SET submitted_at=%s',[instant-timedelta(days=8)])
+        selected=rows('SELECT * FROM message_revision')[0]
+        execute("UPDATE message_revision SET content_hash='changed'")
+        self.assertEqual(minimize('messages',selected,instant,True),'changed')
+        with patch.dict('os.environ',{'MAIN_RETENTION_APPLY':''}):
+            with self.assertRaises(CommandError): call_command('retain_content',apply=True,stdout=StringIO())
+        with self.assertRaises(CommandError): call_command('retain_content',limit=501,stdout=StringIO())
