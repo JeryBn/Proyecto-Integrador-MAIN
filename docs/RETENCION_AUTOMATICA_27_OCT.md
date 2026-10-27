@@ -1,5 +1,7 @@
 # Retención automática de moderación
 
+Actualización posterior: el circuito de apelaciones del solicitante ya está implementado y verificado en web y Android. Ver APELACIONES_27_OCT.md. El estado pendiente de ese circuito al final de este corte se conserva como antecedente; V16 añade su protección automática e historial de resoluciones.
+
 Política delegada por Jery, versión jery-2026-10-27-v1: pendientes siete días, rechazados treinta días, historial de moderación noventa días. La implementación no depende de OpenAI, Firebase ni HTTPS.
 
 Flyway V15 registra la presentación de cada revisión y la fecha de minimización. Los datos heredados reciben la fecha de migración como inicio conservador, incluso si el mensaje original es antiguo; no se elimina inmediatamente contenido por una edad que no se conocía. Los rechazados cuentan desde la decisión o inicio conservador, lo que sea posterior.
