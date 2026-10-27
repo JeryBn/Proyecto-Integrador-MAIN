@@ -1,0 +1,56 @@
+{
+  "synthetic": true,
+  "rollbackOnly": true,
+  "realProviderUsed": false,
+  "passed": 12,
+  "checks": [
+    {
+      "name": "fresh_edit_of_old_message_kept",
+      "passed": true
+    },
+    {
+      "name": "preview_no_write",
+      "passed": true
+    },
+    {
+      "name": "open_appeal_blocks_cleanup",
+      "passed": true
+    },
+    {
+      "name": "stale_hash_refused",
+      "passed": true
+    },
+    {
+      "name": "old_pending_edit_minimized",
+      "passed": true
+    },
+    {
+      "name": "published_text_unchanged",
+      "passed": true
+    },
+    {
+      "name": "published_attachment_unchanged",
+      "passed": true
+    },
+    {
+      "name": "idempotent",
+      "passed": true
+    },
+    {
+      "name": "expired_pending_status_minimized",
+      "passed": true
+    },
+    {
+      "name": "status_bytes_removed",
+      "passed": true
+    },
+    {
+      "name": "mysql_batch_sql_supported",
+      "passed": true
+    },
+    {
+      "name": "fixtures_rolled_back",
+      "passed": true
+    }
+  ]
+}

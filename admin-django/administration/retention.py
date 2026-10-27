@@ -164,4 +164,4 @@ def batch(limit=100, apply=False, instant=None):
             counts['closedHoldsEligible'] += 1
             if apply:
                 counts['closedHoldsPurged'] += human.execute('DELETE FROM moderation_retention_hold WHERE subject_kind=%s AND subject_id=%s AND active=FALSE AND closed_at<=%s', [value['subject_kind'], value['subject_id'], cutoff])
-    return dict(policy=POLICY, mode='apply' if apply else 'preview', counts=counts)
+    return dict(policy=POLICY, evaluatedAt=instant.isoformat(), mode='apply' if apply else 'preview', counts=counts)

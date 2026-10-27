@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "passed": 4,
+  "checks": [
+    "messages_purged_with_dedicated_role",
+    "statuses_purged_with_dedicated_role",
+    "identity_write_denied",
+    "batch_preview_under_dedicated_role"
+  ]
+}
