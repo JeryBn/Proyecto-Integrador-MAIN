@@ -469,6 +469,18 @@ class AdministrationTests(TransactionTestCase):
         self.status_fixture('VIDEO');provider=Mock()
         self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED');provider.assess.assert_not_called()
 
+    def test_enabled_multimedia_even_clear_stays_private_and_cached(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.status_fixture('VIDEO');provider=Mock();provider.assess_media.return_value=Assessment('CLEAR','controlled')
+        with patch.dict('os.environ',{'MAIN_MODERATION_MEDIA_ENABLED':'true'}):
+            self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED')
+            self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED')
+        self.assertEqual(provider.assess_media.call_count,1)
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
+        self.assertEqual(len(rows('SELECT id FROM notification')),0)
+
     def test_automatic_changed_revision_cannot_be_published(self):
         from .automatic_moderation import process,Assessment
         from .moderation import execute,rows

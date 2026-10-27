@@ -1,0 +1,22 @@
+{
+  "synthetic": true,
+  "realDecoder": true,
+  "realProvider": false,
+  "databaseChanged": false,
+  "checks": [
+    {
+      "kind": "AUDIO",
+      "duration": 2.0,
+      "normalizedAudioBytes": 64078,
+      "sampledFrames": 0,
+      "outcome": "HUMAN_REQUIRED"
+    },
+    {
+      "kind": "VIDEO",
+      "duration": 2.0,
+      "normalizedAudioBytes": 64078,
+      "sampledFrames": 1,
+      "outcome": "HUMAN_REQUIRED"
+    }
+  ]
+}

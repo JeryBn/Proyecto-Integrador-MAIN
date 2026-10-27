@@ -38,6 +38,10 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 class OpenAiModerator:
     def __init__(self,key):self.key=key
+    def assess_media(self,kind,content,caption):
+        from .media_assessment import assess,MediaUnavailable
+        try:return assess(self,kind,content,caption)
+        except MediaUnavailable:raise ProviderUnavailable('HUMAN_REQUIRED') from None
     def assess(self,text,image=None):
         if not self.key:raise ProviderUnavailable('NOT_CONFIGURED')
         inputs=[]
@@ -93,15 +97,18 @@ def process(kind,item,provider,apply=False,policy='test-only'):
         except IntegrityError:pass
         return 'HUMAN_REQUIRED'
     media_kind=content['kind']
-    if media_kind in ('VIDEO','AUDIO'):return defer_human()
+    multimedia=media_kind in ('VIDEO','AUDIO')
+    # Separate explicit opt-in: old cached human referrals stay human. Change
+    # the approved policy version to evaluate them with the new coverage.
+    if multimedia and os.environ.get('MAIN_MODERATION_MEDIA_ENABLED')!='true':return defer_human()
     text=content['text'];image=None
     if media_kind=='FILE':
         try:text+='\n'+content['media'].decode('utf-8',errors='strict')
         except UnicodeError:return defer_human()
     elif media_kind=='IMAGE':image=content['media']
-    elif media_kind not in ('TEXT','NONE'):return defer_human()
+    elif media_kind not in ('TEXT','NONE','VIDEO','AUDIO'):return defer_human()
     if len(text)>20000:return defer_human()
-    lease=human.now()+timedelta(minutes=5)
+    lease=human.now()+timedelta(minutes=15 if multimedia else 5)
     try:
         with transaction.atomic():human.execute("INSERT INTO automatic_assessment(id,policy_version,subject_kind,subject_id,content_hash,outcome,attempts,lease_until,updated_at) VALUES(%s,%s,%s,%s,%s,'WAITING',0,%s,%s)",[key,policy,kind,item,content['hash'],human.now(),human.now()])
     except IntegrityError:pass
@@ -113,11 +120,11 @@ def process(kind,item,provider,apply=False,policy='test-only'):
     else:
         claimed=human.execute("UPDATE automatic_assessment SET outcome='RUNNING',attempts=attempts+1,lease_until=%s,updated_at=%s WHERE id=%s AND attempts<3 AND lease_until<=%s AND outcome IN ('WAITING','RUNNING','PROVIDER_UNAVAILABLE')",[lease,human.now(),key,human.now()])
         if not claimed:return 'WAITING_OR_LIMITED'
-        try:result=provider.assess(text,image)
+        try:result=provider.assess_media(media_kind,content['media'],text) if multimedia else provider.assess(text,image)
         except ProviderUnavailable as error:
             state='HUMAN_REQUIRED' if str(error)=='HUMAN_REQUIRED' else 'PROVIDER_UNAVAILABLE'
             human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key]);return state
-        state='HUMAN_REQUIRED' if result.outcome!='CLEAR' or media_kind=='IMAGE' else 'CLEAR_SHADOW'
+        state='HUMAN_REQUIRED' if result.outcome!='CLEAR' or media_kind in ('IMAGE','VIDEO','AUDIO') else 'CLEAR_SHADOW'
         human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key])
         if state=='HUMAN_REQUIRED':return state
         if not apply:return state
