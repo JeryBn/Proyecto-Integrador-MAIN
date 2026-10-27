@@ -147,6 +147,7 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
    }
    if(status.kind!="TEXT" && status.text.isNotBlank())Text(status.text,color=Color.White,textAlign=TextAlign.Center,modifier=Modifier.fillMaxWidth())
    if(status.owner==model.profile?.usuario){Text(statusLabel(status.state),color=Color.White);if(status.state=="REJECTED")Text(status.reason,color=Color.White);if(status.state=="APPROVED")Text(status.views.toString()+" visualizaciones",color=Color.White)}
+   if(status.owner==model.profile?.usuario&&status.state=="REJECTED")TextButton(onClick={model.closeStatus();model.openAppeal(pe.tecsup.main.mobile.data.AppealTarget("statuses",status.id,0,status.contentHash))}){Text("Apelar rechazo",color=Color.White)}
    if(status.owner!=model.profile?.usuario)OutlinedButton(enabled=!model.chatBusy && !model.statusBusy,onClick={model.closeStatus();model.selectedSectionForChat();model.startDirect(status.owner)},modifier=Modifier.fillMaxWidth()){Text("Responder por mensaje",color=Color.White)}
    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){TextButton(enabled=index>0 && !model.statusBusy,onClick={model.openStatus(playlist[index-1])}){Text("Anterior",color=Color.White)};TextButton(enabled=!model.statusBusy,onClick={next()}){Text("Siguiente",color=Color.White)}}
   }

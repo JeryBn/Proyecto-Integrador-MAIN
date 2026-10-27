@@ -12,5 +12,8 @@ data class AcademicAgenda(val courses: List<Course> = emptyList(), val timetable
 
 data class StudentGrades(val studentId:Long,val name:String,val grades:List<Grade>)
 
-data class StatusUpdate(val id:String,val owner:String,val name:String,val text:String,val background:String,val audience:String,val kind:String,val state:String,val createdAt:String,val expiresAt:String,val reason:String,val seen:Boolean,val views:Int)
+data class StatusUpdate(val id:String,val owner:String,val name:String,val text:String,val background:String,val audience:String,val kind:String,val state:String,val createdAt:String,val expiresAt:String,val reason:String,val seen:Boolean,val views:Int,val contentHash:String="")
+
+data class AppealTarget(val kind:String,val subjectId:String,val revision:Int,val contentHash:String)
+data class AppealItem(val id:String,val kind:String,val revision:Int,val state:String,val reason:String,val createdAt:String,val decisionReason:String,val decidedAt:String)
 data class StatusAttachment(val bytes:ByteArray,val mime:String)

@@ -151,7 +151,7 @@ class MainApi(val endpoint: String) {
     fun messages(conversation:String,offset:Int=0): List<ChatMessage> = rows(JSONArray(checked(request("/api/v1/conversations/"+conversation+"/messages?offset="+offset+"&limit=30")))) {
         ChatMessage(it.getString("id"),it.getString("sender"),it.getString("senderName"),it.getInt("revision"),it.getString("text"),it.getString("state"),
             it.optString("reason",""),it.getBoolean("correctedBeforeDelivery"),it.getBoolean("editedAfterDelivery"),
-            it.optString("attachmentKind","NONE"),it.optString("attachmentMime",""),it.optString("attachmentName",""),it.optInt("attachmentSize",0))
+            it.optString("attachmentKind","NONE"),it.optString("attachmentMime",""),it.optString("attachmentName",""),it.optInt("attachmentSize",0),it.optString("contentHash",""))
     }
     fun sendMessage(conversation:String,key:String,text:String) {
         mutate("/api/v1/conversations/"+conversation+"/messages",JSONObject().put("clientKey",key).put("text",text),"POST")
@@ -177,7 +177,9 @@ class MainApi(val endpoint: String) {
     fun contacts(): List<ContactUser> = rows(JSONArray(checked(request("/api/v1/contacts")))) {
         ContactUser(it.getString("username"),it.getString("name"),it.getString("role"),it.getBoolean("muted"),it.getBoolean("blocked"))
     }
-    private fun statusValue(it:JSONObject)=StatusUpdate(it.getString("id"),it.getString("owner"),it.getString("name"),it.getString("text"),it.getString("background"),it.getString("audience"),it.getString("kind"),it.getString("state"),it.getString("createdAt"),it.getString("expiresAt"),it.getString("reason"),it.getBoolean("seen"),it.getInt("views"))
+    private fun statusValue(it:JSONObject)=StatusUpdate(it.getString("id"),it.getString("owner"),it.getString("name"),it.getString("text"),it.getString("background"),it.getString("audience"),it.getString("kind"),it.getString("state"),it.getString("createdAt"),it.getString("expiresAt"),it.getString("reason"),it.getBoolean("seen"),it.getInt("views"),it.optString("contentHash",""))
+    fun appeals(offset:Int=0):List<AppealItem> = rows(JSONArray(checked(request("/api/v1/appeals?offset=$offset&limit=30")))){AppealItem(it.getString("id"),it.getString("kind"),it.getInt("revision"),it.getString("state"),it.getString("reason"),it.getString("createdAt"),it.optString("decisionReason",""),it.optString("decidedAt",""))}
+    fun appeal(target:AppealTarget,reason:String){mutate("/api/v1/appeals",JSONObject().put("kind",target.kind).put("subjectId",target.subjectId).put("revision",target.revision).put("contentHash",target.contentHash).put("reason",reason),"POST")}
     fun statuses():List<StatusUpdate> = rows(JSONArray(checked(request("/api/v1/statuses")))){statusValue(it)}
     fun seenStatus(id:String){mutate("/api/v1/statuses/$id/seen",JSONObject(),"POST")}
     fun deleteStatus(id:String){mutate("/api/v1/statuses/$id/delete",JSONObject(),"POST")}

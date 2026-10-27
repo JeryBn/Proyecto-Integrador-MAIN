@@ -37,6 +37,24 @@ class MainViewModel : ViewModel() {
     var showChatPicker by mutableStateOf(false)
     var contactProfile by mutableStateOf<String?>(null)
     var settingsPage by mutableStateOf("MAIN")
+    var appealTarget by mutableStateOf<AppealTarget?>(null)
+    var appealItems by mutableStateOf<List<AppealItem>>(emptyList())
+        private set
+    var appealPage by mutableStateOf(0)
+        private set
+    fun openAppeal(target:AppealTarget){appealTarget=target;accountError="";accountMessage=""}
+    fun loadAppeals(delta:Int=0){
+        if(accountBusy)return
+        appealPage=(appealPage+delta).coerceAtLeast(0)
+        accountOperation { client -> val result=withContext(Dispatchers.IO){client.appeals(appealPage*30)};if(api===client)appealItems=result }
+    }
+    fun submitAppeal(reason:String){
+        val target=appealTarget?:return
+        accountOperation("Apelación registrada. El contenido sigue privado."){client ->
+            val result=withContext(Dispatchers.IO){client.appeal(target,reason);client.appeals()}
+            if(api===client){appealTarget=null;appealItems=result;appealPage=0;closeStatus();selectedConversation=null;selectedSection=MainSection.PROFILE;settingsPage="APPEALS"}
+        }
+    }
     var profile by mutableStateOf<Profile?>(null)
         private set
     var busy by mutableStateOf(false)
@@ -212,6 +230,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun clearAccount() {
+        appealTarget=null;appealItems=emptyList();appealPage=0
         pushDevice=java.util.UUID.randomUUID().toString()
         uploadJob?.cancel();uploadJob=null
         showChatPicker=false;contactProfile=null;settingsPage="MAIN"

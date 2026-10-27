@@ -55,6 +55,7 @@ internal enum class MainSection(val label: String, val icon: ImageVector, val na
 
 @Composable
 internal fun MainNavigationScreen(model: MainViewModel) {
+    NewAppealDialog(model)
     val lifecycleOwner=LocalLifecycleOwner.current
     LaunchedEffect(model.selectedSection,lifecycleOwner) {
         if(model.selectedSection==MainSection.STATUSES)lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){while(true){delay(5000);if(!model.statusBusy && !model.statusComposer)model.loadStatuses()}}

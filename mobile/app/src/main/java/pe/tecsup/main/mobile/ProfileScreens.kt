@@ -17,6 +17,7 @@ import pe.tecsup.main.mobile.data.ContactUser
 @Composable internal fun AccountProfileScreen(model:MainViewModel) {
  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
   when(model.settingsPage) {
+   "APPEALS" -> AppealHistoryScreen(model)
    "BLOCKED" -> {
     PageHeading("Contactos bloqueados"){model.settingsPage="PRIVACY"}
     Text("Los contactos bloqueados no pueden intercambiar mensajes privados contigo.",Modifier.padding(20.dp),style=MaterialTheme.typography.bodySmall)
@@ -46,6 +47,7 @@ import pe.tecsup.main.mobile.data.ContactUser
     }
     HorizontalDivider()
     SettingsRow(Icons.Outlined.Lock,"Privacidad","Contactos bloqueados y audiencia",onClick={model.settingsPage="PRIVACY"})
+    SettingsRow(Icons.Outlined.RateReview,"Mis apelaciones","Solicitudes y resoluciones",onClick={model.settingsPage="APPEALS";model.loadAppeals()})
     Column(Modifier.padding(horizontal=20.dp,vertical=10.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
      PreferenceSwitch("Tema oscuro","Apariencia de MAIN",model.darkTheme,!model.accountBusy){model.savePreferences(model.preferences.copy(darkTheme=it))}
      PreferenceSwitch("Avisos en MAIN","Mensajes e invitaciones",model.preferences.notifications,!model.accountBusy){model.savePreferences(model.preferences.copy(notifications=it))}

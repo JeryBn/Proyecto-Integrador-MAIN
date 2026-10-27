@@ -188,6 +188,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
        }
        if(message.reason.isNotBlank())Text(message.reason,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodySmall)
        if(mine&&message.state=="REJECTED")TextButton(onClick={model.editMessage(message)},enabled=!model.chatBusy){Text("Corregir mensaje")}
+       if(mine&&message.state=="REJECTED")TextButton(onClick={model.openAppeal(pe.tecsup.main.mobile.data.AppealTarget("messages",message.id,message.revision,message.contentHash))},enabled=!model.accountBusy){Text("Apelar rechazo")}
        if(mine&&message.state=="REJECTED"&&message.attachmentKind!="NONE")Text("Para sustituir el archivo, cancela este envío y adjunta uno nuevo.",style=MaterialTheme.typography.bodySmall)
        if(message.correctedBeforeDelivery)Text("Editado antes del envío para cumplir las normas de MAIN",style=MaterialTheme.typography.labelSmall)
        if(message.editedAfterDelivery)Text("Editado después del envío",style=MaterialTheme.typography.labelSmall)
