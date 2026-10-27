@@ -1,0 +1,17 @@
+{
+  "synthetic": true,
+  "realExternalAiUsed": false,
+  "djangoTests": 69,
+  "spring": {
+    "tests": 147,
+    "distinct": 147,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "webTests": 37,
+  "androidUnitTests": 4,
+  "androidInstrumentedTests": 1,
+  "httpChecks": 25,
+  "temporaryReviewerDisabled": true
+}

@@ -15,3 +15,6 @@ GRANT DELETE,SELECT(status_id) ON main_database.status_recipient TO 'main_retent
 GRANT SELECT,DELETE ON main_database.automatic_assessment TO 'main_retention'@'127.0.0.1';
 GRANT SELECT,INSERT,DELETE ON main_database.administrative_audit TO 'main_retention'@'127.0.0.1';
 GRANT SELECT,DELETE ON main_database.moderation_retention_hold TO 'main_retention'@'127.0.0.1';
+-- After Flyway V16: the worker preserves OPEN appeals and ages resolved history.
+GRANT SELECT,DELETE ON main_database.moderation_appeal TO 'main_retention'@'127.0.0.1';
+GRANT SELECT,UPDATE(state,decision_reason,decided_by,decided_at) ON main_database.moderation_appeal TO 'main_django'@'127.0.0.1';

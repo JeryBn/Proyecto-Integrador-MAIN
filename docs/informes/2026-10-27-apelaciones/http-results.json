@@ -1,0 +1,107 @@
+{
+  "synthetic": true,
+  "realProviderUsed": false,
+  "passed": 25,
+  "checks": [
+    {
+      "name": "browser_request_open",
+      "passed": true
+    },
+    {
+      "name": "peer_history_private",
+      "passed": true
+    },
+    {
+      "name": "peer_cannot_appeal_others",
+      "passed": true
+    },
+    {
+      "name": "anonymous_denied",
+      "passed": true
+    },
+    {
+      "name": "csrf_required",
+      "passed": true
+    },
+    {
+      "name": "retention_protected",
+      "passed": true
+    },
+    {
+      "name": "manual_release_cannot_override_appeal",
+      "passed": true
+    },
+    {
+      "name": "original_reviewer_cannot_resolve",
+      "passed": true
+    },
+    {
+      "name": "not_delivered_while_open",
+      "passed": true
+    },
+    {
+      "name": "independent_browser_resolution_visible_to_sender",
+      "passed": true
+    },
+    {
+      "name": "returned_does_not_publish",
+      "passed": true
+    },
+    {
+      "name": "returned_is_pending",
+      "passed": true
+    },
+    {
+      "name": "duplicate_does_not_reopen",
+      "passed": true
+    },
+    {
+      "name": "second_human_review_succeeds",
+      "passed": true
+    },
+    {
+      "name": "only_then_delivered",
+      "passed": true
+    },
+    {
+      "name": "approval_retry_refused",
+      "passed": true
+    },
+    {
+      "name": "single_notification",
+      "passed": true
+    },
+    {
+      "name": "status_rejected",
+      "passed": true
+    },
+    {
+      "name": "status_appeal_open",
+      "passed": true
+    },
+    {
+      "name": "status_appeal_protects_retention",
+      "passed": true
+    },
+    {
+      "name": "status_private_while_appealed",
+      "passed": true
+    },
+    {
+      "name": "status_independent_resolution",
+      "passed": true
+    },
+    {
+      "name": "status_returned_stays_private",
+      "passed": true
+    },
+    {
+      "name": "status_requires_new_human_approval",
+      "passed": true
+    },
+    {
+      "name": "status_only_visible_after_human_approval",
+      "passed": true
+    }
+  ]
+}
