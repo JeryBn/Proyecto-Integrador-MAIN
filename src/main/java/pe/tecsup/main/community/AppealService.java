@@ -24,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
    var messages=db.queryForList("SELECT conversation_id,sender FROM message WHERE id=?",id);
    if(messages.isEmpty()||!actor.equals(messages.getFirst().get("sender")))throw DomainException.missing();
    db.queryForList("SELECT id FROM conversation WHERE id=? FOR UPDATE",messages.getFirst().get("conversation_id"));
-   var revisions=db.queryForList("SELECT * FROM message_revision WHERE message_id=? ORDER BY revision DESC LIMIT 1",id);
+   // Current locking reads are required under MySQL REPEATABLE READ: the account
+   // lookup can establish an older snapshot before we acquire the parent lock.
+   var revisions=db.queryForList("SELECT * FROM message_revision WHERE message_id=? ORDER BY revision DESC LIMIT 1 FOR UPDATE",id);
    if(revisions.isEmpty())throw DomainException.missing();content=revisions.getFirst();
    if(((Number)content.get("revision")).intValue()!=input.revision())throw changed();
   }else{
@@ -33,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
    content=statuses.getFirst();if(input.revision()!=0)throw changed();
   }
   if(!input.contentHash().equals(content.get("content_hash"))||content.get("purged_at")!=null)throw changed();
-  var previous=db.query("SELECT * FROM moderation_appeal WHERE owner=? AND subject_kind=? AND subject_id=? AND revision=? AND content_hash=?",this::row,actor,kind,id,input.revision(),input.contentHash());
+  var previous=db.query("SELECT * FROM moderation_appeal WHERE owner=? AND subject_kind=? AND subject_id=? AND revision=? AND content_hash=? FOR UPDATE",this::row,actor,kind,id,input.revision(),input.contentHash());
   if(!previous.isEmpty())return previous.getFirst(); // Retry cannot replace the original reason or decision.
   if(!"REJECTED".equals(content.get("state")))throw changed();
   String appealId=UUID.randomUUID().toString();

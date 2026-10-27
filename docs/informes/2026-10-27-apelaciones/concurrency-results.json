@@ -1,0 +1,8 @@
+{
+  "observedLockWait": true,
+  "retentionPurgedSyntheticVersion": true,
+  "httpStatus": 409,
+  "noOrphanAppeal": true,
+  "synthetic": true,
+  "passed": 4
+}

@@ -13,5 +13,7 @@
   "androidUnitTests": 4,
   "androidInstrumentedTests": 1,
   "httpChecks": 25,
-  "temporaryReviewerDisabled": true
+  "temporaryReviewerDisabled": true,
+  "targetedSpringTestsAfterCurrentReadFix": 6,
+  "mysqlConcurrencyChecks": 4
 }
