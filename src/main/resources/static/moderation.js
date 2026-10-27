@@ -9,6 +9,20 @@ async function request(path,options={}){
  return value;
 }
 function element(tag,text){const item=document.createElement(tag);if(text!==undefined)item.textContent=text;return item;}
+function automaticSummary(value){
+ const panel=element('aside');panel.append(element('h3','Evaluación automática orientativa'));
+ if(!value){panel.append(element('p','No hay evaluación automática de esta versión. La revisión humana sigue disponible.'));return panel;}
+ const states={HUMAN_REQUIRED:'Revisión humana necesaria',CLEAR_SHADOW:'Sin alertas en el análisis de texto',PROVIDER_UNAVAILABLE:'Proveedor no disponible; contenido privado',RUNNING:'Evaluación en curso',WAITING:'Evaluación pendiente'};
+ const coverage={TEXT:'Texto',IMAGE_PARTIAL:'Imagen con cobertura parcial',AUDIO_TRANSCRIPT_PARTIAL:'Transcripción de audio con cobertura parcial',VIDEO_SAMPLED_PARTIAL:'Video muestreado y audio con cobertura parcial',NOT_ANALYZED:'Sin análisis completo'};
+ panel.append(element('p',(states[value.outcome]||'Revisión humana pendiente')+' · '+(coverage[value.coverage]||'Cobertura no confirmada')));
+ const categories={'sexual':'Contenido sexual','sexual/minors':'Contenido sexual relacionado con menores','harassment':'Acoso','harassment/threatening':'Acoso con amenazas','hate':'Discriminación','hate/threatening':'Discriminación con amenazas','violence':'Violencia','violence/graphic':'Violencia gráfica','self-harm':'Autolesión','self-harm/intent':'Riesgo de autolesión','self-harm/instructions':'Promoción de autolesión','illicit':'Actividad ilícita','illicit/violent':'Actividad ilícita violenta'};
+ const found=Array.isArray(value.categories)?value.categories.filter(key=>Object.hasOwn(categories,key)):[];
+ panel.append(element('p',found.length?'Alertas: '+found.map(key=>categories[key]).join(', '):'No hay categorías marcadas en este resumen.'));
+ if(Number.isInteger(value.sampledFrames)&&value.sampledFrames>0&&value.sampledFrames<=12)panel.append(element('p','Fotogramas muestreados: '+value.sampledFrames));
+ if(typeof value.durationSeconds==='number'&&Number.isFinite(value.durationSeconds))panel.append(element('p','Duración del medio: '+value.durationSeconds.toFixed(2)+' s'));
+ panel.append(element('p','La ausencia de alertas no aprueba el contenido. Revisa el archivo completo, incluido audio y texto visible; las muestras y transcripciones pueden omitir contenido.'));
+ return panel;
+}
 async function review(message,approved,reason,button,attachmentReviewed=false){
  button.disabled=true;notice.textContent='';
  try{
@@ -27,7 +41,7 @@ async function load(){
   const messages=await request('/api/admin/v1/moderation/messages?offset='+offset+'&limit=20');
   queue.replaceChildren();
   for(const message of messages){
-   const card=element('article');card.append(element('h2',message.senderName+' · versión '+message.revision),element('p',message.createdAt),element('pre',message.text));
+   const card=element('article');card.append(element('h2',message.senderName+' · versión '+message.revision),element('p',message.createdAt),element('pre',message.text),automaticSummary(message.automaticReview));
    const label=element('label','Norma o categoría de rechazo (según reglas aprobadas del equipo)');
    const reason=element('input');reason.maxLength=300;label.append(reason);
    const approve=element('button','Aprobar esta versión'),reject=element('button','Rechazar esta versión');
@@ -70,7 +84,7 @@ async function loadStatuses(){
  const statuses=await request('/api/admin/v1/moderation/statuses?offset='+offset+'&limit=20');
  if(!statuses.length)target.append(element('p','No hay estados pendientes en esta página.'));
  for(const status of statuses){
-  const card=element('article');card.append(element('h3',status.name+' · '+status.kind),element('p','Caduca: '+status.expiresAt+' · Audiencia: '+status.audience),element('pre',status.text));
+  const card=element('article');card.append(element('h3',status.name+' · '+status.kind),element('p','Caduca: '+status.expiresAt+' · Audiencia: '+status.audience),element('pre',status.text),automaticSummary(status.automaticReview));
   let mediaReviewed=null;
   if(status.kind!=='TEXT'){
    mediaReviewed=element('input');mediaReviewed.type='checkbox';mediaReviewed.disabled=true;
@@ -78,17 +92,18 @@ async function loadStatuses(){
    const media=element(status.kind==='IMAGE'?'img':status.kind==='VIDEO'?'video':'audio');media.src='/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/media';
    if(status.kind==='IMAGE'){media.alt='Imagen pendiente de revisión';media.style.maxWidth='100%';}else{media.controls=true;media.preload='metadata';media.style.maxWidth='100%';}
    media.addEventListener(status.kind==='IMAGE'?'load':'loadedmetadata',()=>{mediaReviewed.disabled=false;});
-   media.addEventListener('error',()=>{mediaReviewed.checked=false;mediaReviewed.disabled=true;});
+   media.addEventListener('error',()=>{mediaReviewed.checked=false;mediaReviewed.disabled=true;approve.disabled=true;});
    card.append(media,confirmation);
   }
   const reason=element('input');reason.placeholder='Motivo del rechazo';reason.maxLength=300;
   const approve=element('button','Aprobar estado'),reject=element('button','Rechazar estado');
+  if(mediaReviewed){approve.disabled=!mediaReviewed.checked;mediaReviewed.addEventListener('change',()=>{approve.disabled=!mediaReviewed.checked;});}
   async function decide(approved){
    if(approved&&mediaReviewed&&!mediaReviewed.checked){notice.textContent='Revisa el archivo completo y confirma la revisión antes de aprobar.';return;}
    if(!approved&&!reason.value.trim()){notice.textContent='Indica el motivo del rechazo.';return;}
    approve.disabled=reject.disabled=true;
    try{const csrf=await request('/api/admin/csrf');await request('/api/admin/v1/moderation/statuses/'+encodeURIComponent(status.id)+'/review',{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({contentHash:status.contentHash,approved,reason:reason.value.trim(),attachmentReviewed:mediaReviewed?.checked||false})});await load();}
-   catch(error){notice.textContent=error.message;approve.disabled=reject.disabled=false;}
+   catch(error){notice.textContent=error.message;approve.disabled=!!mediaReviewed&&!mediaReviewed.checked;reject.disabled=false;}
   }
   approve.addEventListener('click',()=>decide(true));reject.addEventListener('click',()=>decide(false));card.append(reason,approve,reject);target.append(card);
  }

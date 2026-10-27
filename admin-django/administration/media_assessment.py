@@ -94,6 +94,7 @@ def assess(provider,kind,content,caption):
     for frame in extracted.frames:categories.update(provider.assess('',frame).categories)
     # Speech recognition can miss words/nonverbal abuse, and 5-second sampling
     # misses brief frames/OCR. Even an apparently clear result needs full review.
-    return Assessment('HUMAN_REQUIRED','whisper-1 + omni-moderation-latest',tuple(sorted(categories)))
+    return Assessment('HUMAN_REQUIRED','whisper-1 + omni-moderation-latest',tuple(sorted(categories)),
+        'VIDEO_SAMPLED_PARTIAL' if kind=='VIDEO' else 'AUDIO_TRANSCRIPT_PARTIAL',len(extracted.frames),extracted.duration)
 
 

@@ -1,5 +1,6 @@
 """Revisión humana explícita sobre las mismas revisiones y archivos de Spring."""
 import hashlib
+import json
 import re
 import uuid
 from datetime import datetime
@@ -48,7 +49,23 @@ def message_data(m):
                 correctedBeforeDelivery=bool(m['corrected_before']),editedAfterDelivery=bool(m['edited_after']),
                 createdAt=timestamp(m['created_at']),contentHash=m['content_hash'],
                 attachmentKind=media['kind'] if media else 'NONE',attachmentMime=media['mime'] if media else '',
-                attachmentName=media['file_name'] if media else '',attachmentSize=media['byte_size'] if media else 0)
+                attachmentName=media['file_name'] if media else '',attachmentSize=media['byte_size'] if media else 0,
+                automaticReview=assessment_summary('messages',m['id'],m['content_hash']))
+
+
+def assessment_summary(kind,item,digest):
+    values=rows('SELECT outcome,policy_version,coverage,categories_json,sampled_frames,duration_seconds FROM automatic_assessment WHERE subject_kind=%s AND subject_id=%s AND content_hash=%s ORDER BY updated_at DESC,id DESC LIMIT 1',[kind,item,digest])
+    if not values:return None
+    value=values[0]
+    try:categories=json.loads(value['categories_json'] or '[]')
+    except (TypeError,ValueError):categories=[]
+    # Only metadata for the current exact hash reaches the authenticated queue.
+    if not isinstance(categories,list):categories=[]
+    categories=[category for category in categories if isinstance(category,str) and re.fullmatch(r'[a-z/-]{1,60}',category)][:20]
+    return dict(outcome=value['outcome'],policyVersion=value['policy_version'],coverage=value['coverage'] or 'NOT_ANALYZED',
+        categories=categories,sampledFrames=value['sampled_frames'] or 0,
+        durationSeconds=float(value['duration_seconds']) if value['duration_seconds'] is not None else None,
+        humanRequired=True)
 
 
 def status_data(s):
@@ -56,7 +73,8 @@ def status_data(s):
         return value.replace(tzinfo=ZoneInfo(settings.TIME_ZONE)).isoformat()
     return dict(id=s['id'],owner=s['owner'],name=s['display_name'],text=s['body'],background=s['background'],
                 audience=s['audience'],kind=s['kind'],state=s['state'],contentHash=s['content_hash'],
-                createdAt=instant(s['created_at']),expiresAt=instant(s['expires_at']),reason=s['reason'] or '',seen=False,views=0)
+                createdAt=instant(s['created_at']),expiresAt=instant(s['expires_at']),reason=s['reason'] or '',seen=False,views=0,
+                automaticReview=assessment_summary('statuses',s['id'],s['content_hash']))
 
 
 @require_GET

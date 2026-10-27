@@ -1,5 +1,7 @@
 # Evaluación asistida de audio y video
 
+Incremento posterior: [resumen para revisores](RESUMEN_PARA_REVISORES_27_OCT.md), con metadatos de cobertura en la cola administrativa, Flyway V14 y 55 pruebas Django. Las referencias a ausencia de panel en el corte inicial siguiente quedan como antecedente de ese corte.
+
 Incremento posterior al informe del 27 de octubre. Django dispone ahora de extracción local y análisis asistido de audio/video, además del texto e imagen existentes. No se activa sobre la cola real y no constituye aprobación automática completa de medios.
 
 ## Cobertura implementada

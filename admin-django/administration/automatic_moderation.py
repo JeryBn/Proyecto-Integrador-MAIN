@@ -28,6 +28,9 @@ class Assessment:
     outcome: str
     model: str
     categories: tuple = ()
+    coverage: str = ''
+    sampled_frames: int = 0
+    duration_seconds: float | None = None
 
 def parse_assessment(value,kind):
     results=value.get('results')
@@ -133,7 +136,13 @@ def process(kind,item,provider,apply=False,policy='test-only'):
             state='HUMAN_REQUIRED' if str(error)=='HUMAN_REQUIRED' else 'PROVIDER_UNAVAILABLE'
             human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key]);return state
         state='HUMAN_REQUIRED' if result.outcome!='CLEAR' or media_kind in ('IMAGE','VIDEO','AUDIO') else 'CLEAR_SHADOW'
-        human.execute('UPDATE automatic_assessment SET outcome=%s,updated_at=%s WHERE id=%s',[state,human.now(),key])
+        coverage={'IMAGE':'IMAGE_PARTIAL','AUDIO':'AUDIO_TRANSCRIPT_PARTIAL','VIDEO':'VIDEO_SAMPLED_PARTIAL'}.get(media_kind,'TEXT')
+        allowed={'sexual','sexual/minors','harassment','harassment/threatening','hate','hate/threatening','violence','violence/graphic','self-harm','self-harm/intent','self-harm/instructions','illicit','illicit/violent'}
+        categories=sorted(category for category in result.categories if category in allowed)
+        frames=result.sampled_frames if type(result.sampled_frames) is int and 0<=result.sampled_frames<=12 else 0
+        duration=result.duration_seconds if type(result.duration_seconds) in (int,float) and 0<result.duration_seconds<=60 else None
+        human.execute('UPDATE automatic_assessment SET outcome=%s,coverage=%s,categories_json=%s,sampled_frames=%s,duration_seconds=%s,updated_at=%s WHERE id=%s',
+            [state,coverage,json.dumps(categories),frames,duration,human.now(),key])
         if state=='HUMAN_REQUIRED':return state
         if not apply:return state
     # Reuse exactly the human path: locks, latest hash/revision, permissions,

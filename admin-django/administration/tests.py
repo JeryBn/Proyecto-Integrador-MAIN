@@ -32,7 +32,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -529,3 +529,29 @@ class AdministrationTests(TransactionTestCase):
         self.status_fixture('IMAGE');provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
         self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED')
         self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
+
+    def test_admin_summary_is_current_hash_only_and_contains_no_transcript(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import execute
+        from unittest.mock import Mock
+        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','controlled',('harassment','unknown-provider-field'))
+        process('messages','msg',provider)
+        summary=self.client.get('/api/admin/v1/moderation/messages').json()[0]['automaticReview']
+        self.assertEqual(summary['categories'],['harassment']);self.assertEqual(summary['coverage'],'TEXT')
+        self.assertTrue(summary['humanRequired']);self.assertNotIn('transcript',summary);self.assertNotIn('model',summary)
+        execute("UPDATE message_revision SET content_hash='new-version' WHERE message_id='msg'")
+        self.assertIsNone(self.client.get('/api/admin/v1/moderation/messages').json()[0]['automaticReview'])
+        self.assertEqual(Client().get('/api/admin/v1/moderation/messages').status_code,401)
+
+    def test_video_summary_has_partial_coverage_without_automatic_release(self):
+        from .automatic_moderation import process,Assessment
+        from .moderation import rows
+        from unittest.mock import Mock
+        self.status_fixture('VIDEO');provider=Mock()
+        provider.assess_media.return_value=Assessment('CLEAR','controlled',('violence',),'VIDEO_SAMPLED_PARTIAL',2,7.25)
+        with patch.dict('os.environ',{'MAIN_MODERATION_MEDIA_ENABLED':'true'}):process('statuses','status',provider,True)
+        summary=self.client.get('/api/admin/v1/moderation/statuses').json()[0]['automaticReview']
+        self.assertEqual(summary['outcome'],'HUMAN_REQUIRED');self.assertEqual(summary['coverage'],'VIDEO_SAMPLED_PARTIAL')
+        self.assertEqual(summary['sampledFrames'],2);self.assertEqual(summary['durationSeconds'],7.25)
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
+        self.assertEqual(len(rows('SELECT id FROM notification')),0)
