@@ -1,0 +1,6 @@
+{
+  "synthetic": true,
+  "httpStatus": 503,
+  "answerReceived": false,
+  "errorCode": "AI_QUOTA_EXHAUSTED"
+}

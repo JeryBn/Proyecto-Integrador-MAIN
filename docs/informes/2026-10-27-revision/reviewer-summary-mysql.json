@@ -1,0 +1,40 @@
+{
+  "synthetic": true,
+  "controlledProvider": true,
+  "realOpenAiRequest": false,
+  "passed": 8,
+  "checks": [
+    {
+      "name": "controlled_assessment",
+      "passed": true
+    },
+    {
+      "name": "admin_queue",
+      "passed": true
+    },
+    {
+      "name": "partial_coverage",
+      "passed": true
+    },
+    {
+      "name": "metadata_only",
+      "passed": true
+    },
+    {
+      "name": "not_published",
+      "passed": true
+    },
+    {
+      "name": "no_notice",
+      "passed": true
+    },
+    {
+      "name": "anonymous_denied",
+      "passed": true
+    },
+    {
+      "name": "stale_hash_not_reused",
+      "passed": true
+    }
+  ]
+}
