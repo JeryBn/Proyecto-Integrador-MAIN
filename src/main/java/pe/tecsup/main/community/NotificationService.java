@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
  private final JdbcTemplate db;private final IdentityService users;private final Clock clock;
  public NotificationService(JdbcTemplate db,IdentityService users,Clock clock){this.db=db;this.users=users;this.clock=clock;}
- public record Notice(String id,String kind,String conversationId,String createdAt,boolean read){}
+ public record Notice(String id,String kind,String conversationId,String createdAt,boolean read,Long activityId){}
  public void enqueue(String recipient,String sender,String conversation,String message,String kind,String event){
   if(recipient.equals(sender)||!users.account(recipient).enabled()||!users.preferences(recipient).notifications()||users.blocked(recipient,sender))return;
   if(db.queryForObject("SELECT COUNT(*) FROM contact_preference WHERE owner=? AND subject=? AND muted=TRUE",Long.class,recipient,sender)>0)return;
@@ -18,25 +18,31 @@ public class NotificationService {
  }
  private static final String VISIBLE="""
   FROM notification n JOIN main_user s ON s.username=n.sender
-  JOIN conversation_member cm ON cm.conversation_id=n.conversation_id AND cm.username=n.recipient
+  LEFT JOIN conversation_member cm ON cm.conversation_id=n.conversation_id AND cm.username=n.recipient
   WHERE n.recipient=? AND s.enabled=TRUE
-  AND ((n.kind='INVITATION' AND cm.state='INVITED') OR
+  AND ((((n.kind='INVITATION' AND cm.state='INVITED') OR
        (n.kind='MESSAGE' AND cm.state='ACTIVE' AND EXISTS(SELECT 1 FROM message m WHERE m.id=n.message_id AND m.published_revision IS NOT NULL AND m.created_at>=cm.joined_at)))
   AND NOT EXISTS(SELECT 1 FROM contact_preference p WHERE
    (p.blocked=TRUE AND ((p.owner=n.recipient AND p.subject=n.sender) OR (p.owner=n.sender AND p.subject=n.recipient))) OR
-   (p.muted=TRUE AND p.owner=n.recipient AND p.subject=n.sender))
+   (p.muted=TRUE AND p.owner=n.recipient AND p.subject=n.sender)))
+  OR (n.kind='REMINDER' AND EXISTS(
+   SELECT 1 FROM actividad a JOIN main_user u ON u.username=n.recipient AND u.enabled=TRUE AND u.role='ALUMNO'
+   JOIN alumno al ON al.id=u.alumno_id AND al.usuario=u.username JOIN matricula m ON m.alumno_id=al.id AND m.curso_id=a.curso_id
+   JOIN reminder_preference rp ON rp.owner=u.username AND rp.enabled=TRUE AND rp.minutes_before=n.reminder_minutes
+   WHERE a.id=n.activity_id AND a.fecha_limite=n.reminder_due AND a.fecha_limite>?
+   AND NOT EXISTS(SELECT 1 FROM entrega e WHERE e.alumno_id=al.id AND e.actividad_id=a.id))))
   """;
  public List<Notice> list(String actor,int offset,int limit){
   users.active(actor);IdentityService.page(offset,limit);if(!users.preferences(actor).notifications())return List.of();
-  return db.query("SELECT n.id,n.kind,n.conversation_id,n.created_at,n.read_at "+VISIBLE+" ORDER BY n.created_at DESC,n.id DESC LIMIT ? OFFSET ?",
-   (r,n)->new Notice(r.getString(1),r.getString(2),r.getString(3),r.getTimestamp(4).toString(),r.getTimestamp(5)!=null),actor,limit,offset);
+  return db.query("SELECT n.id,n.kind,n.conversation_id,n.created_at,n.read_at,n.activity_id "+VISIBLE+" ORDER BY n.created_at DESC,n.id DESC LIMIT ? OFFSET ?",
+   (r,n)->new Notice(r.getString(1),r.getString(2),r.getString(3),r.getTimestamp(4).toString(),r.getTimestamp(5)!=null,r.getObject(6,Long.class)),actor,Timestamp.valueOf(LocalDateTime.now(clock)),limit,offset);
  }
  public void read(String actor,String id){
   users.active(actor);
-  if(db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=?",Long.class,actor,id)==0)throw DomainException.missing();
+  if(db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=?",Long.class,actor,Timestamp.valueOf(LocalDateTime.now(clock)),id)==0)throw DomainException.missing();
   db.update("UPDATE notification SET read_at=COALESCE(read_at,?) WHERE recipient=? AND id=?",Timestamp.valueOf(LocalDateTime.now(clock)),actor,id);
  }
  public boolean pushVisible(String actor,String id){
-  users.active(actor);return users.preferences(actor).notifications()&&db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=? AND n.read_at IS NULL",Long.class,actor,id)>0;
+  users.active(actor);return users.preferences(actor).notifications()&&db.queryForObject("SELECT COUNT(*) "+VISIBLE+" AND n.id=? AND n.read_at IS NULL",Long.class,actor,Timestamp.valueOf(LocalDateTime.now(clock)),id)>0;
  }
 }
