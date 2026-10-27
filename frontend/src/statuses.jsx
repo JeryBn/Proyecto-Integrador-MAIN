@@ -4,6 +4,7 @@ import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {PrivateMedia} from './private-media.jsx';
 import {canPublish,ownerPlaylist,statusTextColor} from './status-model.mjs';
 import {MediaCapture} from './media-capture.jsx';
+import {AppealAction} from './appeals.jsx';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
 export function Statuses({profile,preferences,draft,setDraft,onChat}){
@@ -24,7 +25,7 @@ export function Statuses({profile,preferences,draft,setDraft,onChat}){
   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}<Feedback resource={feed}/>
   {publish&&compose&&<StatusComposer draft={draft} setDraft={setDraft} preferences={preferences} onSaved={()=>{setCompose(false);setNotice('Estado guardado, pendiente de revisión. Aún no está publicado para tus contactos.');feed.reload();}}/>}
   {current&&<StatusViewer key={current.id} status={current} playlist={ownerPlaylist(feed.data,current.owner)} mine={current.owner===profile.usuario} onOpen={open} onClose={()=>setSelected(null)} onDelete={()=>confirm('¿Eliminar este estado? Dejará de estar disponible para tus contactos.',()=>remove(current))} onReply={onChat?()=>reply(current):undefined} busy={busy}/>}
-  <h2>Mi estado</h2>{own.length?<ul className="status-list">{own.map(s=><li key={s.id}><button onClick={()=>open(s)}><span className={'status-ring '+(s.state==='APPROVED'?'':'pending')}>{s.kind==='TEXT'?'T':s.kind==='IMAGE'?'Foto':s.kind==='VIDEO'?'Video':'Audio'}</span><span className="grow"><strong>{s.text||'Estado multimedia'}</strong><small>{s.state==='PENDING'?'Pendiente de revisión':s.state==='REJECTED'?'Rechazado · solo visible para ti':'Aprobado'} · Caduca {localDate(s.expiresAt)}</small></span></button></li>)}</ul>:<p>No tienes estados activos.</p>}
+  <h2>Mi estado</h2>{own.length?<ul className="status-list">{own.map(s=><li key={s.id}><button onClick={()=>open(s)}><span className={'status-ring '+(s.state==='APPROVED'?'':'pending')}>{s.kind==='TEXT'?'T':s.kind==='IMAGE'?'Foto':s.kind==='VIDEO'?'Video':'Audio'}</span><span className="grow"><strong>{s.text||'Estado multimedia'}</strong><small>{s.state==='PENDING'?'Pendiente de revisión':s.state==='REJECTED'?'Rechazado · solo visible para ti':'Aprobado'} · Caduca {localDate(s.expiresAt)}</small></span></button>{s.state==='REJECTED'&&<AppealAction kind="statuses" item={s}/>}</li>)}</ul>:<p>No tienes estados activos.</p>}
   <h2>Actualizaciones de contactos</h2>{!feed.loading&&owners.length===0&&<p>No hay estados de contactos disponibles.</p>}
   <ul className="status-list">{owners.map(owner=>{const updates=ownerPlaylist(feed.data,owner),first=updates.find(s=>!s.seen)||updates[0];return <li key={owner}><button onClick={()=>open(first)}><span className={'status-ring '+(updates.every(s=>s.seen)?'seen':'')}>{first.name.slice(0,1)}</span><span className="grow"><strong>{first.name}</strong><small>{updates.length} {updates.length===1?'actualización':'actualizaciones'} · {updates.every(s=>s.seen)?'Vistos':'Sin ver'} · {localDate(updates.at(-1).createdAt)}</small></span></button></li>;})}</ul>
  </section>;

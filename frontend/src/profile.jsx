@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {userApi,enc} from './user-api.mjs';
 import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {ReminderSettings} from './reminder-settings.jsx';
+import {AppealHistory} from './appeals.jsx';
 import {noticeLabel,noticeTarget} from './notice-model.mjs';
 
 export function Profile({profile,preferences,onPreferences,active,onChat}){
@@ -13,6 +14,7 @@ export function Profile({profile,preferences,onPreferences,active,onChat}){
     <div className="profile-heading"><span className="avatar">{profile.nombre?.slice(0,1)}</span><div><h2>{profile.nombre}</h2><p>{profile.rol} · {profile.usuario}</p></div></div>
     {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
     <ReminderSettings active={active&&profile.rol==='Alumno'}/>
+    <AppealHistory active={active}/>
     <h2>Ajustes</h2>{preferences?<fieldset disabled={busy} className="settings-list"><legend>Preferencias de tu cuenta</legend>
       <label><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/> Tema oscuro</label>
       <label><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/> Avisos dentro de MAIN</label>

@@ -5,6 +5,7 @@
 <body><main><header><p>MAIN · Administración</p><h1>Revisión de mensajes</h1><a href="/admin.html">Volver a Administración</a></header>
 <p>Solo la versión que revisas puede ser aprobada. Los borradores pendientes o rechazados permanecen privados.</p>
 <p id="notice" role="status"></p><button id="refresh">Actualizar cola</button>
+<section aria-labelledby="appealTitle"><h2 id="appealTitle">Apelaciones abiertas</h2><p>Debe resolver una persona distinta de quien rechazó el contenido. Devolver a revisión mantiene el contenido privado; no lo publica ni prolonga un estado caducado.</p><section id="appealQueue"></section><button id="appealsPrevious">Apelaciones anteriores</button><button id="appealsNext">Más apelaciones</button></section>
 <section aria-labelledby="retentionTitle"><h2 id="retentionTitle">Protección por apelación</h2>
 <p>La limpieza conserva pendientes siete días y rechazados treinta días. Una protección activa suspende la eliminación del contenido y su historial de revisión. Resolverla inicia un plazo nuevo; no recupera contenido ya eliminado.</p>
 <form id="retentionForm"><label>Contenido<select id="retentionKind"><option value="messages">Mensaje</option><option value="statuses">Estado</option></select></label>

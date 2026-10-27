@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {userApi,enc,fileError,submissionKey,labels,localDate} from './user-api.mjs';
 import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {PrivateMedia} from './private-media.jsx';
+import {AppealAction} from './appeals.jsx';
 
 const emptyDraft=()=>({text:'',file:null,edit:null,attempt:null});
 export function Messages({profile,conversationId,onOpen,drafts,setDrafts}){
@@ -76,6 +77,7 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
    {m.correctedBeforeDelivery&&<small>Editado antes del envío para cumplir las normas de MAIN</small>}{m.editedAfterDelivery&&<small>Editado después del envío</small>}
    {m.sender===profile.usuario&&m.state!=='CANCELLED'&&<div className="row-actions"><button disabled={busy} onClick={()=>edit(m)}>{m.state==='REJECTED'?'Corregir mensaje':'Editar mensaje'}</button>{m.state!=='APPROVED'&&<button disabled={busy} onClick={()=>{confirm('¿Cancelar esta versión pendiente o rechazada?',()=>run(()=>userApi.call('/api/v1/messages/'+enc(m.id)+'/cancel',{method:'POST',json:{expectedRevision:m.revision}}),'Versión cancelada.'));}}>Cancelar envío</button>}</div>}
    {m.sender===profile.usuario&&m.state==='REJECTED'&&m.attachmentKind!=='NONE'&&<small>Para sustituir el archivo, cancela este envío y adjunta uno nuevo.</small>}
+   {m.sender===profile.usuario&&m.state==='REJECTED'&&<AppealAction kind="messages" item={m}/>}
   </li>)}</ol>
   {contact?.blocked&&<p role="alert">Has bloqueado este contacto. Puedes desbloquearlo desde Perfil.</p>}
   <form className="message-composer" onSubmit={e=>{e.preventDefault();send();}}><fieldset disabled={busy||contact?.blocked}><legend>{draft.edit?'Editar mensaje':'Escribir mensaje'}</legend>

@@ -1,6 +1,7 @@
 'use strict';
 let offset=0;
 let holdsOffset=0;
+let appealsOffset=0;
 const queue=document.getElementById('queue'),notice=document.getElementById('notice');
 async function request(path,options={}){
  const response=await fetch(path,{...options,credentials:'same-origin',headers:{Accept:'application/json',...options.headers}});
@@ -38,6 +39,7 @@ async function review(message,approved,reason,button,attachmentReviewed=false){
 async function load(){
  notice.textContent='Cargando…';
  try{
+  await loadAppeals();
   await loadHolds();
   await loadStatuses();
   const messages=await request('/api/admin/v1/moderation/messages?offset='+offset+'&limit=20');
@@ -138,3 +140,28 @@ document.getElementById('retentionForm').addEventListener('submit',event=>{event
 document.getElementById('releaseContent').addEventListener('click',()=>changeProtection(false));
 document.getElementById('holdsPrevious').addEventListener('click',()=>{holdsOffset=Math.max(0,holdsOffset-20);loadHolds().catch(error=>{notice.textContent=error.message;});});
 document.getElementById('holdsNext').addEventListener('click',()=>{holdsOffset+=20;loadHolds().catch(error=>{notice.textContent=error.message;});});
+
+async function loadAppeals(){
+ const values=await request('/api/admin/v1/appeals?offset='+appealsOffset+'&limit=20');const target=document.getElementById('appealQueue');target.replaceChildren();
+ if(!values.length)target.append(element('p','No hay apelaciones abiertas en esta página.'));
+ for(const value of values){const card=element('article');card.append(element('h3',(value.kind==='messages'?'Mensaje · versión '+value.revision:'Estado')+' · '+value.owner),element('p','Solicitud: '+value.reason));
+  const detail=element('button','Revisar apelación'),panel=element('section');detail.addEventListener('click',async()=>{detail.disabled=true;panel.replaceChildren();
+   try{const item=await request('/api/admin/v1/appeals/'+encodeURIComponent(value.id));panel.append(element('pre',item.text),element('p',item.current?'La versión sigue rechazada.':'El contenido cambió o fue retirado.'),element('p',item.expired?'Estado caducado: no puede volver a publicarse.':''));
+    if(!['NONE','TEXT'].includes(item.mediaKind)){const url='/api/admin/v1/appeals/'+encodeURIComponent(item.id)+'/media';const link=element('a','Abrir archivo completo de la apelación');link.href=url;panel.append(link);
+     if(item.mediaKind!=='FILE'){const media=element(item.mediaKind==='IMAGE'?'img':item.mediaKind==='VIDEO'?'video':'audio');media.src=url;media.style.maxWidth='100%';if(item.mediaKind==='IMAGE')media.alt='Contenido de la apelación';else{media.controls=true;media.preload='metadata';}panel.append(media);}
+    }
+    const label=element('label','Explicación para quien apeló'),reason=element('textarea');reason.maxLength=1000;label.append(reason);panel.append(label);
+    for(const [outcome,title] of [['UPHELD','Mantener rechazo'],['RETURNED','Devolver a revisión humana'],['SUPERSEDED','Cerrar por cambio o caducidad']]){
+     const button=element('button',title);button.disabled=outcome==='RETURNED'&&(!item.current||item.expired)||outcome==='SUPERSEDED'&&item.current&&!item.expired;
+     button.addEventListener('click',async()=>{if(!reason.value.trim()){notice.textContent='Explica la resolución para quien apeló.';reason.focus();return;}const buttons=panel.querySelectorAll('button');buttons.forEach(b=>b.disabled=true);
+      try{const csrf=await request('/api/admin/csrf');await request('/api/admin/v1/appeals/'+encodeURIComponent(item.id)+'/resolve',{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({outcome,reason:reason.value.trim(),contentHash:item.contentHash})});await load();notice.textContent='Apelación resuelta. El contenido no se ha publicado.';}
+      catch(error){notice.textContent=error.message;detail.disabled=false;button.disabled=false;}
+     });panel.append(button);
+    }
+   }catch(error){notice.textContent=error.message;detail.disabled=false;}
+  });card.append(detail,panel);target.append(card);
+ }
+ document.getElementById('appealsPrevious').disabled=appealsOffset===0;document.getElementById('appealsNext').disabled=values.length<20;
+}
+document.getElementById('appealsPrevious').addEventListener('click',()=>{appealsOffset=Math.max(0,appealsOffset-20);loadAppeals().catch(error=>{notice.textContent=error.message;});});
+document.getElementById('appealsNext').addEventListener('click',()=>{appealsOffset+=20;loadAppeals().catch(error=>{notice.textContent=error.message;});});
