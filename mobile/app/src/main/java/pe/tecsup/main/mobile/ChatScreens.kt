@@ -48,7 +48,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
     item{Text("Avisos",Modifier.padding(20.dp),style=MaterialTheme.typography.titleLarge)}
     if(model.notices.isEmpty()) item{Text("No hay avisos visibles.",Modifier.padding(20.dp))}
     items(model.notices,key={"notice-"+it.id}){notice->
-     ListItem(headlineContent={Text(if(notice.kind=="MESSAGE")"Mensaje aprobado disponible" else "Invitación a grupo")},
+     ListItem(modifier=Modifier.clickable{model.openNotice(notice)},headlineContent={Text(when(notice.kind){"REMINDER"->"Actividad próxima a vencer";"MESSAGE"->"Mensaje aprobado disponible";else->"Invitación a grupo"})},
       supportingContent={Text(if(notice.read)"Leído" else "Sin leer")},
       trailingContent={if(!notice.read)TextButton(onClick={model.readNotice(notice.id)},enabled=!model.chatBusy){Text("Marcar leído")}})
     }

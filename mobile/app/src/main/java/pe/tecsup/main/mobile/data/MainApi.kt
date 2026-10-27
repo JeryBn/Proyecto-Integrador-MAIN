@@ -10,7 +10,8 @@ import java.net.URI
 import java.net.URLEncoder
 
 data class Profile(val usuario: String, val nombre: String, val rol: String)
-data class Notice(val id:String,val kind:String,val conversationId:String,val read:Boolean)
+data class Notice(val id:String,val kind:String,val conversationId:String,val read:Boolean,val activityId:Long?=null)
+data class ReminderPreferences(val enabled:Boolean=false,val minutesBefore:Int=60)
 data class Activity(
     val id: Long, val titulo: String, val descripcion: String, val curso: String,
     val docente: String, val fechaLimite: String, val vencida: Boolean, val completada: Boolean
@@ -127,9 +128,11 @@ class MainApi(val endpoint: String) {
     fun askAssistant(key:String,question:String):String = mutate("/api/v1/assistant",
         JSONObject().put("clientKey",key).put("question",question),"POST").getString("answer")
     fun notifications(offset:Int=0):List<Notice> = rows(JSONArray(checked(request("/api/v1/notifications?offset="+offset+"&limit=30")))) {
-        Notice(it.getString("id"),it.getString("kind"),it.getString("conversationId"),it.getBoolean("read"))
+        Notice(it.getString("id"),it.getString("kind"),if(it.isNull("conversationId"))"" else it.getString("conversationId"),it.getBoolean("read"),if(it.isNull("activityId"))null else it.getLong("activityId"))
     }
     fun readNotification(id:String) { mutate("/api/v1/notifications/"+id+"/read",JSONObject(),"POST") }
+    fun reminderPreferences():ReminderPreferences { val value=JSONObject(checked(request("/api/v1/reminders/preferences")));return ReminderPreferences(value.getBoolean("enabled"),value.getInt("minutesBefore")) }
+    fun reminderPreferences(value:ReminderPreferences):ReminderPreferences { val saved=mutate("/api/v1/reminders/preferences",JSONObject().put("enabled",value.enabled).put("minutesBefore",value.minutesBefore));return ReminderPreferences(saved.getBoolean("enabled"),saved.getInt("minutesBefore")) }
 
     fun conversations(offset:Int=0): List<Conversation> = rows(JSONArray(checked(request("/api/v1/conversations?offset="+offset+"&limit=30")))) {
         Conversation(it.getString("id"),it.getString("kind"),it.getString("title"),it.getBoolean("administrator"),it.getString("state"))

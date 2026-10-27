@@ -50,6 +50,7 @@ import pe.tecsup.main.mobile.data.ContactUser
      PreferenceSwitch("Tema oscuro","Apariencia de MAIN",model.darkTheme,!model.accountBusy){model.savePreferences(model.preferences.copy(darkTheme=it))}
      PreferenceSwitch("Avisos en MAIN","Mensajes e invitaciones",model.preferences.notifications,!model.accountBusy){model.savePreferences(model.preferences.copy(notifications=it))}
      PushSettings(model)
+     if(model.profile?.rol=="Alumno")ReminderSettings(model)
     }
     HorizontalDivider()
     SettingsRow(Icons.AutoMirrored.Outlined.Logout,"Cerrar sesión",danger=true,onClick={if(!model.busy)model.logout()})
@@ -57,6 +58,19 @@ import pe.tecsup.main.mobile.data.ContactUser
   }
   Column(Modifier.padding(20.dp)){AccountFeedback(model);TextButton(onClick=model::refreshAccount,enabled=!model.accountBusy){Text("Actualizar preferencias")}}
  }
+}
+@Composable internal fun ReminderSettings(model:MainViewModel){
+ LaunchedEffect(model.profile?.usuario){model.loadReminders()}
+ Text("Recordatorios de tareas",style=MaterialTheme.typography.titleMedium)
+ val value=model.reminderPreferences
+ if(value==null){TextButton(onClick=model::loadReminders,enabled=!model.accountBusy){Text("Cargar recordatorios")}}
+ else {
+  PreferenceSwitch("Recordar tareas pendientes","Solo tus cursos matriculados",value.enabled,!model.accountBusy){model.saveReminders(value.copy(enabled=it))}
+  listOf(15 to "15 minutos antes",60 to "Una hora antes",1440 to "Un día antes").forEach{(minutes,label)->
+   FilterChip(selected=value.minutesBefore==minutes,onClick={model.saveReminders(value.copy(minutesBefore=minutes))},enabled=!model.accountBusy,label={Text(label)})
+  }
+ }
+ Text("Activa Avisos en MAIN. Para avisos con la app cerrada también se necesita push configurado y permiso.",style=MaterialTheme.typography.bodySmall)
 }
 @Composable internal fun ContactRow(contact:ContactUser,onClick:()->Unit) {
  Row(Modifier.fillMaxWidth().clickable(onClick=onClick).padding(horizontal=20.dp,vertical=13.dp),

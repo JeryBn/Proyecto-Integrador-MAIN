@@ -69,6 +69,22 @@ class MainViewModel : ViewModel() {
     fun disablePush(){val client=api?:return;val device=pushDevice;viewModelScope.launch{try{withContext(Dispatchers.IO){client.disablePush(device)}}catch(_:Exception){}}}
     var notices by mutableStateOf<List<Notice>>(emptyList())
         private set
+    var reminderPreferences by mutableStateOf<ReminderPreferences?>(null)
+        private set
+    fun loadReminders() = accountOperation { client ->
+        val value=withContext(Dispatchers.IO){client.reminderPreferences()}
+        if(api===client)reminderPreferences=value
+    }
+    fun saveReminders(value:ReminderPreferences) = accountOperation("Recordatorios guardados.") { client ->
+        val saved=withContext(Dispatchers.IO){client.reminderPreferences(value)}
+        if(api===client)reminderPreferences=saved
+    }
+    fun openNotice(notice:Notice){
+        if(notice.kind=="REMINDER"){
+            val id=notice.activityId?:return
+            if(id>0){selectedSection=MainSection.HOME;openDetail(id)}
+        }else if(notice.conversationId.isNotBlank()){selectedSection=MainSection.MESSAGES;openConversation(notice.conversationId)}
+    }
     var noticePage by mutableStateOf(0)
         private set
     fun noticePage(delta:Int) { if(!chatBusy) {noticePage=(noticePage+delta).coerceAtLeast(0);loadConversations()} }
@@ -200,7 +216,7 @@ class MainViewModel : ViewModel() {
         uploadJob?.cancel();uploadJob=null
         showChatPicker=false;contactProfile=null;settingsPage="MAIN"
         grades=emptyList(); teachingCourse=null; teachingGrades=emptyList(); statuses=emptyList(); statusViewer=null; statusBytes=null; statusComposer=false; statusBusy=false; statusError=""
-        notices=emptyList();noticePage=0
+        notices=emptyList();noticePage=0;reminderPreferences=null
         cancelAssistant()
         assistantQuestion=""; assistantAnswer=""; assistantError=""
         profile = null
