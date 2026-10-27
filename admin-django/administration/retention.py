@@ -7,14 +7,14 @@ from django.views.decorators.http import require_http_methods
 from . import moderation as human
 from .academic import body
 from .identity import mutation, text
-from .views import admin_only, error, pagination
+from .views import review_only, error, pagination
 
 POLICY = 'jery-2026-10-27-v1'
 PENDING_DAYS, REJECTED_DAYS, AUDIT_DAYS = 7, 30, 90
 REASON = 'Contenido eliminado por plazo de conservación.'
 
 @require_http_methods(['GET'])
-@admin_only
+@review_only
 def holds(request):
     page = pagination(request)
     if page is None: return error(400, 'VALIDATION_ERROR', 'Paginación inválida.')
@@ -39,7 +39,7 @@ def event(action, subject, instant, actor='retention-worker'):
                   [str(uuid.uuid4()), actor, action, subject, instant])
 
 @require_http_methods(['GET', 'POST'])
-@admin_only
+@review_only
 @mutation
 def hold(request, kind, item_id):
     if kind not in ('messages', 'statuses'):

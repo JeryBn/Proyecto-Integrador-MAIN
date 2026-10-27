@@ -158,7 +158,7 @@ def process(kind,item,provider,apply=False,policy='test-only'):
 def run_batch(provider,limit=10,apply=False,env=None):
     env=os.environ if env is None else env
     if not approved_policy(env):raise ValueError('POLICY_NOT_APPROVED')
-    if not SharedUser.objects.filter(username=env['MAIN_MODERATION_REVIEWER'],role='ADMIN',enabled=True).exists():raise ValueError('REVIEWER_NOT_AUTHORIZED')
+    if not SharedUser.objects.filter(username=env['MAIN_MODERATION_REVIEWER'],role__in=['ADMIN','REVIEWER'],enabled=True,password_change_required=False).exists():raise ValueError('REVIEWER_NOT_AUTHORIZED')
     if not 1<=limit<=50:raise ValueError('LIMIT_INVALID')
     summary={}
     for kind,item in pending(limit,env['MAIN_MODERATION_POLICY_VERSION'],apply):

@@ -32,7 +32,7 @@ public class IdentityService implements UserDetailsService {
   if(rows.isEmpty())throw new UsernameNotFoundException("Cuenta no disponible.");return rows.getFirst();
  }
  public Map<String,String> profile(String username){
-  var a=active(username);String role=switch(a.role()){case "ALUMNO"->"Alumno";case "DOCENTE"->"Docente";case "FAMILIAR"->"Familiar";default->"ADMIN";};
+  var a=active(username);String role=switch(a.role()){case "ALUMNO"->"Alumno";case "DOCENTE"->"Docente";case "FAMILIAR"->"Familiar";case "REVIEWER"->"Revisor";default->"ADMIN";};
   return Map.of("usuario",a.username(),"nombre",a.name(),"rol",role);
  }
  public static String text(String value,int max,String field){
@@ -85,11 +85,11 @@ public class IdentityService implements UserDetailsService {
  }
  @Transactional public void revokeGuardian(String actor,String guardian,long student){admin(actor);if(db.update("DELETE FROM guardian_link WHERE guardian=? AND alumno_id=?",guardian,student)>0)audit.record(actor,"GUARDIAN_REVOKED",guardian+":"+student);}
  @Transactional public void resetPassword(String actor,String target,String value){
-  admin(actor);password(value);if(active(target).role().equals("ADMIN"))throw DomainException.denied();
+  admin(actor);password(value);if(Set.of("ADMIN","REVIEWER").contains(active(target).role()))throw DomainException.denied();
   db.update("UPDATE main_user SET password_hash=? WHERE username=?",encoder.encode(value),target);audit.record(actor,"PASSWORD_RESET",target);expire(target);
  }
  @Transactional public void disable(String actor,String target){
-  admin(actor);if(account(target).role().equals("ADMIN"))throw DomainException.denied();
+  admin(actor);if(Set.of("ADMIN","REVIEWER").contains(account(target).role()))throw DomainException.denied();
   db.update("UPDATE main_user SET enabled=FALSE WHERE username=?",target);audit.record(actor,"ACCOUNT_DISABLED",target);expire(target);
  }
  private void expire(String username){
@@ -107,7 +107,7 @@ public class IdentityService implements UserDetailsService {
  }
  @Transactional public void approveContact(String actor,String a,String b){
   a=text(a,60,"primer usuario");b=text(b,60,"segundo usuario");
-  admin(actor);if(a.equals(b)||active(a).role().equals("ADMIN")||active(b).role().equals("ADMIN"))throw DomainException.invalid("Contacto inválido.");
+  admin(actor);if(a.equals(b)||Set.of("ADMIN","REVIEWER").contains(active(a).role())||Set.of("ADMIN","REVIEWER").contains(active(b).role()))throw DomainException.invalid("Contacto inválido.");
   String first=a.compareTo(b)<0?a:b,second=a.compareTo(b)<0?b:a;
   if(db.queryForObject("SELECT COUNT(*) FROM contact_link WHERE user_a=? AND user_b=?",Long.class,first,second)==0){db.update("INSERT INTO contact_link VALUES(?,?,?)",first,second,actor);audit.record(actor,"CONTACT_APPROVED",first+":"+second);}
  }

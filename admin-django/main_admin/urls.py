@@ -6,8 +6,10 @@ from administration import scheduling, grades
 from administration import moderation
 from administration import retention
 from administration import appeals
+from administration import review_accounts
 
 urlpatterns = [
+    path('api/admin/reviewer/password', review_accounts.change_password),
     path('api/admin/v1/appeals', appeals.queue),
     path('api/admin/v1/appeals/<str:appeal_id>', appeals.detail),
     path('api/admin/v1/appeals/<str:appeal_id>/media', appeals.download),

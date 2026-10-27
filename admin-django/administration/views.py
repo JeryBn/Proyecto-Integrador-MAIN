@@ -29,20 +29,33 @@ def csrf_failure(request, reason=''):
     return error(403, 'CSRF_REJECTED', 'Renueva la sesión e intenta nuevamente.')
 
 def fingerprint(user):
-    return hashlib.sha256(user.password_hash.encode()).hexdigest()
+    return hashlib.sha256((user.password_hash+'\0'+user.role).encode()).hexdigest()
 
-def admin_only(view):
-    @wraps(view)
-    def protected(request, *args, **kwargs):
-        name = request.session.get('main_admin')
-        user = SharedUser.objects.filter(username=name).first() if name else None
-        if not user or not user.enabled or user.role != 'ADMIN' or not hmac.compare_digest(
-                request.session.get('password_version', ''), fingerprint(user)):
-            request.session.flush()
-            return error(401, 'UNAUTHENTICATED')
-        request.admin_actor = user.username
-        return view(request, *args, **kwargs)
-    return never_cache(protected)
+def require_roles(*roles, allow_initial_password=False):
+    def decorate(view):
+        @wraps(view)
+        def protected(request, *args, **kwargs):
+            name = request.session.get('main_admin')
+            user = SharedUser.objects.filter(username=name).first() if name else None
+            if not user or not user.enabled or not hmac.compare_digest(request.session.get('password_version', ''), fingerprint(user)):
+                request.session.flush()
+                return error(401, 'UNAUTHENTICATED')
+            if user.role not in roles:
+                return error(403, 'FORBIDDEN', 'Esta cuenta no tiene permiso para este módulo.')
+            if user.password_change_required and not allow_initial_password:
+                return error(403, 'PASSWORD_CHANGE_REQUIRED', 'Configura tu contraseña personal antes de revisar contenido.')
+            request.admin_actor = user.username
+            request.operator_user = user
+            return view(request, *args, **kwargs)
+        return never_cache(protected)
+    return decorate
+
+admin_only = require_roles('ADMIN')
+review_only = require_roles('ADMIN', 'REVIEWER')
+operator_only = require_roles('ADMIN', 'REVIEWER', allow_initial_password=True)
+
+def operator_data(user):
+    return dict(usuario=user.username, nombre=user.display_name, rol=user.role, mustChangePassword=user.password_change_required)
 
 @never_cache
 @require_GET
@@ -66,7 +79,7 @@ def login(request):
     if not valid or not user or not user.enabled:
         cache.set(key, attempts + 1, 300)
         return error(401, 'INVALID_CREDENTIALS', 'Usuario o contraseña incorrectos.')
-    if user.role != 'ADMIN':
+    if user.role not in ('ADMIN', 'REVIEWER'):
         request.session.flush()
         return error(403, 'FORBIDDEN', 'Esta cuenta no tiene acceso de administración.')
     request.session.cycle_key()
@@ -74,18 +87,18 @@ def login(request):
     request.session['password_version'] = fingerprint(user)
     rotate_token(request)
     cache.delete(key)
-    return JsonResponse({'rol': 'ADMIN'})
+    return JsonResponse(operator_data(user))
 
 @require_POST
-@admin_only
+@operator_only
 def logout(request):
     request.session.flush()
     return JsonResponse({'message': 'Sesión finalizada'})
 
 @require_GET
-@admin_only
+@operator_only
 def profile(request):
-    return JsonResponse(dict(usuario=request.admin_actor, rol='ADMIN'))
+    return JsonResponse(operator_data(request.operator_user))
 
 def pagination(request):
     try:

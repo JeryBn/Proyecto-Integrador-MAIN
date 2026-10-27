@@ -33,6 +33,7 @@ class SharedUser(models.Model):
     role = models.CharField(max_length=16)
     password_hash = models.CharField(max_length=100)
     enabled = models.BooleanField()
+    password_change_required = models.BooleanField(default=False)
     alumno_id = models.BigIntegerField(null=True)
     docente_id = models.BigIntegerField(null=True)
     dark_theme = models.BooleanField(default=False)

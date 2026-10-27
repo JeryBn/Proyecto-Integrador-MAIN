@@ -5,7 +5,7 @@ from django.views.decorators.http import require_GET, require_POST
 from . import moderation as human, retention
 from .academic import body
 from .identity import mutation, text
-from .views import admin_only, error, pagination
+from .views import review_only, error, pagination
 
 def find(appeal_id):
     values=human.rows('SELECT * FROM moderation_appeal WHERE id=%s',[appeal_id])
@@ -28,7 +28,7 @@ def data(appeal):
     return dict(id=appeal['id'],owner=appeal['owner'],kind=appeal['subject_kind'],subjectId=appeal['subject_id'],revision=appeal['revision'],contentHash=appeal['content_hash'],reason=appeal['request_reason'],state=appeal['state'],createdAt=appeal['created_at'].isoformat(),decisionReason=appeal['decision_reason'] or '')
 
 @require_GET
-@admin_only
+@review_only
 def queue(request):
     page=pagination(request)
     if page is None:return error(400,'VALIDATION_ERROR')
@@ -36,7 +36,7 @@ def queue(request):
     return JsonResponse([data(a) for a in human.rows("SELECT * FROM moderation_appeal WHERE state='OPEN' ORDER BY created_at,id LIMIT %s OFFSET %s",[limit,offset])],safe=False)
 
 @require_GET
-@admin_only
+@review_only
 def detail(request, appeal_id):
     appeal=find(appeal_id)
     if not appeal:return error(404,'NOT_FOUND')
@@ -48,7 +48,7 @@ def detail(request, appeal_id):
     return JsonResponse(result)
 
 @require_GET
-@admin_only
+@review_only
 def download(request, appeal_id):
     appeal=find(appeal_id)
     if not appeal or appeal['state']!='OPEN':return error(404,'NOT_FOUND')
@@ -69,7 +69,7 @@ def download(request, appeal_id):
     except ValueError:return error(409,'CONTENT_INTEGRITY')
 
 @require_POST
-@admin_only
+@review_only
 @mutation
 def resolve(request, appeal_id):
     value=body(request,{'outcome','reason','contentHash'})

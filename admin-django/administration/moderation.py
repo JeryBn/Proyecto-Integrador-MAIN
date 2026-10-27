@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_GET, require_POST
-from .views import admin_only, error, pagination, STATIC
+from .views import review_only, error, pagination, STATIC
 from .academic import body, record
 from .identity import mutation, text
 from .grades import timestamp
@@ -78,7 +78,7 @@ def status_data(s):
 
 
 @require_GET
-@admin_only
+@review_only
 def queue(request, kind):
     if kind not in ('messages','statuses'):
         return error(404,'NOT_FOUND')
@@ -114,7 +114,7 @@ def status_bytes(s):
 
 
 @require_GET
-@admin_only
+@review_only
 def download(request, kind, item_id):
     try:
         with transaction.atomic():
@@ -172,7 +172,7 @@ def notify(m):
 
 
 @require_POST
-@admin_only
+@review_only
 @mutation
 def review(request, kind, item_id):
     value=body(request, {'revision','contentHash','approved','reason','attachmentReviewed'})
@@ -235,7 +235,7 @@ def review_value(request,kind,item_id,value):
 
 
 @require_GET
-@admin_only
+@review_only
 def page(request, name='moderation.html'):
     if name not in ('moderation.html','moderation.js','moderation.css'):
         return error(404,'NOT_FOUND')

@@ -742,3 +742,92 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='UPHELD')).status_code,200)
         old=now()-timedelta(days=90);execute('UPDATE moderation_appeal SET decided_at=%s',[old])
         self.assertEqual(batch(apply=True)['counts']['appealsPurged'],1)
+
+    def reviewer_fixture(self,initial=False):
+        SharedUser.objects.create(username='limited_reviewer',display_name='Revisor sintético',role='REVIEWER',password_hash=HASH,enabled=True,password_change_required=initial)
+        return self.login('limited_reviewer')
+
+    def test_reviewer_can_access_review_but_never_academic_identity_or_audit_modules(self):
+        self.assertEqual(self.reviewer_fixture().status_code,200)
+        for path in ('moderation/messages','moderation/statuses','appeals','retention-holds'):
+            self.assertEqual(self.client.get('/api/admin/v1/'+path).status_code,200,path)
+        for path in ('users','courses','audit'):
+            self.assertEqual(self.client.get('/api/admin/v1/'+path).status_code,403,path)
+        self.assertEqual(self.client.get('/api/admin/actividades').status_code,403)
+        self.assertEqual(self.academic_call('timetable',{}).status_code,403)
+        self.assertEqual(self.academic_call('courses/1/grades',{},'put').status_code,403)
+        self.assertEqual(self.client.get('/api/admin/perfil').json()['rol'],'REVIEWER')
+        self.assertEqual(self.academic_call('users',{'username':'escalation','role':'ADMIN'}).status_code,403)
+
+    def test_initial_reviewer_must_set_password_before_reading_any_content(self):
+        self.assertTrue(self.reviewer_fixture(initial=True).json()['mustChangePassword'])
+        response=self.client.get('/api/admin/v1/moderation/messages')
+        self.assertEqual(response.status_code,403);self.assertEqual(response.json()['error']['code'],'PASSWORD_CHANGE_REQUIRED')
+        self.assertEqual(self.client.get('/moderation.html').status_code,403)
+        self.assertEqual(self.client.get('/api/admin/perfil').status_code,200)
+        self.assertEqual(self.client.post('/api/admin/logout',HTTP_X_CSRFTOKEN=self.token()).status_code,200)
+
+    def change_own_password(self,current=PASSWORD,new='SyntheticPersonalReview2026!'):
+        return self.client.post('/api/admin/reviewer/password',json.dumps({'currentPassword':current,'newPassword':new}),content_type='application/json',HTTP_X_CSRFTOKEN=self.token())
+
+    def test_reviewer_password_change_revokes_other_sessions_and_old_credentials(self):
+        self.reviewer_fixture(initial=True)
+        other=Client(enforce_csrf_checks=True);csrf=other.get('/api/admin/csrf').json()['token']
+        self.assertEqual(other.post('/api/admin/login',{'username':'limited_reviewer','password':PASSWORD},HTTP_X_CSRFTOKEN=csrf).status_code,200)
+        self.assertEqual(self.change_own_password().status_code,200)
+        self.assertFalse(self.client.get('/api/admin/perfil').json()['mustChangePassword'])
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').status_code,200)
+        self.assertEqual(other.get('/api/admin/perfil').status_code,401)
+        self.assertEqual(self.login('limited_reviewer').status_code,401)
+        self.assertEqual(self.login('limited_reviewer','SyntheticPersonalReview2026!').status_code,200)
+
+    def test_reviewer_password_requires_current_secret_csrf_and_atomic_audit(self):
+        self.reviewer_fixture(initial=True)
+        self.assertEqual(self.change_own_password(current='incorrect').status_code,400)
+        self.assertEqual(self.change_own_password(new=PASSWORD).status_code,400)
+        self.assertEqual(self.change_own_password(new='short').status_code,400)
+        self.assertEqual(self.client.post('/api/admin/reviewer/password','{}',content_type='application/json').status_code,403)
+        with patch('administration.review_accounts.record',side_effect=IntegrityError('synthetic')):
+            self.assertEqual(self.change_own_password().status_code,409)
+        self.assertTrue(SharedUser.objects.get(username='limited_reviewer').password_change_required)
+        self.assertEqual(self.login('limited_reviewer').status_code,200)
+
+    def test_reviewer_provision_is_cli_only_and_never_overwrites_existing_identity(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        from io import StringIO
+        with patch.dict('os.environ',{'MAIN_REVIEWER_INITIAL_PASSWORD':'SyntheticInitialReview2026!'}):
+            call_command('provision_reviewer',username='new.reviewer',name='Revisor sintético',stdout=StringIO())
+        user=SharedUser.objects.get(username='new.reviewer');digest=user.password_hash
+        self.assertEqual(user.role,'REVIEWER');self.assertTrue(user.password_change_required)
+        with self.assertRaises(CommandError):call_command('provision_reviewer',username='new.reviewer',name='Otro',stdout=StringIO())
+        self.assertEqual(SharedUser.objects.get(username='new.reviewer').password_hash,digest)
+        self.login()
+        self.assertEqual(self.academic_call('users',dict(username='escalation',name='No autorizado',role='REVIEWER',password=PASSWORD)).status_code,400)
+        self.assertEqual(self.academic_call('users/new.reviewer/disable',{}).status_code,403)
+
+    def test_disabled_reviewer_is_immediately_revoked_and_cannot_be_a_contact(self):
+        self.reviewer_fixture();SharedUser.objects.filter(username='limited_reviewer').update(enabled=False)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').status_code,401)
+        SharedUser.objects.filter(username='limited_reviewer').update(enabled=True)
+        self.login();self.assertEqual(self.academic_call('contacts',dict(first='alumno',second='limited_reviewer')).status_code,400)
+
+    def test_limited_reviewer_can_resolve_appeal_independently(self):
+        value=self.appeal_fixture();self.reviewer_fixture()
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,200)
+        self.assertEqual(self.client.get('/api/admin/v1/users').status_code,403)
+
+    def test_reviewer_password_limits_repeated_wrong_current_secret(self):
+        self.reviewer_fixture(initial=True)
+        for attempt in range(8):self.assertEqual(self.change_own_password(current='incorrect').status_code,400)
+        self.assertEqual(self.change_own_password().status_code,429)
+
+    def test_unactivated_reviewer_cannot_enable_automatic_processing(self):
+        from .automatic_moderation import run_batch
+        from unittest.mock import Mock
+        self.reviewer_fixture(initial=True);provider=Mock()
+        env=dict(MAIN_MODERATION_POLICY_APPROVED='true',MAIN_MODERATION_POLICY_VERSION='synthetic-reviewer-test',MAIN_MODERATION_REVIEWER='limited_reviewer',MAIN_MODERATION_RETENTION_DAYS='30')
+        with self.assertRaisesRegex(ValueError,'REVIEWER_NOT_AUTHORIZED'):run_batch(provider,env=env)
+        SharedUser.objects.filter(username='limited_reviewer').update(password_change_required=False)
+        self.assertEqual(run_batch(provider,env=env),{})
+        provider.assess.assert_not_called()

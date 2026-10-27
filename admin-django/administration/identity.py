@@ -94,7 +94,7 @@ def change_account(request, username, action):
     user = SharedUser.objects.select_for_update().filter(pk=username).first()
     if not user:
         return error(404, 'NOT_FOUND')
-    if user.role == 'ADMIN':
+    if user.role in ('ADMIN','REVIEWER'):
         return error(403, 'FORBIDDEN', 'No se modifican cuentas administrativas desde este módulo.')
     if action == 'reset-password':
         if not user.enabled:
@@ -153,7 +153,7 @@ def contacts(request):
     if first == second:
         raise ValueError('Contacto inválido.')
     users = list(SharedUser.objects.select_for_update().filter(username__in=[first,second],enabled=True).order_by('username'))
-    if len(users) != 2 or any(u.role == 'ADMIN' for u in users):
+    if len(users) != 2 or any(u.role in ('ADMIN','REVIEWER') for u in users):
         raise ValueError('Dos cuentas activas no administrativas requeridas.')
     with connection.cursor() as cursor:
         cursor.execute('SELECT COUNT(*) FROM contact_link WHERE user_a=%s AND user_b=%s', [first,second])
