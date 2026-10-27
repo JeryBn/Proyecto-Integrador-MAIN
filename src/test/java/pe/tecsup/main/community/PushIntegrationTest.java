@@ -14,6 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PushIntegrationTest {
  @Autowired PushService push;@Autowired NotificationService notices;@Autowired CommunicationService chat;@Autowired IdentityService users;
  @Autowired PushTokenCipher cipher;@Autowired JdbcTemplate db;@Autowired SessionRegistry sessions;@Autowired MockMvc mvc;
+ @Autowired ReminderService reminders;
+ @Autowired Clock clock;
  @MockitoBean FcmGateway gateway;
  String device,session,token;Object principal;
  @BeforeEach void prepare(){when(gateway.ready()).thenReturn(true);when(gateway.send(anyString(),anyString(),anyString())).thenReturn(FcmGateway.Outcome.ACCEPTED);
@@ -35,4 +37,12 @@ class PushIntegrationTest {
  @Test void registrationRequiresCsrfAndSession()throws Exception{mvc.perform(post("/api/v1/push/devices").with(user("otro").roles("ALUMNO")).contentType("application/json").content("{}" )).andExpect(status().isForbidden());}
  @Test void fcmPayloadNeverContainsConversationContent(){var payload=FcmGateway.payload("token","binding","delivery");String serialized=payload.toString();assertFalse(serialized.contains("notification="));assertFalse(serialized.contains("Contenido"));assertTrue(serialized.contains("MAIN_UPDATE"));}
  @Test void cipherRejectsWrongDeviceAndTampering(){String encrypted=cipher.encrypt("synthetic-token",device);assertThrows(IllegalStateException.class,()->cipher.decrypt(encrypted,UUID.randomUUID().toString()));assertThrows(IllegalStateException.class,()->cipher.decrypt(encrypted+"broken",device));}
+ void dueReminder(){
+  Long student=users.account("otro").alumnoId();
+  if(db.queryForObject("SELECT COUNT(*) FROM matricula WHERE alumno_id=? AND curso_id=1",Integer.class,student)==0)db.update("INSERT INTO matricula VALUES(?,1)",student);
+  db.update("INSERT INTO actividad VALUES(9002,1,'Recordatorio sintético','Texto que no sale a FCM',?)",java.sql.Timestamp.valueOf(LocalDateTime.now(clock).plusMinutes(10)));
+  reminders.settings("otro",new ReminderService.Settings(true,15));register();reminders.dispatch();
+ }
+ @Test void reminderUsesGenericPushAndDoesNotSendTwice(){dueReminder();push.dispatch();push.dispatch();verify(gateway,times(1)).send(eq(token),anyString(),anyString());}
+ @Test void revokedEnrollmentSuppressesReminderBeforePush(){dueReminder();db.update("DELETE FROM matricula WHERE alumno_id=? AND curso_id=1",users.account("otro").alumnoId());push.dispatch();verify(gateway,never()).send(anyString(),anyString(),anyString());}
 }

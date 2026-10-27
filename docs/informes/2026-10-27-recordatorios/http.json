@@ -1,0 +1,80 @@
+{
+  "synthetic": true,
+  "realMySqlScheduler": true,
+  "fcmSent": false,
+  "passed": 18,
+  "checks": [
+    {
+      "name": "admin_login",
+      "passed": true
+    },
+    {
+      "name": "create_alumno",
+      "passed": true
+    },
+    {
+      "name": "create_docente",
+      "passed": true
+    },
+    {
+      "name": "course",
+      "passed": true
+    },
+    {
+      "name": "enroll",
+      "passed": true
+    },
+    {
+      "name": "activity",
+      "passed": true
+    },
+    {
+      "name": "login_student",
+      "passed": true
+    },
+    {
+      "name": "login_other",
+      "passed": true
+    },
+    {
+      "name": "default_off",
+      "passed": true
+    },
+    {
+      "name": "csrf_required",
+      "passed": true
+    },
+    {
+      "name": "enable",
+      "passed": true
+    },
+    {
+      "name": "real_scheduler_once",
+      "passed": true
+    },
+    {
+      "name": "activity_destination",
+      "passed": true
+    },
+    {
+      "name": "other_account_isolated",
+      "passed": true
+    },
+    {
+      "name": "read",
+      "passed": true
+    },
+    {
+      "name": "revoke",
+      "passed": true
+    },
+    {
+      "name": "revoked_notice_hidden",
+      "passed": true
+    },
+    {
+      "name": "disable",
+      "passed": true
+    }
+  ]
+}
