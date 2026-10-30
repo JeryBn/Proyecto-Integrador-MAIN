@@ -1,0 +1,382 @@
+{
+  "origin": "https://localhost:8443",
+  "publicDeploymentVerified": false,
+  "certificateVerificationEnabled": true,
+  "requests": 25,
+  "assertions": 55,
+  "failedAssertions": 0,
+  "failures": 0,
+  "executionError": false,
+  "cases": [
+    {
+      "name": "01 Acceso alumno público",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "02 Administración React pública",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "03 Sin sesión alumno",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 401",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "04 Sin sesión administrativa",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 401",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "05 CSRF alumno",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "06 Acceso alumno",
+      "status": 302,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 302",
+          "passed": true
+        },
+        {
+          "name": "Cookie de sesión segura",
+          "passed": true
+        },
+        {
+          "name": "Redirección permanece HTTPS",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "07 Identidad autenticada",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "08 Pendientes autorizados",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Listado válido",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "09 Detalle inexistente privado",
+      "status": 404,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 404",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "10 Avisos del usuario",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "11 Escritura sin CSRF rechazada",
+      "status": 403,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 403",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "12 CSRF sesión alumno",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "13 Salida alumno",
+      "status": 302,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 302",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "14 Sesión alumno revocada",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 401",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "15 CSRF administración Django",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Cookie de sesión segura",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "16 Alumno no puede administrar",
+      "status": 403,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 403",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "17 Renovar CSRF administración",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "18 Acceso administrativo",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "19 Perfil administrativo",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Rol administrativo",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "20 Actividades Django",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "21 Alta sin CSRF rechazada",
+      "status": 403,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 403",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "22 CSRF administrativo actual",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "23 Origen ajeno rechazado",
+      "status": 403,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 403",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "24 Salida administrativa",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 200",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "25 Sesión administrativa revocada",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTPS y cabeceras del proxy",
+          "passed": true
+        },
+        {
+          "name": "Estado HTTP 401",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

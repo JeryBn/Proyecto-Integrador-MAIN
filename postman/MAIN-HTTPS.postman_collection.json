@@ -1,0 +1,685 @@
+{
+  "info": {
+    "name": "MAIN HTTPS sesiones y permisos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Smoke local HTTPS o servidor futuro. Solo lectura y sesiones; no crea notas, mensajes ni cuentas. Usar cuentas sintéticas ALUMNO y ADMIN."
+  },
+  "item": [
+    {
+      "name": "01 Acceso alumno público",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/login.html"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Administración React pública",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/admin.html"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Sin sesión alumno",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/actividades/pendientes"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Sin sesión administrativa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/perfil"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 CSRF alumno",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/login-token"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "const t=pm.response.json(); pm.expect(t.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('userToken',t.token); pm.collectionVariables.set('userParameter',t.parameterName);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Acceso alumno",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{userBase}}/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "{{username}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{password}}",
+              "type": "text"
+            },
+            {
+              "key": "{{userParameter}}",
+              "value": "{{userToken}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 302', () => pm.response.to.have.status(302));",
+              "pm.test('Cookie de sesión segura', () => {const cookies=pm.response.headers.all().filter(h=>h.key.toLowerCase()==='set-cookie'); const c=cookies.find(h=>h.value.startsWith('JSESSIONID=')); pm.expect(c,'cookie de sesión').to.exist; pm.expect(c.value).to.match(/;\\s*Secure/i); pm.expect(c.value).to.match(/;\\s*HttpOnly/i); pm.expect(c.value).to.match(/;\\s*SameSite=Lax/i);});",
+              "pm.test('Redirección permanece HTTPS',()=>{pm.expect(pm.response.headers.get('Location')).not.to.match(/^http:\\/\\//i);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Identidad autenticada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/v1/profile"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Pendientes autorizados",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/actividades/pendientes"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Listado válido',()=>pm.expect(pm.response.json()).to.be.an('array')); "
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Detalle inexistente privado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/actividades/9223372036854775806"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Avisos del usuario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/v1/notifications"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Escritura sin CSRF rechazada",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": "{{userBase}}/api/v1/reminders/preferences"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 CSRF sesión alumno",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/csrf"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "const t=pm.response.json(); pm.expect(t.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('userToken',t.token); pm.collectionVariables.set('userParameter',t.parameterName);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Salida alumno",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          }
+        ],
+        "url": "{{userBase}}/logout"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 302', () => pm.response.to.have.status(302));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Sesión alumno revocada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{userBase}}/api/actividades/pendientes"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 CSRF administración Django",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/csrf"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "const t=pm.response.json(); pm.expect(t.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('adminToken',t.token); pm.collectionVariables.set('adminParameter',t.parameterName);",
+              "pm.test('Cookie de sesión segura', () => {const cookies=pm.response.headers.all().filter(h=>h.key.toLowerCase()==='set-cookie'); const c=cookies.find(h=>h.value.startsWith('MAIN_ADMIN_SESSION=')); pm.expect(c,'cookie de sesión').to.exist; pm.expect(c.value).to.match(/;\\s*Secure/i); pm.expect(c.value).to.match(/;\\s*HttpOnly/i); pm.expect(c.value).to.match(/;\\s*SameSite=Lax/i);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Alumno no puede administrar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{adminToken}}"
+          },
+          {
+            "key": "Origin",
+            "value": "{{adminBase}}"
+          }
+        ],
+        "url": "{{adminBase}}/api/admin/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "{{username}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{password}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 Renovar CSRF administración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/csrf"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "const t=pm.response.json(); pm.expect(t.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('adminToken',t.token); pm.collectionVariables.set('adminParameter',t.parameterName);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 Acceso administrativo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{adminToken}}"
+          },
+          {
+            "key": "Origin",
+            "value": "{{adminBase}}"
+          }
+        ],
+        "url": "{{adminBase}}/api/admin/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "{{adminUsername}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{adminPassword}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 Perfil administrativo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/perfil"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Rol administrativo',()=>pm.expect(pm.response.json().rol).to.equal('ADMIN'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 Actividades Django",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/actividades"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 Alta sin CSRF rechazada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "{{adminBase}}"
+          }
+        ],
+        "url": "{{adminBase}}/api/admin/actividades"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 CSRF administrativo actual",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/csrf"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "const t=pm.response.json(); pm.expect(t.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('adminToken',t.token); pm.collectionVariables.set('adminParameter',t.parameterName);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 Origen ajeno rechazado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{adminToken}}"
+          },
+          {
+            "key": "Origin",
+            "value": "https://foreign.invalid"
+          }
+        ],
+        "url": "{{adminBase}}/api/admin/logout"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 Salida administrativa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRFToken",
+            "value": "{{adminToken}}"
+          },
+          {
+            "key": "Origin",
+            "value": "{{adminBase}}"
+          }
+        ],
+        "url": "{{adminBase}}/api/admin/logout"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 Sesión administrativa revocada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{adminBase}}/api/admin/perfil"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const url=pm.variables.replaceIn(pm.request.url.toString()); if (!url.startsWith('https://')) throw new Error('Esta colección requiere HTTPS');"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('HTTPS y cabeceras del proxy',()=>{pm.expect(pm.variables.replaceIn(pm.request.url.toString())).to.match(/^https:\\/\\//); pm.expect(pm.response.headers.get('Strict-Transport-Security')).to.include('max-age='); pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.equal('nosniff');});"
+        ]
+      }
+    }
+  ]
+}
