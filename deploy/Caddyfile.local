@@ -4,7 +4,7 @@
  skip_install_trust
  auto_https disable_redirects
  storage file_system {
-  root {$MAIN_CADDY_DATA_DIR:./var/caddy}
+  root "{$MAIN_CADDY_DATA_DIR:./var/caddy}"
  }
 }
 import routes.caddy
