@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import './app.css';
 import {Academic} from './academic.jsx';
@@ -72,6 +72,7 @@ function ActivityDetail({ id }) {
 }
 
 function App() {
+  const previousRoute=useRef(null);
   const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
   const [preferences,setPreferences]=useState(null);
   const [chatDrafts,setChatDrafts]=useState({});
@@ -126,20 +127,32 @@ function App() {
   const match = hash.match(/^#actividad\/(\d+)$/);
   const chatRoute=/^#chats(?:\/[A-Za-z0-9-]+)?$/.test(hash);
   const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
+  const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':hash==='#cursos'?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
+  useEffect(()=>{
+    document.title=pageTitle+' · MAIN';
+    const changed=previousRoute.current!==null&&previousRoute.current!==hash;
+    previousRoute.current=hash;
+    if(!changed)return;
+    const frame=requestAnimationFrame(()=>document.getElementById('contenido-principal')?.focus());
+    return ()=>cancelAnimationFrame(frame);
+  },[hash,pageTitle]);
   const shown = items.filter(a => (filter === 'all' || (filter === 'late' ? a.vencida : !a.vencida)) && (a.titulo + ' ' + a.curso).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es').trim()));
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
-      <aside className="sidebar" aria-label="Navegación principal">
+      <nav className="sidebar" aria-label="Navegación principal">
         <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
         <span className="workspace-label">ESPACIO ACADÉMICO</span>
-        {[['#inicio','Inicio'],['#chats','Chats'],['#estados','Estados'],['#ia','IA'],['#perfil','Perfil']].map(([route,label])=><a key={route} className={'nav-item '+((hash===route||(!hash&&route==='#inicio')||(route==='#chats'&&chatRoute))?'active':'')} aria-current={hash===route?'page':undefined} href={route}>{label}</a>)}
+        {[['#inicio','Inicio'],['#chats','Chats'],['#estados','Estados'],['#ia','IA'],['#perfil','Perfil']].map(([route,label])=>{
+          const active=hash===route||(route==='#inicio'&&(!hash||hash==='#cursos'||hash==='#actividades'||!!match))||(route==='#chats'&&chatRoute);
+          return <a key={route} className={'nav-item '+(active?'active':'')} aria-current={active?'page':undefined} href={route}>{label}</a>;
+        })}
         <div className="sidebar-bottom">
           <span className="sprint-badge">Tu comunidad académica</span>
           <p>Cursos, tareas y conversaciones<br/>con los mismos datos de tu app.</p>
         </div>
-      </aside>
+      </nav>
       <div className="main-area">
         <header className="topbar">
           <span className="breadcrumb">MAIN <span>/</span> {profile?.rol||'Mi espacio'}</span>
@@ -153,7 +166,7 @@ function App() {
             </form>
           </div>
         </header>
-        <main className="content" id="contenido-principal" tabIndex={-1}>
+        <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
           {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
           <div className="page-heading">
             <div>

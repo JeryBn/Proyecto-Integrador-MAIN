@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-30",
+  "syntheticAccount": true,
+  "sourceBase": "842f519",
+  "previewOrigin": "http://127.0.0.1:8288",
+  "realBackend": "http://127.0.0.1:8088",
+  "webTests": 37,
+  "skipLinkFirstTab": true,
+  "skipLinkEnterFocusesMain": true,
+  "keyboardNavigationFiveSections": true,
+  "routeTitlesUpdated": true,
+  "oneCurrentPrimaryDestination": true,
+  "focusVisibleOutlinePx": 3,
+  "backgroundRefreshPreservesSearchFocus": true,
+  "reflowViews": [
+    {
+      "bodyWidth": 305,
+      "documentWidth": 305,
+      "mainFocused": true,
+      "navigation": [
+        {
+          "current": "page",
+          "text": "Inicio",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "Chats",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "Estados",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "IA",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "Perfil",
+          "width": 58
+        }
+      ],
+      "title": "Inicio académico · MAIN",
+      "width": 320
+    },
+    {
+      "bodyWidth": 320,
+      "documentWidth": 320,
+      "mainFocused": true,
+      "navigation": [
+        {
+          "current": null,
+          "text": "Inicio",
+          "width": 61
+        },
+        {
+          "current": "page",
+          "text": "Chats",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Estados",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "IA",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Perfil",
+          "width": 61
+        }
+      ],
+      "title": "Chats · MAIN",
+      "width": 320
+    },
+    {
+      "bodyWidth": 320,
+      "documentWidth": 320,
+      "mainFocused": true,
+      "navigation": [
+        {
+          "current": null,
+          "text": "Inicio",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Chats",
+          "width": 61
+        },
+        {
+          "current": "page",
+          "text": "Estados",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "IA",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Perfil",
+          "width": 61
+        }
+      ],
+      "title": "Estados · MAIN",
+      "width": 320
+    },
+    {
+      "bodyWidth": 320,
+      "documentWidth": 320,
+      "mainFocused": true,
+      "navigation": [
+        {
+          "current": null,
+          "text": "Inicio",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Chats",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Estados",
+          "width": 61
+        },
+        {
+          "current": "page",
+          "text": "IA",
+          "width": 61
+        },
+        {
+          "current": null,
+          "text": "Perfil",
+          "width": 61
+        }
+      ],
+      "title": "Asistente académico · MAIN",
+      "width": 320
+    },
+    {
+      "bodyWidth": 305,
+      "documentWidth": 305,
+      "mainFocused": true,
+      "navigation": [
+        {
+          "current": null,
+          "text": "Inicio",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "Chats",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "Estados",
+          "width": 58
+        },
+        {
+          "current": null,
+          "text": "IA",
+          "width": 58
+        },
+        {
+          "current": "page",
+          "text": "Perfil",
+          "width": 58
+        }
+      ],
+      "title": "Perfil y ajustes · MAIN",
+      "width": 320
+    },
+    {
+      "documentWidth": 625,
+      "mainFocused": true,
+      "title": "Inicio académico · MAIN",
+      "width": 640
+    },
+    {
+      "current": [
+        "Inicio"
+      ],
+      "documentWidth": 1280,
+      "mainFocused": true,
+      "title": "Cursos y notas · MAIN",
+      "width": 1280
+    }
+  ],
+  "actualBrowserZoomTested": false,
+  "screenReaderCertified": false
+}

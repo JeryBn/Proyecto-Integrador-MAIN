@@ -29,6 +29,9 @@
 .app-shell button,.nav-item,.notice-button{overflow-wrap:anywhere}
 .skip-link{position:fixed;top:8px;left:8px;z-index:100;padding:12px 16px;background:var(--surface);color:var(--ink);border:2px solid var(--purple);border-radius:8px;transform:translateY(-200%)}
 .skip-link:focus{transform:translateY(0);outline:3px solid var(--purple)}
+.app-shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid var(--purple);outline-offset:3px}
+.content:focus{outline:2px solid var(--purple);outline-offset:-2px}
+@media(forced-colors:active){.app-shell :focus-visible,.content:focus{outline-color:Highlight}}
 @media(max-width:640px){
   .sidebar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:auto;min-height:66px;overflow:visible;padding:4px}
   .sidebar .nav-item{min-width:0;padding:10px 2px;font-size:.75rem;min-height:54px;white-space:normal}
