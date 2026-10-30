@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +43,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -55,6 +61,8 @@ internal enum class MainSection(val label: String, val icon: ImageVector, val na
 
 @Composable
 internal fun MainNavigationScreen(model: MainViewModel) {
+    val largeText = LocalDensity.current.fontScale >= 1.3f
+    val navigationWidth = maxOf(LocalConfiguration.current.screenWidthDp, 560).dp
     NewAppealDialog(model)
     val lifecycleOwner=LocalLifecycleOwner.current
     LaunchedEffect(model.selectedSection,lifecycleOwner) {
@@ -78,14 +86,21 @@ internal fun MainNavigationScreen(model: MainViewModel) {
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (model.statusViewer==null && !model.statusComposer && model.teachingCourse==null && model.selectedId == null && model.selectedConversation == null && !model.showChatPicker && model.contactProfile==null && model.settingsPage=="MAIN") {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                NavigationBar(
+                    modifier = if (largeText) Modifier.fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()).width(navigationWidth).heightIn(min = 112.dp)
+                        else Modifier,
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
                     MainSection.entries.filter { it!=MainSection.ACTIVITIES }.forEach { section ->
                         NavigationBarItem(
                             modifier = Modifier.semantics { contentDescription = section.label },
                             selected = model.selectedSection == section || section==MainSection.HOME && model.selectedSection==MainSection.ACTIVITIES,
                             onClick = { model.selectSection(section) },
                             icon = { Icon(section.icon, contentDescription = null) },
-                            label = { Text(section.navigationLabel, maxLines = 1, style = MaterialTheme.typography.labelSmall) }
+                            label = { Text(section.navigationLabel,
+                                modifier = if (largeText) Modifier.wrapContentHeight(unbounded = true) else Modifier,
+                                maxLines = if (largeText) 2 else 1, style = MaterialTheme.typography.labelSmall) }
                         )
                     }
                 }

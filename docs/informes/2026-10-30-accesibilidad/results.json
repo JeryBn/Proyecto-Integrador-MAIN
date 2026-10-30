@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "device": "Medium_Phone emulator Android 17 API 37",
+  "physicalPhone": false,
+  "baselineVersion": "b95f5f9",
+  "baselineAtFontScale2": "FAIL visible clipping of Estados",
+  "correctedAtFontScale2": "PASS one instrumented test",
+  "normalFontInstrumentedTests": 1,
+  "normalFontFailures": 0,
+  "unitTests": 4,
+  "unitFailures": 0,
+  "lintErrors": 0,
+  "lintWarnings": 12,
+  "fontScaleRestored": 1.0,
+  "screenReaderCertified": false,
+  "webZoomCertified": false
+}
