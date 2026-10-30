@@ -1,0 +1,20 @@
+# Isolated TLS laboratory. No public listener, domain, ACME or OS trust changes.
+{
+ admin off
+ skip_install_trust
+ auto_https disable_redirects
+ storage file_system {
+  root {$MAIN_CADDY_DATA_DIR:./var/caddy}
+ }
+}
+import routes.caddy
+https://localhost:8443 {
+ bind 127.0.0.1
+ tls internal
+ import main_routes 127.0.0.1:8190 127.0.0.1:8188
+ header {
+  Strict-Transport-Security "max-age=300"
+  X-Content-Type-Options nosniff
+  Referrer-Policy same-origin
+ }
+}

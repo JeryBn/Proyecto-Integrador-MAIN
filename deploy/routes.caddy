@@ -1,0 +1,15 @@
+(main_routes) {
+ @administration path /admin.html /assets/admin.js /assets/admin.css /api/admin /api/admin/* /moderation.html /moderation.js /moderation.css
+ handle @administration {
+  reverse_proxy {args[0]} {
+   header_up X-Forwarded-Proto {scheme}
+   header_up -Forwarded
+  }
+ }
+ handle {
+  reverse_proxy {args[1]} {
+   header_up X-Forwarded-Proto {scheme}
+   header_up -Forwarded
+  }
+ }
+}

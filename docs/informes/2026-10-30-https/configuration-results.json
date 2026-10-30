@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "caddyVersion": "2.11.7",
+  "officialZipSha512Verified": true,
+  "productionCaddyValidation": "passed with example domain only; not deployed",
+  "localCaddyValidation": "passed",
+  "djangoTests": 81,
+  "springRegressionBeforeConfigurationChange": 149,
+  "webRegression": 37,
+  "untrustedLocalCaRejected": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+  "operatingSystemTrustChanged": false,
+  "publicHostingOrDnsChanged": false,
+  "newmanVersion": "6.2.3",
+  "postmanRequests": 25,
+  "postmanAssertions": 55,
+  "postmanFailures": 0,
+  "tlsVerificationDisabled": false,
+  "localTlsPort": 8443,
+  "realPublicHttpsDeploymentVerified": false
+}
