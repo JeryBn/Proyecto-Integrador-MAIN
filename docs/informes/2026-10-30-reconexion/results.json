@@ -1,0 +1,86 @@
+{
+  "passed": 10,
+  "outageMs": 75008,
+  "recoveryMs": 34,
+  "failedRequests": 4,
+  "reads": 6,
+  "maxActive": 1,
+  "recoveredMessages": 2,
+  "duplicates": 0,
+  "maxRetryDelayMs": 60000,
+  "stoppedWithoutFurtherReads": true,
+  "fault": "loopback proxy closes GET connections for 75 real seconds; backend remains running",
+  "physicalNetworkTest": false,
+  "androidTest": false,
+  "pushTest": false,
+  "synthetic": true,
+  "backend": "Spring/Django shared local MySQL",
+  "httpChecks": [
+    {
+      "name": "create_synthetic_0",
+      "passed": true
+    },
+    {
+      "name": "create_synthetic_1",
+      "passed": true
+    },
+    {
+      "name": "contact",
+      "passed": true
+    },
+    {
+      "name": "group",
+      "passed": true
+    },
+    {
+      "name": "invite",
+      "passed": true
+    },
+    {
+      "name": "accept",
+      "passed": true
+    },
+    {
+      "name": "pending_before_outage",
+      "passed": true
+    },
+    {
+      "name": "retry_same_id_before_outage",
+      "passed": true
+    },
+    {
+      "name": "human_review_before_outage",
+      "passed": true
+    },
+    {
+      "name": "pending_during_outage",
+      "passed": true
+    },
+    {
+      "name": "retry_same_id_during_outage",
+      "passed": true
+    },
+    {
+      "name": "human_review_during_outage",
+      "passed": true
+    },
+    {
+      "name": "backend_exactly_two_messages",
+      "passed": true
+    },
+    {
+      "name": "backend_exactly_two_notices",
+      "passed": true
+    },
+    {
+      "name": "disable_0",
+      "passed": true
+    },
+    {
+      "name": "disable_1",
+      "passed": true
+    }
+  ],
+  "httpPassed": 16,
+  "syntheticUsersDisabled": true
+}
