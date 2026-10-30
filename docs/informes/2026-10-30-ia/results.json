@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "synthetic": true,
+  "existingKeyReused": true,
+  "realProvider": true,
+  "realAcademicRecordsIncluded": false,
+  "moderationQueueProcessed": false,
+  "assistant": {
+    "status": 503,
+    "success": false,
+    "errorCode": "AI_QUOTA_EXHAUSTED",
+    "model": null,
+    "answerCharacters": 0
+  },
+  "moderation": {
+    "attempted": true,
+    "success": true,
+    "outcome": "CLEAR",
+    "model": "omni-moderation-latest"
+  }
+}
