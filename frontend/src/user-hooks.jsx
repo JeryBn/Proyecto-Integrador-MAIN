@@ -29,8 +29,22 @@ export function Feedback({resource}){return <>{resource.loading&&<p role="status
 
 export function useConfirmation(){
   const [pending,setPending]=useState(null);
-  const confirm=(message,action)=>setPending(current=>current||{message,action});
-  const finish=approved=>{const action=pending?.action;setPending(null);if(approved)action?.();};
+  const restoreFrame=useRef(null);
+  useEffect(()=>()=>{if(restoreFrame.current!==null)cancelAnimationFrame(restoreFrame.current);},[]);
+  const confirm=(message,action)=>{
+    if(restoreFrame.current!==null){cancelAnimationFrame(restoreFrame.current);restoreFrame.current=null;}
+    const returnTo=document.activeElement;
+    setPending(current=>current||{message,action,returnTo});
+  };
+  const finish=approved=>{
+    const action=pending?.action,returnTo=pending?.returnTo;
+    setPending(null);if(approved)action?.();
+    restoreFrame.current=requestAnimationFrame(()=>{
+      restoreFrame.current=null;
+      if(returnTo?.isConnected&&!returnTo.disabled)returnTo.focus();
+      else document.getElementById('contenido-principal')?.focus();
+    });
+  };
   return {confirm,confirmation:pending&&<Confirmation message={pending.message} onFinish={finish}/>};
 }
 function Confirmation({message,onFinish}){

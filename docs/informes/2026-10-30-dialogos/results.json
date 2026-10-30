@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-30",
+  "synthetic": true,
+  "baseline": "b94b2f3",
+  "beforeEscapeFocus": "BODY",
+  "afterEscapeFocus": "trigger button",
+  "afterCancelButtonFocus": "trigger button",
+  "tabToConfirm": true,
+  "shiftTabToCancel": true,
+  "dialogClosedAfterCancellation": true,
+  "contactBlockedAfterCancellation": false,
+  "realSpringMySqlVerified": true,
+  "viewportWidth": 320,
+  "webTests": 37,
+  "screenReaderCertified": false
+}
