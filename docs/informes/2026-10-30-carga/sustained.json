@@ -1,0 +1,41 @@
+{
+  "measuredAtUtc": "2026-10-30T16:20:10.704086+00:00",
+  "environment": "MySQL local aislado 3307; Spring 8088; ocho sesiones sinteticas; consultas durante 120 segundos con pausa de 250 ms por trabajador",
+  "endpoint": "Mixed authenticated GETs",
+  "workers": 8,
+  "requests": 3666,
+  "http200": 3666,
+  "errors": 0,
+  "durationLimitSeconds": 120,
+  "intervalMs": 250,
+  "workerReadSeconds": [
+    120.0,
+    120.0,
+    120.02,
+    120.15,
+    120.0,
+    120.08,
+    120.13,
+    120.03
+  ],
+  "endpoints": {
+    "/api/actividades/pendientes": {
+      "requests": 1224,
+      "errors": 0
+    },
+    "/api/perfil": {
+      "requests": 1219,
+      "errors": 0
+    },
+    "/api/v1/notifications": {
+      "requests": 1223,
+      "errors": 0
+    }
+  },
+  "medianMs": 13.26,
+  "p95Ms": 16.86,
+  "maximumMs": 25.88,
+  "wallSecondsIncludingLoginAndLogout": 120.61,
+  "latencyScope": "Authenticated read latency excludes login and logout. Wall time includes both.",
+  "limitations": "Local baseline only. No production capacity claim; no media uploads, AI provider, long disconnection, or physical devices measured."
+}
