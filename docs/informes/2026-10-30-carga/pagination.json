@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-30",
+  "synthetic": true,
+  "database": "isolated local MySQL",
+  "realHttp": true,
+  "messagesCreated": 35,
+  "messagesApproved": 33,
+  "messagePages": 5,
+  "notificationPages": 5,
+  "syntheticUsersDisabled": true,
+  "realProviderUsed": false,
+  "passed": 25,
+  "checks": [
+    {
+      "name": "create_synthetic_0",
+      "passed": true
+    },
+    {
+      "name": "create_synthetic_1",
+      "passed": true
+    },
+    {
+      "name": "create_synthetic_2",
+      "passed": true
+    },
+    {
+      "name": "approve_contact",
+      "passed": true
+    },
+    {
+      "name": "create_group",
+      "passed": true
+    },
+    {
+      "name": "invite_receiver",
+      "passed": true
+    },
+    {
+      "name": "accept_invitation",
+      "passed": true
+    },
+    {
+      "name": "35_distinct_pending_messages",
+      "passed": true
+    },
+    {
+      "name": "all_33_approved_across_pages",
+      "passed": true
+    },
+    {
+      "name": "no_duplicates_or_pending_leak",
+      "passed": true
+    },
+    {
+      "name": "stable_newest_windows_chronological_inside_each_page",
+      "passed": true
+    },
+    {
+      "name": "private_review_fields_hidden",
+      "passed": true
+    },
+    {
+      "name": "author_sees_own_35_including_two_pending",
+      "passed": true
+    },
+    {
+      "name": "33_unique_message_notices",
+      "passed": true
+    },
+    {
+      "name": "outsider_denied_first_page",
+      "passed": true
+    },
+    {
+      "name": "outsider_denied_later_page",
+      "passed": true
+    },
+    {
+      "name": "invalid_page_offset=-1&limit=7",
+      "passed": true
+    },
+    {
+      "name": "invalid_page_offset=0&limit=0",
+      "passed": true
+    },
+    {
+      "name": "invalid_page_offset=0&limit=101",
+      "passed": true
+    },
+    {
+      "name": "remove_receiver",
+      "passed": true
+    },
+    {
+      "name": "revoked_first_and_later_pages",
+      "passed": true
+    },
+    {
+      "name": "revoked_message_notices_hidden",
+      "passed": true
+    },
+    {
+      "name": "disable_synthetic_0",
+      "passed": true
+    },
+    {
+      "name": "disable_synthetic_1",
+      "passed": true
+    },
+    {
+      "name": "disable_synthetic_2",
+      "passed": true
+    }
+  ]
+}
