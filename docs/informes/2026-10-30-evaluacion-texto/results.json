@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-30",
+  "synthetic": true,
+  "realProvider": true,
+  "source": "docs/revision/pamela/CASOS_M20.csv",
+  "sourceAuthor": "Pamela Regina Meneses Mayhua",
+  "referenceLabels": "Initial policy interpretation; pending independent human confirmation",
+  "referenceIds": [
+    "M20-01",
+    "M20-02",
+    "M20-03",
+    "M20-04",
+    "M20-05",
+    "M20-06",
+    "M20-09"
+  ],
+  "excludedIds": [
+    "M20-07",
+    "M20-08",
+    "M20-10",
+    "M20-11",
+    "M20-12"
+  ],
+  "requestsCompleted": 7,
+  "blocked": null,
+  "queueProcessed": false,
+  "publicationEnabled": false,
+  "humanAcceptance": false,
+  "representativeAccuracyClaimed": false,
+  "cases": [
+    {
+      "id": "M20-01",
+      "textSha256": "3f73219c6ba65f08b8a730edc143243eff995a9698d67a9b950e160935434e27",
+      "referenceRoute": "CLEAR",
+      "providerRoute": "CLEAR",
+      "categories": [],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-02",
+      "textSha256": "1251b705737dd64a6449febe9d866d5652513fdbd28e6865a969dace65d9d507",
+      "referenceRoute": "CLEAR",
+      "providerRoute": "CLEAR",
+      "categories": [],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-03",
+      "textSha256": "165a80a55f8ee73c8ac60e169b940e51d205feb19c4f2830ba50d3e2e9c902cb",
+      "referenceRoute": "CLEAR",
+      "providerRoute": "CLEAR",
+      "categories": [],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-04",
+      "textSha256": "5be0b1d5442522e8b3b7bff5afa7200dd4f733f3e7b62fa6d5b521c51576e0b2",
+      "referenceRoute": "HUMAN_REQUIRED",
+      "providerRoute": "HUMAN_REQUIRED",
+      "categories": [
+        "harassment"
+      ],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-05",
+      "textSha256": "b2335eeb5e1e05f50e3e3c6d705200ebb4691f28aedcd0306b4a1768df7cdded",
+      "referenceRoute": "HUMAN_REQUIRED",
+      "providerRoute": "HUMAN_REQUIRED",
+      "categories": [
+        "harassment/threatening",
+        "violence"
+      ],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-06",
+      "textSha256": "077f055cd9cbf512d8f4f07368826f8de67f98fcb615a170882978f5f45659da",
+      "referenceRoute": "CLEAR",
+      "providerRoute": "CLEAR",
+      "categories": [],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    },
+    {
+      "id": "M20-09",
+      "textSha256": "4caf817ee69df0b761a80c782a693c807125236fcf869dbf0fd84285e6b2567c",
+      "referenceRoute": "CLEAR",
+      "providerRoute": "CLEAR",
+      "categories": [],
+      "model": "omni-moderation-latest",
+      "agrees": true
+    }
+  ],
+  "agreements": 7,
+  "referenceRiskSentClear": 0,
+  "referenceClearSentToHuman": 0
+}
