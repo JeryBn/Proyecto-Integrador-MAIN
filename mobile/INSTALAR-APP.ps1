@@ -1,4 +1,7 @@
-param([string]$Device = '')
+param(
+    [string]$Device = '',
+    [ValidateRange(1, 65535)][int]$BackendPort = 8088
+)
 $ErrorActionPreference = 'Stop'
 $mobileRoot = $PSScriptRoot
 $sdkRoot = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { Join-Path $env:LOCALAPPDATA 'Android\Sdk' }
@@ -12,10 +15,10 @@ if (!$Device) {
     $Device = $devices[0]
 }
 if ($Device -notin $devices) { throw 'El dispositivo no está conectado o su depuración aún no está autorizada.' }
-& $adb -s $Device reverse tcp:8088 tcp:8088
+& $adb -s $Device reverse tcp:8088 "tcp:$BackendPort"
 if ($LASTEXITCODE) { throw 'No se pudo conectar el puente local.' }
 & $adb -s $Device install -r $apk
 if ($LASTEXITCODE) { throw 'No se pudo instalar la aplicación.' }
 & $adb -s $Device shell am start -n pe.tecsup.main.mobile/.MainActivity
 if ($LASTEXITCODE) { throw 'No se pudo abrir la aplicación.' }
-Write-Output 'MAIN instalada. El backend debe estar iniciado en esta PC en 127.0.0.1:8088.'
+Write-Output "MAIN instalada. En la app usa http://127.0.0.1:8088. El puente apunta al puerto $BackendPort de esta PC."
