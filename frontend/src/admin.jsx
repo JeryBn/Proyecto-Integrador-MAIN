@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import './admin.css';
+import './admin-design.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
 import {ReviewerPortal} from './reviewer-portal.jsx';
@@ -84,7 +85,7 @@ function Login({notice, onOk}) {
 
 /* ---------- Listado ---------- */
 const PAGE = 10;
-function Lista({onOpen, onExpire, reload}) {
+function Lista({onOpen, onExpire, reload, onNew}) {
   const [off, setOff] = useState(0);
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
@@ -104,15 +105,15 @@ function Lista({onOpen, onExpire, reload}) {
   const hasPrev = off > 0, hasNext = off + PAGE < data.total;
   return (
     <section>
-      <h2>Actividades ({data.total})</h2>
+      <div className="section-heading"><div><span className="eyebrow">GESTIÓN ACADÉMICA</span><h2>Actividades <span className="count-badge">{data.total}</span></h2><p>Organiza las actividades y consulta la información de tus cursos.</p></div><button className="primary" onClick={onNew}>+ Nueva actividad</button></div>
       <div className="scroll">
         <table>
           <thead><tr><th>ID</th><th>Título</th><th>Curso</th><th>Docente</th><th>Fecha límite</th><th><span className="sr">Acciones</span></th></tr></thead>
           <tbody>
             {data.items.map(a => (
               <tr key={a.id}>
-                <td>{a.id}</td><td>{a.titulo}</td><td>{a.curso}</td><td>{a.docente}</td><td>{fmtFecha(a.fechaLimite)}</td>
-                <td><button className="link" onClick={() => onOpen(a.id)} aria-label={`Ver detalle de ${a.titulo}`}>Ver</button></td>
+                <td className="record-id">{a.id}</td><td className="activity-title">{a.titulo}</td><td>{a.curso}</td><td>{a.docente}</td><td className="deadline-cell">{fmtFecha(a.fechaLimite)}</td>
+                <td><button className="link detail-link" onClick={() => onOpen(a.id)} aria-label={`Ver detalle de ${a.titulo}`}>Ver detalle <span aria-hidden="true">↗</span></button></td>
               </tr>
             ))}
           </tbody>
@@ -243,6 +244,16 @@ function Formulario({onCreated, onBack, onExpire}) {
 }
 
 /* ---------- App ---------- */
+function NavIcon({kind}) {
+  const paths = {
+    list:'M8 6h12M8 12h12M8 18h12M3 6h.01M3 12h.01M3 18h.01',
+    new:'M12 5v14M5 12h14',
+    community:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M18 8a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+    academic:'M3 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H3ZM21 4h-5a3 3 0 0 0-3 3v14a4 4 0 0 1 4-2h4Z',
+    review:'m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Zm-4 9 3 3 5-6'
+  };
+  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind]}/></svg>;
+}
 function App() {
   const [auth, setAuth] = useState('checking');
   const [user, setUser] = useState('');
@@ -288,29 +299,36 @@ function App() {
   if (user.rol==='REVIEWER'||user.mustChangePassword) return <ReviewerPortal profile={user} api={api} onUpdated={setUser} onLogout={logout} notice={notice}/>;
 
   return (
-    <>
-      <header>
-        <strong>Administración · MAIN</strong>
-        <nav>
-          <button className="link" onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}>Actividades</button>
-          <button className="link" onClick={() => { setNotice(''); setView({name: 'new'}); }}>Nueva actividad</button>
-          <button className="link" onClick={() => setView({name: 'community'})}>Cuentas y vínculos</button>
-          <button className="link" onClick={() => setView({name: 'academic'})}>Cursos y matrículas</button>
-          <a href="/moderation.html">Revisar contenido</a>
+    <div className="admin-shell">
+      <a className="skip-link" href="#admin-content">Saltar al contenido</a>
+      <header className="admin-sidebar">
+        <div className="admin-brand"><span className="brand-mark" aria-hidden="true">M</span><div><strong>MAIN<span className="brand-dot">.</span></strong><small>Portal administrativo</small></div></div>
+        <p className="nav-label">ESPACIO DE TRABAJO</p>
+        <nav aria-label="Administración">
+          <button className="link" aria-current={['list','detail'].includes(view.name)?'page':undefined} onClick={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }}><NavIcon kind="list"/>Actividades</button>
+          <button className="link" aria-current={view.name==='new'?'page':undefined} onClick={() => { setNotice(''); setView({name: 'new'}); }}><NavIcon kind="new"/>Nueva actividad</button>
+          <button className="link" aria-current={view.name==='community'?'page':undefined} onClick={() => setView({name: 'community'})}><NavIcon kind="community"/>Cuentas y vínculos</button>
+          <button className="link" aria-current={view.name==='academic'?'page':undefined} onClick={() => setView({name: 'academic'})}><NavIcon kind="academic"/>Cursos y matrículas</button>
+          <a href="/moderation.html"><NavIcon kind="review"/>Revisar contenido</a>
         </nav>
-        <span>{user.usuario}</span>
-        <button onClick={logout}>Cerrar sesión</button>
+        <div className="sidebar-note"><span aria-hidden="true">✦</span><strong>Todo conectado</strong><p>Actividades, cursos y comunidad en un mismo espacio.</p></div>
+        <div className="sidebar-account"><span className="user-avatar" aria-hidden="true">{user.usuario?.slice(0,1).toUpperCase()}</span><div><strong>{user.usuario}</strong><small>Administración</small></div></div>
+        <button className="logout-button" onClick={logout}>Cerrar sesión <span aria-hidden="true">↗</span></button>
       </header>
-      <main>
+      <div className="admin-workspace">
+      <div className="admin-topbar"><span>MAIN <span className="breadcrumb-divider">/</span> Administración</span><span className="workspace-tag"><span aria-hidden="true"/>Espacio académico</span></div>
+      <main id="admin-content" tabIndex={-1}>
         {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
         {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
         {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user.usuario} />}
-        {view.name === 'list' && <Lista reload={reload} onExpire={expire} onOpen={id => { setNotice(''); setView({name: 'detail', id}); }} />}
+        {view.name === 'list' && <Lista reload={reload} onExpire={expire} onNew={()=>{setNotice('');setView({name:'new'});}} onOpen={id => { setNotice(''); setView({name: 'detail', id}); }} />}
         {view.name === 'detail' && <Detalle id={view.id} notice={notice} onExpire={expire} onBack={() => { setNotice(''); setView({name: 'list'}); setReload(reload + 1); }} />}
         {view.name === 'new' && <Formulario onExpire={expire} onBack={() => setView({name: 'list'})}
           onCreated={id => { setNotice('Actividad creada correctamente.'); setView({name: 'detail', id}); }} />}
       </main>
-    </>
+      <footer className="admin-footer">MAIN · Gestión académica <span>Un espacio para aprender y conectar.</span></footer>
+      </div>
+    </div>
   );
 }
 
