@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import pe.tecsup.main.mobile.data.ApiFailure
 import pe.tecsup.main.mobile.data.InvalidCredentials
+import pe.tecsup.main.mobile.data.InvalidEndpoint
 import java.io.EOFException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -45,6 +46,17 @@ class ErrorMessagesTest {
         assertEquals(
             "Ocurrió un problema inesperado. Intenta nuevamente.",
             userMessage(IllegalStateException("database password leaked"))
+        )
+        assertEquals(
+            "Revisa los datos ingresados e intenta nuevamente.",
+            userMessage(IllegalArgumentException("C:\\private\\internal-path"))
+        )
+    }
+
+    @Test fun preservesOnlyTheValidatedEndpointGuidance() {
+        assertEquals(
+            "Usa HTTPS. HTTP solo está disponible para la conexión local de pruebas.",
+            userMessage(InvalidEndpoint("Usa HTTPS. HTTP solo está disponible para la conexión local de pruebas."))
         )
     }
 }

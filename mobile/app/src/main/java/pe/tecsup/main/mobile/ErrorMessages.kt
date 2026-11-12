@@ -3,6 +3,7 @@ package pe.tecsup.main.mobile
 import pe.tecsup.main.mobile.data.ActivityUnavailable
 import pe.tecsup.main.mobile.data.ApiFailure
 import pe.tecsup.main.mobile.data.InvalidCredentials
+import pe.tecsup.main.mobile.data.InvalidEndpoint
 import pe.tecsup.main.mobile.data.ResourceUnavailable
 import pe.tecsup.main.mobile.data.SessionExpired
 import java.io.IOException
@@ -18,7 +19,7 @@ internal fun userMessage(error: Exception): String = when (error) {
     is SessionExpired,
     is ActivityUnavailable,
     is ResourceUnavailable,
-    is IllegalArgumentException -> error.message ?: "No pudimos completar la operación."
+    is InvalidEndpoint -> error.message ?: "Revisa la dirección del servidor."
 
     is SocketTimeoutException ->
         "El servidor está tardando más de lo esperado. Intenta nuevamente en unos segundos."
@@ -28,5 +29,7 @@ internal fun userMessage(error: Exception): String = when (error) {
         "No pudimos establecer una conexión segura con el servidor."
     is IOException ->
         "La conexión se interrumpió. Revisa tu red e intenta nuevamente."
+    is IllegalArgumentException ->
+        "Revisa los datos ingresados e intenta nuevamente."
     else -> "Ocurrió un problema inesperado. Intenta nuevamente."
 }

@@ -46,7 +46,7 @@ internal fun attachmentLabel(kind:String)=when(kind){"IMAGE"->"Ver foto";"VIDEO"
       StatusAttachment(bytes,mime)
      }
      withContext(Dispatchers.Main.immediate){if(expectedAccount==model.profile?.usuario&&expectedConversation==model.selectedConversation)model.updateMessageAttachment(value)}
-    }catch(e:CancellationException){throw e}catch(e:Exception){withContext(Dispatchers.Main.immediate){error=e.message?:"No se pudo abrir el archivo."}}finally{reading=false}
+    }catch(e:CancellationException){throw e}catch(e:Exception){withContext(Dispatchers.Main.immediate){error=userMessage(e)}}finally{reading=false}
    }
   }
  }
@@ -82,7 +82,7 @@ internal fun attachmentLabel(kind:String)=when(kind){"IMAGE"->"Ver foto";"VIDEO"
    if(BuildConfig.DEBUG)android.util.Log.d("MAIN_MEDIA","Message attachment ready")
   }
   catch(e:CancellationException){if(BuildConfig.DEBUG)android.util.Log.d("MAIN_MEDIA","Message attachment cancelled");throw e}
-  catch(e:Exception){withContext(Dispatchers.Main.immediate){error=e.message?.takeIf{it.isNotBlank()}?:"No se pudo abrir el adjunto."};if(BuildConfig.DEBUG)android.util.Log.d("MAIN_MEDIA","Message attachment failed")}
+  catch(e:Exception){withContext(Dispatchers.Main.immediate){error=userMessage(e)};if(BuildConfig.DEBUG)android.util.Log.d("MAIN_MEDIA","Message attachment failed")}
  }
  var paused by remember(message.id){mutableStateOf(false)};var progress by remember(message.id){mutableFloatStateOf(0f)}
  val owner=LocalLifecycleOwner.current
