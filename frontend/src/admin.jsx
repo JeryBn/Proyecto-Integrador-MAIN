@@ -4,6 +4,7 @@ import './admin.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
 import {ReviewerPortal} from './reviewer-portal.jsx';
+import {AppErrorBoundary, ConnectionStatus} from './resilience.jsx';
 
 /* ---------- Acceso a la API ---------- */
 let csrf = null;
@@ -313,4 +314,6 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(
+  <AppErrorBoundary><ConnectionStatus/><App /></AppErrorBoundary>
+);
