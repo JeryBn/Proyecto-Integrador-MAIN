@@ -28,6 +28,13 @@ function Get-ListenerProcess([int]$Port){
   $listener=Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue | Select-Object -First 1
   if($listener){return Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"}
 }
+function Test-LocalPort([int]$Port){
+  $client=[Net.Sockets.TcpClient]::new()
+  try {
+    $attempt=$client.ConnectAsync('127.0.0.1',$Port)
+    return $attempt.Wait(750) -and $client.Connected
+  } catch { return $false } finally { $client.Dispose() }
+}
 function Wait-LocalPort([int]$Port,[int]$Seconds=60){
   $deadline=[DateTime]::UtcNow.AddSeconds($Seconds)
   do {
@@ -41,6 +48,10 @@ function Wait-LocalPort([int]$Port,[int]$Seconds=60){
   throw "No abrió el puerto local $Port en $Seconds segundos; revisa los logs. No se detienen procesos ajenos."
 }
 $databaseProcess=Get-ListenerProcess ([int]$configuration.port)
+if(!$databaseProcess -and (Test-LocalPort ([int]$configuration.port))){
+  $databaseProcess=Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'mysqld.exe' -and $_.CommandLine -like "*$MySqlDataDirectory*" } | Select-Object -First 1
+  if(!$databaseProcess){throw 'El puerto MySQL está activo, pero no pertenece a la base aislada esperada'}
+}
 if($databaseProcess){
   if($databaseProcess.CommandLine -notlike "*$MySqlDataDirectory*"){throw 'El puerto MySQL lo ocupa otra instancia; no se modifica'}
 } else {
@@ -61,6 +72,10 @@ if($FfmpegDirectory){
   $env:MAIN_MEDIA_FFMPEG_DIRECTORY=$FfmpegDirectory
 }
 $springProcess=Get-ListenerProcess 8088
+if(!$springProcess -and (Test-LocalPort 8088)){
+  $springProcess=Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -like "*$JarPath*" } | Select-Object -First 1
+  if(!$springProcess){throw '8088 está activo, pero no pertenece al servidor MAIN esperado'}
+}
 if($springProcess){
   if($springProcess.CommandLine -notlike "*$JarPath*"){throw '8088 está ocupado por otro servidor; no se detiene'}
 } else {
@@ -74,8 +89,12 @@ $env:MAIN_DB_USER='main_django'
 $env:MAIN_DB_PASSWORD=$configuration.django_password
 $env:MAIN_DJANGO_SECRET_KEY=$configuration.django_secret
 $djangoProcess=Get-ListenerProcess 8090
+if(!$djangoProcess -and (Test-LocalPort 8090)){
+  $djangoProcess=Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'python.exe' -and $_.CommandLine -like "*$PythonExecutable*" -and $_.CommandLine -like '*main_admin.wsgi:application*' } | Select-Object -First 1
+  if(!$djangoProcess){throw '8090 está activo, pero no pertenece al servidor Django esperado'}
+}
 if($djangoProcess){
-  if($djangoProcess.CommandLine -notlike '*main_admin.wsgi:application*'){throw '8090 está ocupado por otro servidor; no se detiene'}
+  if($djangoProcess.CommandLine -notlike "*$PythonExecutable*" -or $djangoProcess.CommandLine -notlike '*main_admin.wsgi:application*'){throw '8090 está ocupado por otro servidor; no se detiene'}
 } else {
   Start-Process -FilePath $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8090','--threads=4','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repository 'admin-django') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'django.stdout.log') -RedirectStandardError (Join-Path $logs 'django.stderr.log') | Out-Null
 }
