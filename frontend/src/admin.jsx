@@ -316,8 +316,9 @@ function App() {
         <button className="logout-button" onClick={logout}>Cerrar sesión <span aria-hidden="true">↗</span></button>
       </header>
       <div className="admin-workspace">
-      <div className="admin-topbar"><span>MAIN <span className="breadcrumb-divider">/</span> Administración</span><span className="workspace-tag"><span aria-hidden="true"/>Espacio académico</span></div>
+      <div className="admin-topbar" role="region" aria-label="Contexto administrativo"><span>MAIN <span className="breadcrumb-divider">/</span> Administración</span><span className="workspace-tag"><span aria-hidden="true"/>Espacio académico</span></div>
       <main id="admin-content" tabIndex={-1}>
+        <h1 className="sr">Administración MAIN</h1>
         {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
         {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
         {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user.usuario} />}
