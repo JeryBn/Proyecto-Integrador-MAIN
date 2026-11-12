@@ -28,6 +28,16 @@ def error(status, code, message='Acceso rechazado.', fields=None):
 def csrf_failure(request, reason=''):
     return error(403, 'CSRF_REJECTED', 'Renueva la sesión e intenta nuevamente.')
 
+def api_not_found(request, exception=None):
+    if request.path.startswith('/api/'):
+        return error(404, 'NOT_FOUND', 'El recurso no existe o ya no está disponible.')
+    return HttpResponse('Página no encontrada.', status=404, content_type='text/plain; charset=utf-8')
+
+def api_server_error(request):
+    if request.path.startswith('/api/'):
+        return error(500, 'INTERNAL_ERROR', 'Ocurrió un problema inesperado. Intenta nuevamente.')
+    return HttpResponse('MAIN no pudo completar la solicitud.', status=500, content_type='text/plain; charset=utf-8')
+
 def fingerprint(user):
     return hashlib.sha256((user.password_hash+'\0'+user.role).encode()).hexdigest()
 
@@ -198,6 +208,10 @@ def page(request):
     # La interfaz React consume directamente todos los módulos administrativos de Django.
     html = (STATIC / 'admin.html').read_text(encoding='utf-8')
     return HttpResponse(html)
+
+@require_GET
+def favicon(request):
+    return FileResponse((STATIC / 'favicon.svg').open('rb'), content_type='image/svg+xml')
 
 @require_GET
 def asset(request, name):

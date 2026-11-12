@@ -77,7 +77,7 @@ public class SecurityConfig {
     @Bean @Order(2) SecurityFilterChain security(HttpSecurity http, HttpSessionCsrfTokenRepository csrfRepository, org.springframework.jdbc.core.JdbcTemplate db) throws Exception {
         http.addFilterBefore(new pe.tecsup.main.community.SharedIdentityFilter(db), org.springframework.security.web.authentication.logout.LogoutFilter.class);
         http.csrf(c -> c.csrfTokenRepository(csrfRepository));
-        http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/error",
+        http.authorizeHttpRequests(a->a.requestMatchers("/login.html","/login-token","/app.css","/login.js","/favicon.ico","/favicon.svg","/error",
                         "/admin.html","/assets/admin.js","/assets/admin.css").permitAll()
                         .requestMatchers("/api/actividades/**").hasRole("ALUMNO")
                         .anyRequest().hasAnyRole("ALUMNO","DOCENTE","FAMILIAR"))

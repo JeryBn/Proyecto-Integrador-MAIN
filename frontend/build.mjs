@@ -16,6 +16,7 @@ writeFileSync('dist/index.html',html);
 writeFileSync('dist/admin.html',adminHtml);
 mkdirSync('../src/main/resources/static/assets',{recursive:true});
 cpSync('dist/assets','../src/main/resources/static/assets',{recursive:true});
+cpSync('src/app.css','../src/main/resources/static/app.css');
 writeFileSync('../src/main/resources/static/index.html',html);
 writeFileSync('../src/main/resources/static/admin.html',adminHtml);
 console.log('React compilado y copiado al backend.');

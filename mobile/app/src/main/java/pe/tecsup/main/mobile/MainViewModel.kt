@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pe.tecsup.main.mobile.data.*
-import java.io.IOException
 
 class MainViewModel : ViewModel() {
     private data class AccountBundle(val profile: Profile, val preferences: UserPreferences,
@@ -525,10 +524,5 @@ class MainViewModel : ViewModel() {
         super.onCleared()
     }
 
-    private fun friendly(error: Exception): String = when (error) {
-        is InvalidCredentials, is ApiFailure, is SessionExpired, is ActivityUnavailable, is ResourceUnavailable,
-        is IllegalArgumentException -> error.message ?: "No pudimos completar la operación."
-        is IOException -> "No pudimos conectar con el servidor. Revisa la conexión e intenta nuevamente."
-        else -> "No pudimos leer la respuesta del servidor. Intenta nuevamente."
-    }
+    private fun friendly(error: Exception): String = userMessage(error)
 }

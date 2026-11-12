@@ -82,6 +82,16 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.client.get('/api/admin/actividades').status_code, 401)
         self.assertEqual(self.create().status_code, 401)
 
+    def test_unknown_api_and_server_failure_keep_json_error_contract(self):
+        response = self.client.get('/api/admin/ruta-inexistente')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['error']['code'], 'NOT_FOUND')
+        from django.test import RequestFactory
+        from .views import api_server_error
+        response = api_server_error(RequestFactory().get('/api/admin/falla-sintetica'))
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(json.loads(response.content)['error']['code'], 'INTERNAL_ERROR')
+
     def test_csrf_required_even_for_login(self):
         self.assertEqual(self.client.post('/api/admin/login', {'username':'admin_test','password':PASSWORD}).status_code, 403)
         self.login()
@@ -176,6 +186,8 @@ class AdministrationTests(TransactionTestCase):
 
     def test_react_assets_and_unsupported_operations(self):
         self.assertContains(self.client.get('/admin.html'), '<html lang="es">')
+        self.assertEqual(self.client.get('/favicon.ico').status_code,200)
+        self.assertEqual(self.client.get('/favicon.svg').status_code,200)
         self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
         self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
         self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)
