@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Course, Teacher
 from .views import admin_only, error
-from .academic import body, positive, record
+from .academic import ValidationError, body, positive, record
 from .identity import mutation, text
 
 
@@ -27,17 +27,20 @@ def timetable(request, slot_id=None):
         return error(405,'METHOD_NOT_ALLOWED')
     value = body(request, {'courseId','dayOfWeek','startsAt','endsAt','classroom'})
     if not positive(value.get('courseId')) or type(value.get('dayOfWeek')) is not int or not 1 <= value['dayOfWeek'] <= 7:
-        raise ValueError('Curso positivo y día de 1 (lunes) a 7 (domingo) requeridos.')
+        raise ValidationError('Curso positivo y día de 1 (lunes) a 7 (domingo) requeridos.')
     classroom = text(value.get('classroom'),100)
     times = []
     for key in ('startsAt','endsAt'):
         raw = value.get(key)
         if not isinstance(raw,str) or not re.fullmatch(r'[0-9]{2}:[0-9]{2}(:[0-9]{2})?',raw):
-            raise ValueError('Horas HH:mm o HH:mm:ss requeridas.')
-        times.append(time.fromisoformat(raw))
+            raise ValidationError('Horas HH:mm o HH:mm:ss requeridas.')
+        try:
+            times.append(time.fromisoformat(raw))
+        except ValueError:
+            raise ValidationError('Ingresa horas válidas entre 00:00 y 23:59.') from None
     start,end = times
     if start >= end:
-        raise ValueError('La hora final debe ser posterior a la inicial.')
+        raise ValidationError('La hora final debe ser posterior a la inicial.')
     course = Course.objects.select_for_update().filter(pk=value['courseId']).first()
     if not course:
         return error(404,'NOT_FOUND')
@@ -47,7 +50,7 @@ def timetable(request, slot_id=None):
         cursor.execute('SELECT COUNT(*) FROM timetable t JOIN curso c ON c.id=t.curso_id WHERE t.day_of_week=%s AND t.starts_at<%s AND t.ends_at>%s AND (c.docente_id=%s OR t.classroom=%s)',
                        [value['dayOfWeek'],end.isoformat(),start.isoformat(),course.docente_id,classroom])
         if cursor.fetchone()[0]:
-            raise ValueError('El horario se cruza con otra clase del docente o aula.')
+            raise ValidationError('El horario se cruza con otra clase del docente o aula.')
         slot_id = str(uuid.uuid4())
         cursor.execute('INSERT INTO timetable(id,curso_id,day_of_week,starts_at,ends_at,classroom) VALUES(%s,%s,%s,%s,%s,%s)',
                        [slot_id,course.id,value['dayOfWeek'],start.isoformat(),end.isoformat(),classroom])

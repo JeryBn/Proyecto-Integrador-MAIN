@@ -255,6 +255,17 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.academic_call('audit', {}).status_code, 405)
         self.assertEqual(self.academic_call('courses/1/students', {'username':'alumno','enrolled':'false'}, 'put').status_code, 400)
 
+    def test_admin_v1_malformed_json_has_safe_error_contract(self):
+        self.login()
+        for payload in ('{"id":', b'{"name":"\xff"}'):
+            response = self.client.post('/api/admin/v1/courses', payload, content_type='application/json',
+                                        HTTP_X_CSRFTOKEN=self.token())
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json()['error'], {
+                'code': 'VALIDATION_ERROR',
+                'message': 'JSON inválido. Revisa el contenido e inténtalo nuevamente.',
+            })
+
     def test_academic_audit_failure_rolls_back_course(self):
         self.prepare_academic()
         with patch('administration.academic.record', side_effect=IntegrityError('synthetic')):
@@ -320,6 +331,10 @@ class AdministrationTests(TransactionTestCase):
         for field,invalid in [('dayOfWeek',True),('startsAt','08:00:00.1'),('endsAt','07:00')]:
             candidate=dict(value);candidate[field]=invalid
             self.assertEqual(self.academic_call('timetable',candidate).status_code,400)
+        value.update(startsAt='99:99',endsAt='10:00')
+        response=self.academic_call('timetable',value)
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(response.json()['error']['message'],'Ingresa horas válidas entre 00:00 y 23:59.')
 
     def test_grade_contract_conflict_and_revoked_enrollment(self):
         self.login()

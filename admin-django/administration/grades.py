@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Course
 from .views import admin_only, error
-from .academic import body, positive, record
+from .academic import ValidationError, body, positive, record
 from .identity import mutation, text
 
 
@@ -23,23 +23,23 @@ def timestamp(value):
 def save(request, item_id):
     value = body(request, {'studentId','assessment','score','maximum','expectedRecordedAt'})
     if not positive(value.get('studentId')):
-        raise ValueError('Estudiante positivo requerido.')
+        raise ValidationError('Estudiante positivo requerido.')
     assessment = text(value.get('assessment'),120)
     numbers = []
     for key in ('score','maximum'):
         raw = value.get(key)
         if type(raw) not in (int,float):
-            raise ValueError('Nota y escala numéricas requeridas.')
+            raise ValidationError('Nota y escala numéricas requeridas.')
         try:
             number = Decimal(str(raw))
             if not number.is_finite() or number != number.quantize(Decimal('.01')):
-                raise ValueError('Máximo dos decimales.')
+                raise ValidationError('Máximo dos decimales.')
             numbers.append(number)
         except InvalidOperation:
-            raise ValueError('Nota o escala inválida.')
+            raise ValidationError('Nota o escala inválida.')
     score,maximum = numbers
     if not 0 < maximum <= 1000 or not 0 <= score <= maximum:
-        raise ValueError('Nota entre cero y la escala máxima, hasta 1000.')
+        raise ValidationError('Nota entre cero y la escala máxima, hasta 1000.')
     if not Course.objects.select_for_update().filter(pk=item_id).first():
         return error(404,'NOT_FOUND')
     with connection.cursor() as cursor:

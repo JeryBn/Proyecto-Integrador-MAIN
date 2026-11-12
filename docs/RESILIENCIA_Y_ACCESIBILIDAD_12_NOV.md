@@ -14,7 +14,7 @@
 | Área | Resultado |
 |---|---:|
 | Spring | 157 pruebas, sin fallos |
-| Django | 82 pruebas, sin fallos |
+| Django | 83 pruebas, sin fallos |
 | Web | 38 pruebas, sin fallos |
 | Android | 9 pruebas unitarias, sin fallos; `lintDebug` y `assembleDebug` correctos |
 | Arquitectura compartida | 16 comprobaciones HTTP reales después del reinicio, sin fallos |

@@ -10,7 +10,7 @@ from django.db import connection, transaction
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_GET, require_POST
 from .views import review_only, error, pagination, STATIC
-from .academic import body, record
+from .academic import ValidationError, body, record
 from .identity import mutation, text
 from .grades import timestamp
 
@@ -101,7 +101,7 @@ def blob(table, column, item):
 def message_bytes(mid, media):
     data=blob('message_attachment_chunk','message_id',mid)
     if len(data)!=media['byte_size'] or hashlib.sha256(data).hexdigest()!=media['content_hash']:
-        raise ValueError('La integridad del adjunto no es válida; no se permite publicarlo.')
+        raise ValidationError('La integridad del adjunto no es válida; no se permite publicarlo.')
     return data
 
 
@@ -109,7 +109,7 @@ def status_bytes(s):
     data=blob('status_media_chunk','status_id',s['id'])
     calculated=hashlib.sha256((s['kind']+'\n'+s['body']+'\n'+s['background']+'\n'+s['audience']+'\n').encode()+data).hexdigest()
     if calculated!=s['content_hash']:
-        raise ValueError('La integridad del estado no es válida; no se permite publicarlo.')
+        raise ValidationError('La integridad del estado no es válida; no se permite publicarlo.')
     return data
 
 
@@ -182,7 +182,7 @@ def review(request, kind, item_id):
 def review_value(request,kind,item_id,value):
     """Shared publication path; caller owns transaction and authorized identity."""
     if type(value.get('approved')) is not bool or not isinstance(value.get('contentHash'),str):
-        raise ValueError('Decisión explícita y huella del contenido requeridas.')
+        raise ValidationError('Decisión explícita y huella del contenido requeridas.')
     approved=value['approved'];state='APPROVED' if approved else 'REJECTED'
     reason='' if approved else text(value.get('reason'),300)
     if kind=='statuses':
@@ -195,7 +195,7 @@ def review_value(request,kind,item_id,value):
             return error(403,'FORBIDDEN')
         if approved:
             if s['kind']!='TEXT' and value.get('attachmentReviewed') is not True:
-                raise ValueError('Confirma la revisión completa de la imagen, video o audio.')
+                raise ValidationError('Confirma la revisión completa de la imagen, video o audio.')
             status_bytes(s)
             if not rows('SELECT username FROM main_user WHERE username=%s AND enabled=TRUE',[s['owner']]):
                 return error(403,'FORBIDDEN')
@@ -215,12 +215,12 @@ def review_value(request,kind,item_id,value):
         media=attachment(item_id)
         if approved:
             if media and value.get('attachmentReviewed') is not True:
-                raise ValueError('Confirma la revisión del adjunto completo.')
+                raise ValidationError('Confirma la revisión del adjunto completo.')
             if media:
                 message_bytes(item_id,media)
             digest=hashlib.sha256((m['body'] if not media else 'MAIN-ATTACHMENT\n'+m['body']+'\x00'+media['content_hash']).encode()).hexdigest()
             if digest!=m['content_hash']:
-                raise ValueError('La integridad de la revisión no es válida.')
+                raise ValidationError('La integridad de la revisión no es válida.')
             if not can_publish(m,conversation):
                 return error(403,'FORBIDDEN','El emisor ya no puede publicar en esta conversación.')
         execute('UPDATE message_revision SET state=%s,reason=%s,reviewed_by=%s,reviewed_at=%s WHERE message_id=%s AND revision=%s',[state,reason,request.admin_actor,now(),item_id,m['revision']])
