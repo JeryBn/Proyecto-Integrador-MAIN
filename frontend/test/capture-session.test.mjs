@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCaptureSession,captureLimit} from '../src/capture-session.mjs';
+import {captureError,createCaptureSession,captureLimit} from '../src/capture-session.mjs';
 function fixture(getMedia){
  let stopped=0,stream,recorder,timer,cleared=0;const files=[],errors=[];
  const device={getTracks:()=>[{stop(){stopped++;}}]};
@@ -39,4 +39,9 @@ test('permiso rechazado explica alternativa y no entrega archivo',async()=>{
 });
 test('foto no solicita micrófono y no graba automáticamente',async()=>{
  let constraints;const f=fixture(async value=>{constraints=value;return f.device;});await f.session.start('photo');assert.equal(constraints.audio,false);assert.equal(f.recorder,undefined);f.session.cancel();assert.equal(f.stopped,1);
+});
+test('un fallo técnico de captura no expone el mensaje del navegador',()=>{
+ const message=captureError(new Error('C:\\private\\camera-driver.dll failed'));
+ assert.equal(message,'No se pudo iniciar la captura. Puedes volver a intentar o adjuntar un archivo.');
+ assert.doesNotMatch(message,/private|driver/i);
 });

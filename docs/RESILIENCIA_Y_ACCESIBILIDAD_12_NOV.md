@@ -2,7 +2,7 @@
 
 ## Alcance implementado
 
-- Web de usuarios: límite de errores de renderizado con recuperación, aviso accesible de desconexión y reconexión, y conservación del borrador mientras la red no está disponible.
+- Web de usuarios: límite de errores de renderizado con recuperación, aviso accesible de desconexión y reconexión, conservación del borrador mientras la red no está disponible y mensajes seguros ante fallos de cámara o micrófono.
 - API Spring: contrato JSON estable para recurso inexistente, parámetro inválido, conflicto de datos, base no disponible y fallo inesperado, tanto en actividades como en los módulos comunitarios. Los detalles técnicos quedan en el registro del servidor y no se exponen a la persona usuaria.
 - Administración: la interfaz React incorpora recuperación ante errores de renderizado, avisos accesibles de desconexión y reconexión, y conservación del formulario sin enviar. Django devuelve respuestas JSON estables para rutas API inexistentes y fallos internos; las páginas no API reciben mensajes de texto seguros. Se añadió un ícono local para evitar solicitudes fallidas del navegador.
 - Android: mensajes diferenciados para espera agotada, servidor inaccesible, error TLS, interrupción de red, credenciales inválidas y fallos inesperados. La configuración del servidor y los flujos multimedia conservan únicamente mensajes validados; los errores no reconocidos no muestran rutas ni detalles internos.
@@ -15,7 +15,7 @@
 |---|---:|
 | Spring | 154 pruebas, sin fallos |
 | Django | 82 pruebas, sin fallos |
-| Web | 37 pruebas, sin fallos |
+| Web | 38 pruebas, sin fallos |
 | Android | 9 pruebas unitarias, sin fallos; `lintDebug` y `assembleDebug` correctos |
 | Arquitectura compartida | 16 comprobaciones HTTP reales después del reinicio, sin fallos |
 | Web de usuarios | 18 vistas en Chrome, normal y 200 % emulado: 0 infracciones Axe, 0 errores de consola, 0 desbordamientos globales |

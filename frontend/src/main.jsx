@@ -100,7 +100,8 @@ function App() {
         return;
       }
     } catch (error) {
-      setSessionError(error.message || 'No hay conexión. Intenta nuevamente.');
+      setSessionError(error?.message === 'No pudimos confirmar el cierre. Intenta nuevamente.'
+        ? error.message : 'No hay conexión. Intenta nuevamente.');
     } finally { setSigningOut(false); }
   };
 
