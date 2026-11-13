@@ -29,6 +29,8 @@ Android Studio, JDK 21, SDK Android 36, Gradle 8.13 (wrapper incluido), Android 
 6. Demo: cuentas alumno, otro y vacio, contraseña sintética `MainDemo2026!`.
 7. Con backend iniciado y puente USB: `gradlew.bat connectedDebugAndroidTest`.
 
+Si Spring corre en otro puerto de Windows, ejecuta desde `mobile` `.\INSTALAR-APP.ps1 -BackendPort 8089` para reenviar el puerto 8088 del dispositivo a ese puerto de la PC. Conserva `http://127.0.0.1:8088` en la app.
+
 Opcional: en PowerShell `& .\INSTALAR-APP.ps1` instala el APK compilado y configura el puente para un único dispositivo. Si hay varios, indicar `-Device emulator-5554` o el identificador correspondiente. El script no inicia ni modifica otros servidores.
 
 En Android Studio seleccionar Gradle JDK 21. Si se ejecuta desde una terminal, configurar JAVA_HOME hacia el JDK 21 instalado antes de usar el wrapper. No subir local.properties: cada instalación de Android Studio genera su ruta al SDK.
