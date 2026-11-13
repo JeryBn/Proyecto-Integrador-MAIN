@@ -33,6 +33,14 @@ class PortalSessionTest {
                 .andReturn().getRequest().getSession();
     }
 
+    @Test void healthIsAnonymousAndDoesNotExposeComponents() throws Exception {
+        mvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.components").doesNotExist())
+                .andExpect(jsonPath("$.groups").doesNotExist());
+    }
+
     @Test void expiredLoginPageNeedsFreshTokenAndThenCanAuthenticate() throws Exception {
         var old = token(null);
         old.session().invalidate();

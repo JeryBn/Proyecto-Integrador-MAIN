@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import logging
 import re
 import uuid
 from datetime import datetime
@@ -9,7 +10,7 @@ from zoneinfo import ZoneInfo
 import bcrypt
 from django.conf import settings
 from django.core.cache import cache
-from django.db import IntegrityError, transaction
+from django.db import DatabaseError, IntegrityError, connection, transaction
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.middleware.csrf import get_token, rotate_token
 from django.views.decorators.cache import never_cache
@@ -18,6 +19,7 @@ from .models import Activity, Audit, Course, SharedUser
 
 STATIC = settings.BASE_DIR.parent / 'src/main/resources/static'
 DUMMY_HASH = bcrypt.hashpw(b'not-a-user-password', bcrypt.gensalt(rounds=10))
+logger = logging.getLogger(__name__)
 
 def error(status, code, message='Acceso rechazado.', fields=None):
     value = {'code': code, 'message': message}
@@ -37,6 +39,19 @@ def api_server_error(request):
     if request.path.startswith('/api/'):
         return error(500, 'INTERNAL_ERROR', 'Ocurrió un problema inesperado. Intenta nuevamente.')
     return HttpResponse('MAIN no pudo completar la solicitud.', status=500, content_type='text/plain; charset=utf-8')
+
+@never_cache
+@require_GET
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+        return JsonResponse({'status': 'UP'})
+    except DatabaseError:
+        if cache.add('health:database-error-log', True, timeout=60):
+            logger.exception('Django database health check failed')
+        return JsonResponse({'status': 'DOWN'}, status=503)
 
 def fingerprint(user):
     return hashlib.sha256((user.password_hash+'\0'+user.role).encode()).hexdigest()

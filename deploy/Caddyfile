@@ -1,11 +1,11 @@
 # Only the proxy listens publicly. MAIN_DOMAIN is a hostname, without scheme/path.
 import routes.caddy
 {$MAIN_DOMAIN} {
- encode zstd gzip
- import main_routes 127.0.0.1:8090 127.0.0.1:8088
- header {
-  Strict-Transport-Security "max-age=31536000"
-  X-Content-Type-Options "nosniff"
-  Referrer-Policy "same-origin"
- }
+	encode zstd gzip
+	import main_routes 127.0.0.1:8090 127.0.0.1:8088
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+	}
 }
