@@ -162,7 +162,7 @@ def blocked(first,second):
 
 
 def notify(m):
-    recipients=rows("SELECT u.* FROM conversation_member cm JOIN main_user u ON u.username=cm.username WHERE cm.conversation_id=%s AND cm.state='ACTIVE' AND cm.joined_at<=%s AND u.enabled=TRUE AND u.notifications=TRUE AND u.username<>%s",[m['conversation_id'],m['created_at'],m['sender']])
+    recipients=rows("SELECT u.* FROM conversation_member cm JOIN main_user u ON u.username=cm.username WHERE cm.conversation_id=%s AND cm.state='ACTIVE' AND cm.joined_at<=%s AND cm.joined_after_sequence<%s AND u.enabled=TRUE AND u.notifications=TRUE AND u.username<>%s",[m['conversation_id'],m['created_at'],m['conversation_sequence'],m['sender']])
     for recipient in recipients:
         who=recipient['username'];event='message:'+m['id']
         if blocked(who,m['sender']) or rows('SELECT owner FROM contact_preference WHERE owner=%s AND subject=%s AND muted=TRUE',[who,m['sender']]):

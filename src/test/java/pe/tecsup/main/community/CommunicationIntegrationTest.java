@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!"})
 @AutoConfigureMockMvc @Transactional
 class CommunicationIntegrationTest{
- @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;
+ @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
  @Test void conversationLinkResolvesOnlyForCurrentMember() throws Exception {
   String id=chat.direct("alumno","otro");
@@ -107,10 +108,13 @@ class CommunicationIntegrationTest{
   mvc.perform(get("/api/v1/conversations/"+id+"/messages?limit=101").with(user("alumno").roles("ALUMNO"))).andExpect(status().isBadRequest());
  }
  @Test void newGroupMembersCannotReadMessagesFromBeforeTheyJoined(){
-  String id=chat.group("alumno","Historial privado");approve(send(id,"Anterior a la invitación"));
+  String id=chat.group("alumno","Historial privado");var previous=send(id,"Anterior a la invitación");approve(previous);
   chat.invite("alumno",id,"otro");chat.invitation("otro",id,true);
+  var boundary=db.queryForObject("SELECT created_at FROM message WHERE id=?",java.sql.Timestamp.class,previous.id());
+  db.update("UPDATE conversation_member SET joined_at=? WHERE conversation_id=? AND username='otro'",boundary,id);
   assertTrue(chat.messages("otro",id,0,30).isEmpty());
-  approve(send(id,"Posterior a la incorporación"));assertEquals(1,chat.messages("otro",id,0,30).size());
+  var next=send(id,"Posterior a la incorporación");db.update("UPDATE message SET created_at=? WHERE id=?",boundary,next.id());approve(next);
+  assertEquals(1,chat.messages("otro",id,0,30).size());
  }
  @Test void manualReviewInterfaceIsRestrictedToAdministrators()throws Exception{
   mvc.perform(get("/moderation.html").with(user("alumno").roles("ALUMNO"))).andExpect(status().isForbidden());

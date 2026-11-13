@@ -32,7 +32,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -373,7 +373,7 @@ class AdministrationTests(TransactionTestCase):
         SharedUser.objects.create(username='recipient',display_name='Destinatario',role='ALUMNO',password_hash=HASH,enabled=True)
         execute("INSERT INTO conversation VALUES('conv','DIRECT','Sintética','alumno',%s,'alumno:recipient')",[now()])
         for name in ('alumno','recipient'):
-            execute("INSERT INTO conversation_member VALUES('conv',%s,'ACTIVE',FALSE,%s)",[name,now()-timedelta(minutes=1)])
+            execute("INSERT INTO conversation_member(conversation_id,username,state,administrator,joined_at) VALUES('conv',%s,'ACTIVE',FALSE,%s)",[name,now()-timedelta(minutes=1)])
         execute("INSERT INTO contact_link VALUES('alumno','recipient','admin_test')")
         execute("INSERT INTO message(id,conversation_id,sender,client_key,created_at) VALUES('msg','conv','alumno','key',%s)",[now()])
         digest=hashlib.sha256(b'hola').hexdigest()
@@ -394,6 +394,13 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'],1)
         self.assertEqual(len(rows('SELECT id FROM notification')),1)
         self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').json(),[])
+
+    def test_moderation_does_not_notify_message_from_before_membership_boundary(self):
+        from .moderation import execute,rows
+        value=self.moderation_fixture()
+        execute("UPDATE conversation_member SET joined_at=(SELECT created_at FROM message WHERE id='msg'),joined_after_sequence=0 WHERE conversation_id='conv' AND username='recipient'")
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,200)
+        self.assertEqual(rows('SELECT id FROM notification'),[])
 
     def test_moderation_attachment_requires_review_and_integrity(self):
         from .moderation import execute
