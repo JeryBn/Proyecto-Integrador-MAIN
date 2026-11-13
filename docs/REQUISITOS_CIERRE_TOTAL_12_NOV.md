@@ -4,19 +4,18 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 ## Estado técnico disponible
 
-- Rama `feat/resiliencia-profesional` publicada, sin cambios locales pendientes.
-- Spring: 157 pruebas aprobadas; Django: 83; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
+- PR #5 integrado en `main`, sin cambios locales pendientes al cerrar esa integración.
+- Spring: 157 pruebas aprobadas; Django: 85; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
 - Administración: seis estados normales, sin conexión y al 200 % emulado sin infracciones Axe ni desbordamiento; el acceso sin red conserva el usuario, limpia la contraseña y oculta el error técnico.
+- La configuración Django de producción falla de forma segura si una base MySQL remota no proporciona una CA válida y exige `VERIFY_IDENTITY`; las conexiones locales conservan su preparación actual.
 - El rediseño administrativo de Pamela está integrado en la rama de resiliencia conservando su autoría, seguido de correcciones separadas de accesibilidad.
 
 ## Acciones que debe habilitar Jery
 
 | Bloqueo | Qué se necesita | Evidencia de cierre |
 |---|---|---|
-| Trello privado | Cuando Jery termine de usar la pantalla, autorizar una sesión breve con el navegador ya autenticado, o conectar un acceso de Trello a las herramientas. No compartir contraseña ni token por chat. | Estado, checklist, responsables, comentarios y enlaces a commits actualizados en las tarjetas existentes. |
-| Escritura en GitHub | Permitir el navegador autenticado o conceder escritura a la integración. La API disponible devuelve `403 Resource not accessible by integration`. | Revisar e integrar PR #3 y #4, abrir el PR de `feat/resiliencia-profesional`, ejecutar comprobaciones y dejar `main` actualizado. |
 | Teléfono físico | Conectar un Android 8 o superior por USB, desbloquearlo y aceptar depuración e instalación. No hay dispositivos ADB conectados en esta revisión. | Acceso, listado, detalle, permisos, medios, segundo plano, cierre de app, desconexión y recuperación documentados con fecha y dispositivo. |
 | Firma de entrega | Copiar el keystore original y confirmar su alias, o aprobar expresamente la creación de una identidad nueva si nunca se distribuyó otra. Configurar contraseñas solo mediante el mecanismo privado local. La carpeta `%LOCALAPPDATA%\MAIN-private\android` no existe en esta PC. | APK release no depurable, firma y huella verificadas, respaldo privado recuperable e instalación en el teléfono sin borrar datos para ocultar incompatibilidades. |
 | Android Firebase | Colocar `mobile/app/google-services.json` fuera de Git. El archivo no está presente en ninguna de las dos copias revisadas. | Compilación release con el proyecto Firebase correcto y token obtenido en el teléfono de prueba sin exponerlo. |
@@ -40,12 +39,11 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 ## Orden mínimo para terminar
 
-1. Habilitar acceso de edición a Trello y GitHub para regularizar el trabajo ya comprobado.
-2. Elegir HTTPS y recuperar o crear conscientemente la firma de entrega.
-3. Proporcionar las rutas privadas de Firebase Android y FCM; habilitar cuota de IA.
-4. Conectar el teléfono y ejecutar la matriz completa contra HTTPS.
-5. Corregir cualquier defecto hallado, repetir regresiones y generar el APK release final.
-6. Recoger la aceptación real de Pamela, Michael, Jery y el docente.
-7. Solo entonces completar las listas y mover las tarjetas globales a `FINALIZADO`.
+1. Elegir HTTPS y recuperar o crear conscientemente la firma de entrega.
+2. Proporcionar las rutas privadas de Firebase Android y FCM; habilitar cuota de IA.
+3. Conectar el teléfono y ejecutar la matriz completa contra HTTPS.
+4. Corregir cualquier defecto hallado, repetir regresiones y generar el APK release final.
+5. Recoger la aceptación real de Pamela, Michael, Jery y el docente.
+6. Solo entonces completar las listas y mover las tarjetas globales a `FINALIZADO`.
 
 Marcar todo como completo antes de estas evidencias produciría un tablero visualmente cerrado, pero no un proyecto verificablemente terminado.

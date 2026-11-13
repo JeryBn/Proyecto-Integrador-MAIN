@@ -2,9 +2,11 @@
 
 ## Estado de cierre — 12 de noviembre de 2026
 
-La resiliencia y accesibilidad multiplataforma están verificadas en la rama `feat/resiliencia-profesional`: 157 pruebas Spring, 83 Django, 42 web, 9 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
+La resiliencia y accesibilidad multiplataforma están integradas en `main`: 157 pruebas Spring, 83 Django, 42 web, 9 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
 
-Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). El código local está listo para integración; el cierre global aún requiere Trello/GitHub con escritura, teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3, #4 y #5 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; el cierre global aún requiere teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+
+Antes de preparar la entrega, ejecutar `powershell -File scripts/Test-ReleaseReadiness.ps1`. La comprobación no imprime secretos y enumera únicamente los requisitos privados o externos que todavía faltan.
 
 ## Paridad web de usuarios — 22 de octubre de 2026
 
