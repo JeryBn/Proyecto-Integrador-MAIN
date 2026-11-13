@@ -30,7 +30,7 @@ El primer recorrido exigía que Spring renovara una cookie en una solicitud que 
 
 ## Pendiente para un servidor real
 
-Elegir servidor y dominio, asignar DNS y presupuesto y habilitar únicamente los puertos públicos necesarios de Caddy. Mantener MySQL y backends privados. Configurar Spring con perfil production y las credenciales SQL correspondientes; su conexión MySQL exige TLS con verificación de identidad. Configurar Django con DJANGO_SETTINGS_MODULE=main_admin.production_settings, MAIN_PUBLIC_ORIGIN y credenciales acotadas. Para MySQL remoto falta configurar y comprobar también su TLS en Django antes de transmitir credenciales por una red externa. Migraciones, respaldo/restauración y operación supervisada deben comprobarse en ese destino.
+Elegir servidor y dominio, asignar DNS y presupuesto y habilitar únicamente los puertos públicos necesarios de Caddy. Mantener MySQL y backends privados. Configurar Spring con perfil production y las credenciales SQL correspondientes; su conexión MySQL exige TLS con verificación de identidad. Configurar Django con DJANGO_SETTINGS_MODULE=main_admin.production_settings, MAIN_PUBLIC_ORIGIN y credenciales acotadas. Django exige ahora `MAIN_DB_SSL_CA` y `VERIFY_IDENTITY` cuando MySQL no está en el mismo servidor; falta proporcionar y comprobar la CA del destino real. Migraciones, respaldo/restauración y operación supervisada deben comprobarse en ese destino.
 
 Después validar el dominio/certificado público, repetir esta colección con cuentas sintéticas, conectar Android a ese origen y documentar el recorrido. Hosting, DNS, disponibilidad pública, integración Android contra ese destino y recepción FCM permanecen pendientes. Preparar y aprobar un laboratorio no cierra M16 ni S3-04.
 

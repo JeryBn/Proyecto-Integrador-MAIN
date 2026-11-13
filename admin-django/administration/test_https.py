@@ -1,5 +1,6 @@
 import os
 import runpy
+import tempfile
 from unittest.mock import patch
 from django.core.exceptions import ImproperlyConfigured
 from django.test import RequestFactory, SimpleTestCase, override_settings
@@ -22,6 +23,29 @@ class HttpsDeploymentTests(SimpleTestCase):
                        'https://main.example.org?token=x', 'https://main.example.org#x'):
             with self.subTest(origin=origin), self.assertRaises(ImproperlyConfigured):
                 self.configuration(origin)
+
+    def test_remote_database_requires_a_real_ca(self):
+        with patch.dict(os.environ, {
+            'MAIN_PUBLIC_ORIGIN': 'https://main.example.org',
+            'MAIN_DB_HOST': 'db.example.org',
+            'MAIN_DB_SSL_CA': '',
+        }):
+            with self.assertRaises(ImproperlyConfigured):
+                runpy.run_module('main_admin.production_settings')
+
+    def test_remote_database_verifies_certificate_and_hostname(self):
+        with tempfile.NamedTemporaryFile() as certificate:
+            with patch.dict(os.environ, {
+                'MAIN_PUBLIC_ORIGIN': 'https://main.example.org',
+                'MAIN_DB_HOST': 'db.example.org',
+                'MAIN_DB_SSL_CA': certificate.name,
+            }):
+                config = runpy.run_module('main_admin.production_settings')
+        database = config['DATABASES']['default']
+        self.assertEqual(database['OPTIONS']['ssl_mode'], 'VERIFY_IDENTITY')
+        self.assertEqual(database['OPTIONS']['ssl']['ca'], certificate.name)
+        self.assertEqual(database['CONN_MAX_AGE'], 60)
+        self.assertTrue(database['CONN_HEALTH_CHECKS'])
 
     @override_settings(SECURE_PROXY_SSL_HEADER=None)
     def test_only_wsgi_scheme_not_untrusted_raw_header_marks_https(self):
