@@ -8,6 +8,7 @@ on:
       - 'pom.xml'
       - 'frontend/**'
       - 'admin-django/**'
+      - 'scripts/Test-ReleaseReadiness.ps1'
       - '.github/workflows/quality.yml'
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - 'pom.xml'
       - 'frontend/**'
       - 'admin-django/**'
+      - 'scripts/Test-ReleaseReadiness.ps1'
       - '.github/workflows/quality.yml'
   workflow_dispatch:
 
@@ -32,6 +34,15 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+      - name: Validar preflight de entrega
+        shell: pwsh
+        run: |
+          $output = & ./scripts/Test-ReleaseReadiness.ps1 -Json -AllowIncomplete
+          $summary = $output | ConvertFrom-Json
+          if ($null -eq $summary.ready -or $summary.checks.Count -lt 10) {
+            throw 'El preflight no devolvió el contrato JSON esperado.'
+          }
+          Write-Host "Preflight válido; bloqueos externos detectados: $($summary.blockers)."
       - uses: actions/setup-java@v6
         with:
           distribution: temurin

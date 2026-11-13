@@ -1,11 +1,19 @@
 [CmdletBinding()]
 param(
-    [string]$RepositoryRoot = (Split-Path -Parent $PSScriptRoot),
-    [switch]$Json
+    [string]$RepositoryRoot,
+    [switch]$Json,
+    [switch]$AllowIncomplete
 )
 
 $ErrorActionPreference = 'Stop'
 $checks = [System.Collections.Generic.List[object]]::new()
+
+if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+    if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        throw 'No se pudo determinar la carpeta del verificador. Indica -RepositoryRoot.'
+    }
+    $RepositoryRoot = Split-Path -Parent $PSScriptRoot
+}
 
 function Add-ReadinessCheck {
     param(
@@ -157,4 +165,4 @@ if ($Json) {
     else { Write-Host "$($blocking.Count) bloqueo(s) de entrega siguen pendientes." -ForegroundColor Yellow }
 }
 
-if (-not $summary.ready) { exit 2 }
+if (-not $summary.ready -and -not $AllowIncomplete) { exit 2 }
