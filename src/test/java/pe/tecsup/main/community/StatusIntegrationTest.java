@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:statuses_test;DB_CLOSE_DELAY=-1","main.admin.username=status_admin","main.admin.password=SyntheticStatus2026!"})
 @AutoConfigureMockMvc @Transactional class StatusIntegrationTest {
- @Autowired StatusService statuses;@Autowired StatusMedia media;@Autowired IdentityService users;@Autowired JdbcTemplate db;@Autowired MockMvc mvc;
+ @Autowired StatusService statuses;@Autowired StatusMedia media;@Autowired IdentityService users;@Autowired JdbcTemplate db;@Autowired MockMvc mvc;@Autowired Clock clock;
  @BeforeEach void setup(){users.approveContact("status_admin","alumno","otro");users.create("status_admin",new IdentityService.NewAccount("family_status","Familia","FAMILIAR","SyntheticFamily2026!",null,null));}
  StatusService.Update create(String audience){return statuses.create("alumno",UUID.randomUUID().toString(),"Estado sintético","#087F68",audience,null);}
  void approve(StatusService.Update s){statuses.review("status_admin",s.id(),new StatusService.Review(s.contentHash(),true,""));}
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
   statuses.seen("otro",s.id());statuses.seen("otro",s.id());assertEquals(1,statuses.get("alumno",s.id()).views());
   users.contactPreference("otro","alumno",false,true);assertTrue(statuses.feed("otro").isEmpty());users.contactPreference("otro","alumno",false,false);
   users.preferences("alumno",new IdentityService.Preferences(false,true,"PRIVATE"));assertTrue(statuses.feed("otro").isEmpty());users.preferences("alumno",new IdentityService.Preferences(false,true,"CONTACTS"));
-  db.update("UPDATE status_update SET expires_at=? WHERE id=?",java.sql.Timestamp.valueOf(LocalDateTime.now().minusHours(1)),s.id());assertTrue(statuses.feed("otro").isEmpty());assertThrows(DomainException.class,()->statuses.get("alumno",s.id()));
+  db.update("UPDATE status_update SET expires_at=? WHERE id=?",java.sql.Timestamp.valueOf(LocalDateTime.now(clock).minusHours(1)),s.id());assertTrue(statuses.feed("otro").isEmpty());assertThrows(DomainException.class,()->statuses.get("alumno",s.id()));
   var other=create("CONTACTS");approve(other);statuses.delete("alumno",other.id());assertThrows(DomainException.class,()->statuses.get("otro",other.id()));
  }
  @Test void familyCannotPublishAndPrivateNeverReachesContacts(){

@@ -4,7 +4,7 @@ M16 y M15 avanzan con una configuración de proxy completa y una colección ejec
 
 ## Arquitectura de acceso
 
-Caddy recibe HTTPS y conserva un único origen para ambos servicios. /admin.html, /assets/admin.js, /assets/admin.css, /api/admin y sus subrutas y /moderation.html, .js y .css van a Django. Las demás rutas van a Spring. Se corrigió el Caddyfile anterior que enviaba todo a Spring. No se quitan prefijos de las API. Las sesiones MAIN_ADMIN_SESSION y JSESSIONID permanecen independientes.
+Caddy recibe HTTPS y conserva un único origen para ambos servicios. /admin.html, /assets/admin.js, /assets/admin.css, /api/admin y sus subrutas y /moderation.html, .js y .css van a Django. Las demás rutas, incluida `/actuator/health`, van a Spring. Django expone su salud de base en `/api/admin/health`. No se quitan prefijos de las API. Las sesiones MAIN_ADMIN_SESSION y JSESSIONID permanecen independientes.
 
 Los servicios escuchan solo en loopback. Caddy sobrescribe X-Forwarded-Proto y retira Forwarded del cliente. Spring producción usa procesamiento nativo de cabeceras limitado al proxy local, cookies Secure, HttpOnly y SameSite Lax, demo desactivada y administración histórica desactivada. Django usa main_admin.production_settings: exige MAIN_PUBLIC_ORIGIN HTTPS exacto, limita host y origen CSRF y requiere cookies seguras. Waitress debe ejecutarse con --listen=127.0.0.1:8090 --trusted-proxy=127.0.0.1 --trusted-proxy-headers=x-forwarded-proto main_admin.wsgi:application. Django confía en el esquema WSGI ya validado por Waitress, no directamente en una cabecera arbitraria del navegador.
 
@@ -14,7 +14,7 @@ Start-HttpsLab.ps1 inicia copias separadas de Spring 8188 y Django 8190 sobre la
 
 La CA y sus claves quedan en var/caddy, ignoradas por Git. Solo el certificado público var/caddy/pki/authorities/local/root.crt se proporciona explícitamente al cliente de pruebas. Una petición sin esa CA falló con UNABLE_TO_GET_ISSUER_CERT_LOCALLY. Newman verificó la cadena y el nombre localhost con TLS activado. El certificado local no se instala en Windows ni constituye certificado público de producción. No abrir excepciones del navegador para usarlo.
 
-Caddy 2.11.7 se descargó del repositorio oficial y el ZIP se verificó contra la suma SHA512 publicada. Las configuraciones pública y local superaron caddy adapt --validate. La configuración pública se validó con main.example.org como marcador, sin iniciar ACME. No se afirma que ese dominio pertenezca al proyecto.
+Caddy 2.11.9 quedó instalado mediante el paquete oficial de Windows, cuyo instalador verificó el hash publicado. Las configuraciones pública y local están formateadas y superaron `caddy validate`; la pública se validó con main.example.org como marcador, sin iniciar ACME. No se afirma que ese dominio pertenezca al proyecto.
 
 ## Pruebas en Postman
 
@@ -30,7 +30,7 @@ El primer recorrido exigía que Spring renovara una cookie en una solicitud que 
 
 ## Pendiente para un servidor real
 
-Elegir servidor y dominio, asignar DNS y presupuesto y habilitar únicamente los puertos públicos necesarios de Caddy. Mantener MySQL y backends privados. Configurar Spring con perfil production y las credenciales SQL correspondientes; su conexión MySQL exige TLS con verificación de identidad. Configurar Django con DJANGO_SETTINGS_MODULE=main_admin.production_settings, MAIN_PUBLIC_ORIGIN y credenciales acotadas. Para MySQL remoto falta configurar y comprobar también su TLS en Django antes de transmitir credenciales por una red externa. Migraciones, respaldo/restauración y operación supervisada deben comprobarse en ese destino.
+Elegir servidor y dominio, asignar DNS y presupuesto y habilitar únicamente los puertos públicos necesarios de Caddy. Mantener MySQL y backends privados. Configurar Spring con perfil production y las credenciales SQL correspondientes; su conexión MySQL exige TLS con verificación de identidad. Configurar Django con DJANGO_SETTINGS_MODULE=main_admin.production_settings, MAIN_PUBLIC_ORIGIN y credenciales acotadas. Django exige ahora `MAIN_DB_SSL_CA` y `VERIFY_IDENTITY` cuando MySQL no está en el mismo servidor; falta proporcionar y comprobar la CA del destino real. Migraciones, respaldo/restauración y operación supervisada deben comprobarse en ese destino.
 
 Después validar el dominio/certificado público, repetir esta colección con cuentas sintéticas, conectar Android a ese origen y documentar el recorrido. Hosting, DNS, disponibilidad pública, integración Android contra ese destino y recepción FCM permanecen pendientes. Preparar y aprobar un laboratorio no cierra M16 ni S3-04.
 

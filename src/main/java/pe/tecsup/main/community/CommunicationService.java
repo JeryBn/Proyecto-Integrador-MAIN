@@ -24,6 +24,13 @@ public class CommunicationService {
   public Review(int revision,String contentHash,boolean approved,String reason){this(revision,contentHash,approved,reason,false);}
  }
  private LocalDateTime now(){return LocalDateTime.now(clock);}
+ private long lastSequence(String conversation){return db.queryForObject("SELECT COALESCE(MAX(conversation_sequence),0) FROM message WHERE conversation_id=?",Long.class,conversation);}
+ private Timestamp messageAt(String conversation){
+  Timestamp latest=db.queryForObject("SELECT MAX(joined_at) FROM conversation_member WHERE conversation_id=? AND state='ACTIVE'",Timestamp.class,conversation);
+  LocalDateTime created=now();
+  if(latest!=null&&created.isBefore(latest.toLocalDateTime()))created=latest.toLocalDateTime();
+  return Timestamp.valueOf(created);
+ }
  private void lock(String id){if(db.queryForList("SELECT id FROM conversation WHERE id=? FOR UPDATE",String.class,id).isEmpty())throw DomainException.missing();}
  private void member(String actor,String id){
   users.active(actor);
@@ -69,27 +76,27 @@ public class CommunicationService {
   var existing=db.queryForList("SELECT id FROM conversation WHERE direct_key=?",String.class,key);if(!existing.isEmpty())return existing.getFirst();
   String id=UUID.randomUUID().toString();var date=Timestamp.valueOf(now());
   db.update("INSERT INTO conversation VALUES(?,?,?,?,?,?)",id,"DIRECT","Conversación privada",actor,date,key);
-  for(String user:List.of(actor,target))db.update("INSERT INTO conversation_member VALUES(?,?,'ACTIVE',FALSE,?)",id,user,date);
+  for(String user:List.of(actor,target))db.update("INSERT INTO conversation_member(conversation_id,username,state,administrator,joined_at) VALUES(?,?,'ACTIVE',FALSE,?)",id,user,date);
   return id;
  }
  @Transactional public String group(String actor,String title){
   if(users.active(actor).role().equals("ADMIN"))throw DomainException.denied();
   String id=UUID.randomUUID().toString();var date=Timestamp.valueOf(now());
   db.update("INSERT INTO conversation VALUES(?,?,?,?,?,NULL)",id,"GROUP",IdentityService.text(title,100,"nombre del grupo"),actor,date);
-  db.update("INSERT INTO conversation_member VALUES(?,?,'ACTIVE',TRUE,?)",id,actor,date);audit.record(actor,"GROUP_CREATED",id);return id;
+  db.update("INSERT INTO conversation_member(conversation_id,username,state,administrator,joined_at) VALUES(?,?,'ACTIVE',TRUE,?)",id,actor,date);audit.record(actor,"GROUP_CREATED",id);return id;
  }
  @Transactional public void invite(String actor,String id,String target){
   lock(id);administrator(actor,id);users.active(target);
   if(direct(id)||!users.contacts(actor,target)||users.blocked(actor,target))throw DomainException.denied();
   var states=db.queryForList("SELECT state FROM conversation_member WHERE conversation_id=? AND username=?",String.class,id,target);
-  if(states.isEmpty())db.update("INSERT INTO conversation_member VALUES(?,?,'INVITED',FALSE,NULL)",id,target);
-  else if(!states.getFirst().equals("ACTIVE"))db.update("UPDATE conversation_member SET state='INVITED',administrator=FALSE,joined_at=NULL WHERE conversation_id=? AND username=?",id,target);
+  if(states.isEmpty())db.update("INSERT INTO conversation_member(conversation_id,username,state,administrator,joined_at) VALUES(?,?,'INVITED',FALSE,NULL)",id,target);
+  else if(!states.getFirst().equals("ACTIVE"))db.update("UPDATE conversation_member SET state='INVITED',administrator=FALSE,joined_at=NULL,joined_after_sequence=-1 WHERE conversation_id=? AND username=?",id,target);
   if(states.isEmpty()||!states.getFirst().equals("ACTIVE")){notifications.enqueue(target,actor,id,null,"INVITATION","invitation:"+id+":"+target);audit.record(actor,"GROUP_INVITED",id+":"+target);}
  }
  @Transactional public void invitation(String actor,String id,boolean accept){
   lock(id);users.active(actor);
-  if(db.update("UPDATE conversation_member SET state=?,joined_at=? WHERE conversation_id=? AND username=? AND state='INVITED'",
-   accept?"ACTIVE":"REMOVED",accept?Timestamp.valueOf(now()):null,id,actor)==0)throw DomainException.missing();
+  if(db.update("UPDATE conversation_member SET state=?,joined_at=?,joined_after_sequence=? WHERE conversation_id=? AND username=? AND state='INVITED'",
+   accept?"ACTIVE":"REMOVED",accept?Timestamp.valueOf(now()):null,accept?lastSequence(id):-1L,id,actor)==0)throw DomainException.missing();
   audit.record(actor,accept?"GROUP_INVITATION_ACCEPTED":"GROUP_INVITATION_REJECTED",id);
  }
  public List<Member> members(String actor,String id){
@@ -134,7 +141,7 @@ public class CommunicationService {
    if(used+media.bytes().length>100*1024*1024)throw new DomainException(HttpStatus.TOO_MANY_REQUESTS,"UPLOAD_LIMIT","Límite de adjuntos: 100 MB procesados por cuenta en 24 horas.");
   }
   String id=UUID.randomUUID().toString();
-  db.update("INSERT INTO message(id,conversation_id,sender,client_key,created_at) VALUES(?,?,?,?,?)",id,conversation,actor,input.clientKey(),Timestamp.valueOf(now()));
+  db.update("INSERT INTO message(id,conversation_id,sender,client_key,created_at,conversation_sequence) VALUES(?,?,?,?,?,?)",id,conversation,actor,input.clientKey(),messageAt(conversation),lastSequence(conversation)+1);
   if(media!=null)attachments.save(id,media);
   revision(id,1,text);return message(actor,id);
  }
@@ -146,7 +153,7 @@ public class CommunicationService {
  }
  private DomainException stale(){return new DomainException(HttpStatus.CONFLICT,"REVISION_CONFLICT","La versión cambió. Actualiza y revisa el contenido actual.");}
  private Map<String,Object> header(String id){
-  var rows=db.queryForList("SELECT id,conversation_id,sender,created_at,published_revision,corrected_before,edited_after FROM message WHERE id=?",id);
+  var rows=db.queryForList("SELECT id,conversation_id,sender,created_at,conversation_sequence,published_revision,corrected_before,edited_after FROM message WHERE id=?",id);
   if(rows.isEmpty())throw DomainException.missing();
   var result=new HashMap<String,Object>();rows.getFirst().forEach((k,v)->result.put(k.toLowerCase(Locale.ROOT),v));return result;
  }
@@ -154,8 +161,9 @@ public class CommunicationService {
   var h=header(id);String conversation=(String)h.get("conversation_id"),sender=(String)h.get("sender");member(actor,conversation);
   users.active(sender);
   if(!sender.equals(actor)&&users.blocked(actor,sender))throw DomainException.missing();
-  var joined=db.queryForObject("SELECT joined_at FROM conversation_member WHERE conversation_id=? AND username=?",Timestamp.class,conversation,actor);
-  if(!sender.equals(actor)&&((Timestamp)h.get("created_at")).before(joined))throw DomainException.missing();
+  var visibility=db.queryForMap("SELECT joined_at,joined_after_sequence FROM conversation_member WHERE conversation_id=? AND username=?",conversation,actor);
+  var joined=(Timestamp)visibility.get("joined_at");long boundary=((Number)visibility.get("joined_after_sequence")).longValue();
+  if(!sender.equals(actor)&&(((Timestamp)h.get("created_at")).before(joined)||((Number)h.get("conversation_sequence")).longValue()<=boundary))throw DomainException.missing();
   Integer revision;
   if(sender.equals(actor)) revision=latest(id);
   else revision=h.get("published_revision")==null?null:Integer.valueOf(((Number)h.get("published_revision")).intValue());
@@ -177,7 +185,7 @@ public class CommunicationService {
    SELECT m.id FROM message m JOIN conversation_member cm ON cm.conversation_id=m.conversation_id AND cm.username=?
    JOIN main_user sender ON sender.username=m.sender
    WHERE m.conversation_id=? AND sender.enabled=TRUE AND
-   (m.sender=? OR (m.published_revision IS NOT NULL AND m.created_at>=cm.joined_at AND NOT EXISTS(
+   (m.sender=? OR (m.published_revision IS NOT NULL AND m.created_at>=cm.joined_at AND m.conversation_sequence>cm.joined_after_sequence AND NOT EXISTS(
     SELECT 1 FROM contact_preference p WHERE p.blocked=TRUE AND ((p.owner=? AND p.subject=m.sender) OR (p.owner=m.sender AND p.subject=?)))))
    ORDER BY m.created_at DESC,m.id DESC LIMIT ? OFFSET ?
    """,String.class,actor,id,actor,actor,actor,limit,offset);
@@ -208,7 +216,7 @@ public class CommunicationService {
    boolean corrected=!published&&db.queryForObject("SELECT COUNT(*) FROM message_revision WHERE message_id=? AND state='REJECTED'",Long.class,id)>0;
    db.update("UPDATE message SET published_revision=?,corrected_before=?,edited_after=? WHERE id=?",current,
     published?Boolean.TRUE.equals(h.get("corrected_before")):corrected,published,id);
-   if(!published) for(String recipient:db.queryForList("SELECT username FROM conversation_member WHERE conversation_id=? AND state='ACTIVE' AND joined_at<=?",String.class,conversation,h.get("created_at")))
+   if(!published) for(String recipient:db.queryForList("SELECT username FROM conversation_member WHERE conversation_id=? AND state='ACTIVE' AND joined_at<=? AND joined_after_sequence<?",String.class,conversation,h.get("created_at"),h.get("conversation_sequence")))
     notifications.enqueue(recipient,(String)h.get("sender"),conversation,id,"MESSAGE","message:"+id);
   }
  }
