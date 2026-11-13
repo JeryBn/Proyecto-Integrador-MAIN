@@ -1,0 +1,84 @@
+name: Calidad integral
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'frontend/**'
+      - 'admin-django/**'
+      - '.github/workflows/quality.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'frontend/**'
+      - 'admin-django/**'
+      - '.github/workflows/quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calidad-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spring-y-web:
+    name: Spring y web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias web
+        working-directory: frontend
+        run: npm ci
+      - name: Probar y compilar web
+        working-directory: frontend
+        run: |
+          node --test test/*.test.*
+          node build.mjs
+      - name: Verificar que los archivos servidos están actualizados
+        run: git diff --exit-code -- src/main/resources/static
+      - name: Probar Spring Boot
+        run: mvn --batch-mode --no-transfer-progress test
+      - name: Guardar informes Spring
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-spring
+          path: target/surefire-reports
+          if-no-files-found: warn
+
+  django:
+    name: Administración Django
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: admin-django/requirements.txt
+      - name: Preparar controlador MySQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes default-libmysqlclient-dev pkg-config
+      - name: Instalar dependencias
+        run: python -m pip install --disable-pip-version-check -r admin-django/requirements.txt
+      - name: Probar administración aislada
+        working-directory: admin-django
+        run: python manage.py test administration --settings=main_admin.test_settings --noinput -v 2
