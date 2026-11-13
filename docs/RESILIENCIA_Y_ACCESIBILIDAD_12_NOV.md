@@ -8,6 +8,7 @@
 - Android: mensajes diferenciados para espera agotada, servidor inaccesible, error TLS, interrupción de red, credenciales inválidas y fallos inesperados. La configuración del servidor y los flujos multimedia conservan únicamente mensajes validados; los errores no reconocidos no muestran rutas ni detalles internos.
 - Inicio local: el iniciador reconoce procesos propios aunque Windows no informe correctamente el dueño del puerto, evitando levantar instancias duplicadas.
 - Producción Django: una base MySQL remota exige CA existente y verificación de certificado y nombre; la aplicación no inicia con una ruta ausente o inválida.
+- Multimedia local: FFmpeg 9.0.2 quedó instalado y se comprobó la extracción real de audio y video sintéticos, incluida normalización de audio, muestreo de video y derivación a revisión humana. No sustituye la prueba con proveedor externo aprobado.
 - Accesibilidad web: se corrigieron contrastes, reflujo, foco visible, áreas táctiles y comportamiento con movimiento reducido.
 
 ## Comprobaciones automatizadas
