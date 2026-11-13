@@ -1,4 +1,4 @@
-:root{--bg:#f7f9f8;--ink:#171c22;--muted:#46515b;--purple:#087f68;--border:#dce6e0;--surface:#fff;--soft:#edf3ef;--accent-soft:#d9f3e9;--danger:#a12424}
+:root{--bg:#f7f9f8;--ink:#171c22;--muted:#46515b;--purple:#006b58;--border:#dce6e0;--surface:#fff;--soft:#edf3ef;--accent-soft:#d9f3e9;--danger:#a12424}
 :root[data-theme=dark]{color-scheme:dark;--bg:#101820;--ink:#e2e8ef;--muted:#c2cbd4;--purple:#80d5bb;--border:#3d4a50;--surface:#151f28;--soft:#23362e;--accent-soft:#145244;--danger:#ffb4ab}
 .sidebar,.topbar,.list-panel,.detail-panel,.summary-grid article,.user-panel{background:var(--surface);color:var(--ink)}
 .sidebar{width:224px;padding:28px 18px;position:sticky;top:0;height:100vh}.workspace-label{margin:34px 10px 14px}.nav-item.active,.sprint-badge,.badge{background:var(--accent-soft);color:var(--purple)}.logo{background:#087f68;color:white}.content{padding:30px;max-width:1300px}.topbar{height:auto;min-height:80px;padding:16px 30px;flex-wrap:wrap}.user-area{margin-left:auto}.content .academic{margin-top:24px}.breadcrumb{white-space:nowrap}.topbar nav a{padding:8px 2px;display:inline-block}.topbar nav a:hover,.nav-item:hover{text-decoration:underline}
@@ -52,3 +52,8 @@
 @media(prefers-reduced-motion:reduce){
   .app-shell *,.app-shell *::before,.app-shell *::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
+
+.connection-banner{position:fixed;z-index:200;top:12px;left:50%;transform:translateX(-50%);width:min(680px,calc(100vw - 24px));padding:12px 16px;border:2px solid var(--purple);border-radius:10px;background:var(--surface);color:var(--ink);box-shadow:0 8px 28px #1018202e;text-align:center;font-weight:600}
+.connection-banner.offline{border-color:var(--danger)}
+.fatal-error{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center;background:var(--bg);color:var(--ink)}
+.fatal-error h1,.fatal-error p{max-width:620px;margin:0}.fatal-error .toolbar{justify-content:center}.fatal-error button{min-height:44px;padding:10px 16px;border:1px solid var(--border);border-radius:9px;background:var(--accent-soft);color:var(--ink)}

@@ -1,5 +1,11 @@
 # Proyecto Integrador MAIN - seccion A
 
+## Estado de cierre — 12 de noviembre de 2026
+
+La resiliencia y accesibilidad multiplataforma están verificadas en la rama `feat/resiliencia-profesional`: 157 pruebas Spring, 83 Django, 42 web, 9 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
+
+Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). El código local está listo para integración; el cierre global aún requiere Trello/GitHub con escritura, teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+
 ## Paridad web de usuarios — 22 de octubre de 2026
 
 La web ahora incluye Inicio académico, chats privados/grupos e invitaciones, adjuntos, estados multimedia con respuesta privada, IA, perfil/privacidad y avisos. Conserva cursos/notas: docente registra/edita y estudiante consulta. Comparte API y datos con Android; administración continúa en Django. [Matriz y límites de paridad](docs/PARIDAD_WEB_22_OCT.md), [guía de prueba y traspaso](docs/GUIA_PARIDAD_WEB_ANDROID.md) y [evidencias actuales](docs/informes/2026-10-22-paridad-web/LEEME.md).

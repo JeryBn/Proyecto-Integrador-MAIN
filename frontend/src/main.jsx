@@ -9,6 +9,7 @@ import './workspace.css';
 import {Messages} from './messages.jsx';
 import {Statuses,emptyStatusDraft} from './statuses.jsx';
 import {Assistant,emptyAssistant} from './assistant.jsx';
+import {AppErrorBoundary,ConnectionStatus} from './resilience.jsx';
 
 const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
 
@@ -99,7 +100,8 @@ function App() {
         return;
       }
     } catch (error) {
-      setSessionError(error.message || 'No hay conexión. Intenta nuevamente.');
+      setSessionError(error?.message === 'No pudimos confirmar el cierre. Intenta nuevamente.'
+        ? error.message : 'No hay conexión. Intenta nuevamente.');
     } finally { setSigningOut(false); }
   };
 
@@ -221,4 +223,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(<AppErrorBoundary><ConnectionStatus/><App /></AppErrorBoundary>);

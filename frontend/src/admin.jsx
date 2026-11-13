@@ -5,40 +5,10 @@ import './admin-design.css';
 import {CommunityAdmin} from './community-admin.jsx';
 import {AcademicAdmin} from './academic-admin.jsx';
 import {ReviewerPortal} from './reviewer-portal.jsx';
+import {AppErrorBoundary, ConnectionStatus} from './resilience.jsx';
+import {api, loadCsrf} from './admin-api.mjs';
 
 /* ---------- Acceso a la API ---------- */
-let csrf = null;
-async function loadCsrf() {
-  const r = await fetch('/api/admin/csrf', {credentials: 'same-origin'});
-  if (!r.ok) throw new Error('No se pudo obtener el token de seguridad.');
-  csrf = await r.json();
-}
-class ApiError extends Error {
-  constructor(status, code, message, fields) {
-    super(message); this.status = status; this.code = code; this.fields = fields || {};
-  }
-}
-async function api(path, {method = 'GET', json, form} = {}) {
-  const headers = {Accept: 'application/json'};
-  let body;
-  if (method !== 'GET') {
-    if (!csrf) await loadCsrf();
-    headers[csrf.headerName] = csrf.token;
-    if (json !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(json); }
-    if (form) body = new URLSearchParams(form);
-  }
-  let r;
-  try { r = await fetch('/api/admin' + path, {method, headers, body, credentials: 'same-origin'}); }
-  catch { throw new ApiError(0, 'NETWORK', 'No hay conexión con el servidor.'); }
-  const text = await r.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { /* sin JSON */ }
-  if (!r.ok) {
-    const e = data?.error || {};
-    throw new ApiError(r.status, e.code || 'ERROR', e.message || 'Ocurrió un error.', e.fields || data?.fields);
-  }
-  return data;
-}
 const sessionLost = x => x.status === 401 || x.status === 403;
 const fmtFecha = s => (s ? String(s).replace('T', ' ').slice(0, 16) : '');
 
@@ -62,7 +32,9 @@ function Login({notice, onOk}) {
       setErr(x.status === 401 ? 'Usuario o contraseña incorrectos.'
         : x.status === 403 ? 'Esta cuenta no tiene acceso de administración.' : x.message);
       setP('');
-      try { await loadCsrf(); } catch { /* se reintenta al enviar */ }
+      if (x.status) {
+        try { await loadCsrf(); } catch { /* se reintenta al enviar */ }
+      }
     } finally { setBusy(false); }
   }
 
@@ -315,8 +287,9 @@ function App() {
         <button className="logout-button" onClick={logout}>Cerrar sesión <span aria-hidden="true">↗</span></button>
       </header>
       <div className="admin-workspace">
-      <div className="admin-topbar"><span>MAIN <span className="breadcrumb-divider">/</span> Administración</span><span className="workspace-tag"><span aria-hidden="true"/>Espacio académico</span></div>
+      <div className="admin-topbar" role="region" aria-label="Contexto administrativo"><span>MAIN <span className="breadcrumb-divider">/</span> Administración</span><span className="workspace-tag"><span aria-hidden="true"/>Espacio académico</span></div>
       <main id="admin-content" tabIndex={-1}>
+        <h1 className="sr">Administración MAIN</h1>
         {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
         {notice && view.name !== 'detail' && <p role="status">{notice}</p>}
         {view.name === 'community' && <CommunityAdmin api={api} onExpire={expire} currentUser={user.usuario} />}
@@ -331,4 +304,6 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(
+  <AppErrorBoundary><ConnectionStatus/><App /></AppErrorBoundary>
+);

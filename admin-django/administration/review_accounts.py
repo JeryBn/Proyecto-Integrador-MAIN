@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .views import operator_only, error, fingerprint, operator_data
 from .identity import mutation, password
-from .academic import body, record
+from .academic import ValidationError, body, record
 from .models import SharedUser
 
 @require_POST
@@ -25,7 +25,7 @@ def change_password(request):
     if not isinstance(current,str) or len(current.encode())>72 or not bcrypt.checkpw(current.encode(),user.password_hash.encode()):
         cache.set(key,attempts+1,900)
         return error(400,'CURRENT_PASSWORD_INVALID','La contraseña actual no coincide.')
-    if current==new:raise ValueError('Elige una contraseña distinta de la temporal o anterior.')
+    if current==new:raise ValidationError('Elige una contraseña distinta de la temporal o anterior.')
     user.password_hash=password(new);user.password_change_required=False
     user.save(update_fields=['password_hash','password_change_required'])
     record(request,'REVIEWER_PASSWORD_CHANGED' if user.role=='REVIEWER' else 'PASSWORD_CHANGED_SELF',user.username)

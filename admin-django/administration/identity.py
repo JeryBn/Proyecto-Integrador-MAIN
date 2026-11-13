@@ -9,19 +9,25 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
 from .models import SharedUser
 from .views import admin_only, error, pagination
-from .academic import body, positive, record
+from .academic import ValidationError, body, positive, record
 
 
 def text(value, maximum):
     if not isinstance(value, str) or not 1 <= len(value.strip()) <= maximum:
-        raise ValueError(f'Texto de 1 a {maximum} caracteres requerido.')
+        raise ValidationError(f'Texto de 1 a {maximum} caracteres requerido.')
     return value.strip()
 
 
 def password(value):
-    if not isinstance(value, str) or len(value) < 12 or len(value.encode()) > 72:
-        raise ValueError('Contraseña: al menos 12 caracteres y máximo 72 bytes UTF-8.')
-    return bcrypt.hashpw(value.encode(), bcrypt.gensalt(rounds=10)).decode()
+    if not isinstance(value, str) or len(value) < 12:
+        raise ValidationError('Contraseña: al menos 12 caracteres y máximo 72 bytes UTF-8.')
+    try:
+        encoded = value.encode()
+    except UnicodeError:
+        raise ValidationError('La contraseña contiene caracteres no válidos.') from None
+    if len(encoded) > 72:
+        raise ValidationError('Contraseña: al menos 12 caracteres y máximo 72 bytes UTF-8.')
+    return bcrypt.hashpw(encoded, bcrypt.gensalt(rounds=10)).decode()
 
 
 def account_data(user):
@@ -35,8 +41,10 @@ def mutation(view):
         try:
             with transaction.atomic():
                 return view(request, *args, **kwargs)
-        except (ValueError, UnicodeError) as exc:
+        except ValidationError as exc:
             return error(400, 'VALIDATION_ERROR', str(exc))
+        except UnicodeError:
+            return error(400, 'VALIDATION_ERROR', 'El texto contiene caracteres no válidos.')
         except IntegrityError:
             return error(409, 'DATA_CONFLICT', 'Conflicto de datos; no se guardaron cambios.')
     return execute
@@ -49,16 +57,16 @@ def users(request):
     if request.method == 'GET':
         page = pagination(request)
         if page is None:
-            raise ValueError('Paginación inválida.')
+            raise ValidationError('Paginación inválida.')
         offset, limit = page
         return JsonResponse([account_data(u) for u in SharedUser.objects.order_by('username')[offset:offset+limit]], safe=False)
     value = body(request, {'username','name','role','password','alumnoId','docenteId'})
     username, name = text(value.get('username'), 60), text(value.get('name'), 100)
     if not re.fullmatch(r'[a-zA-Z0-9._-]{3,60}', username):
-        raise ValueError('Usuario: 3 a 60 letras, números, punto o guion.')
+        raise ValidationError('Usuario: 3 a 60 letras, números, punto o guion.')
     role = value.get('role')
     if role not in ('ALUMNO', 'DOCENTE', 'FAMILIAR'):
-        raise ValueError('Rol inválido.')
+        raise ValidationError('Rol inválido.')
     hashed = password(value.get('password'))
     if SharedUser.objects.filter(pk=username).exists():
         return error(409, 'CONFLICT', 'Usuario existente.')
@@ -66,21 +74,21 @@ def users(request):
     with connection.cursor() as cursor:
         if role == 'ALUMNO':
             if not positive(student) or teacher is not None:
-                raise ValueError('Identidad de alumno positiva y sin identidad docente requerida.')
+                raise ValidationError('Identidad de alumno positiva y sin identidad docente requerida.')
             cursor.execute('SELECT usuario FROM alumno WHERE id=%s', [student])
             row = cursor.fetchone()
             if row is None:
                 cursor.execute('INSERT INTO alumno(id,usuario,nombre) VALUES(%s,%s,%s)', [student, username, name])
             elif row[0] != username:
-                raise ValueError('El registro académico pertenece a otro usuario.')
+                raise ValidationError('El registro académico pertenece a otro usuario.')
         elif role == 'DOCENTE':
             if not positive(teacher) or student is not None:
-                raise ValueError('Identidad de docente positiva y sin identidad de alumno requerida.')
+                raise ValidationError('Identidad de docente positiva y sin identidad de alumno requerida.')
             cursor.execute('SELECT id FROM docente WHERE id=%s', [teacher])
             if cursor.fetchone() is None:
                 cursor.execute('INSERT INTO docente(id,nombre) VALUES(%s,%s)', [teacher, name])
         elif student is not None or teacher is not None:
-            raise ValueError('Los parentescos se verifican por separado.')
+            raise ValidationError('Los parentescos se verifican por separado.')
     user = SharedUser.objects.create(username=username, display_name=name, role=role, password_hash=hashed,
                                     enabled=True, alumno_id=student, docente_id=teacher)
     record(request, 'ACCOUNT_CREATED', username)
@@ -119,7 +127,7 @@ def guardians(request, guardian=None, student_id=None):
         value = body(request, {'guardian','studentId'})
         guardian, student_id = text(value.get('guardian'),60), value.get('studentId')
         if not positive(student_id):
-            raise ValueError('Identificador de estudiante positivo requerido.')
+            raise ValidationError('Identificador de estudiante positivo requerido.')
     elif guardian is None:
         return error(405, 'METHOD_NOT_ALLOWED')
     with connection.cursor() as cursor:
@@ -127,7 +135,7 @@ def guardians(request, guardian=None, student_id=None):
             # Serializa altas idempotentes de un mismo familiar.
             user = SharedUser.objects.select_for_update().filter(pk=guardian, role='FAMILIAR', enabled=True).first()
             if not user:
-                raise ValueError('La cuenta debe ser familiar activa.')
+                raise ValidationError('La cuenta debe ser familiar activa.')
             cursor.execute('SELECT id FROM alumno WHERE id=%s', [student_id])
             if cursor.fetchone() is None:
                 return error(404, 'NOT_FOUND')
@@ -151,10 +159,10 @@ def contacts(request):
     value = body(request, {'first','second'})
     first, second = sorted([text(value.get('first'),60), text(value.get('second'),60)])
     if first == second:
-        raise ValueError('Contacto inválido.')
+        raise ValidationError('Contacto inválido.')
     users = list(SharedUser.objects.select_for_update().filter(username__in=[first,second],enabled=True).order_by('username'))
     if len(users) != 2 or any(u.role in ('ADMIN','REVIEWER') for u in users):
-        raise ValueError('Dos cuentas activas no administrativas requeridas.')
+        raise ValidationError('Dos cuentas activas no administrativas requeridas.')
     with connection.cursor() as cursor:
         cursor.execute('SELECT COUNT(*) FROM contact_link WHERE user_a=%s AND user_b=%s', [first,second])
         if cursor.fetchone()[0] == 0:

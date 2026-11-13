@@ -11,6 +11,10 @@ from .models import Course, SharedUser, Audit
 from .views import admin_only, error, pagination
 
 
+class ValidationError(ValueError):
+    """Error de entrada apto para mostrarse sin exponer fallos internos."""
+
+
 def record(request, action, subject):
     Audit.objects.create(id=str(uuid.uuid4()), actor=request.admin_actor, action=action,
                          subject=str(subject), occurred_at=datetime.now(ZoneInfo(settings.TIME_ZONE)).replace(tzinfo=None))
@@ -18,10 +22,13 @@ def record(request, action, subject):
 
 def body(request, allowed):
     if request.content_type != 'application/json' or len(request.body) > 32768:
-        raise ValueError('Se requiere un objeto JSON de tamaño válido.')
-    value = json.loads(request.body)
+        raise ValidationError('Se requiere un objeto JSON de tamaño válido.')
+    try:
+        value = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise ValidationError('JSON inválido. Revisa el contenido e inténtalo nuevamente.') from None
     if not isinstance(value, dict) or value.keys() - allowed:
-        raise ValueError('Objeto JSON con campos conocidos requerido.')
+        raise ValidationError('Objeto JSON con campos conocidos requerido.')
     return value
 
 
@@ -52,19 +59,19 @@ def courses(request, item_id=None):
         value = body(request, {'id', 'name', 'teacherUsername', 'expectedVersion'})
         cid = value.get('id')
         if not positive(cid) or (not create and cid != item_id):
-            raise ValueError('Identificador positivo y coincidente requerido.')
+            raise ValidationError('Identificador positivo y coincidente requerido.')
         name, teacher_name = value.get('name'), value.get('teacherUsername')
         if not isinstance(name, str) or not 1 <= len(name.strip()) <= 100:
-            raise ValueError('Nombre de curso de 1 a 100 caracteres requerido.')
+            raise ValidationError('Nombre de curso de 1 a 100 caracteres requerido.')
         if not isinstance(teacher_name, str) or not 1 <= len(teacher_name.strip()) <= 60:
-            raise ValueError('Usuario docente requerido.')
+            raise ValidationError('Usuario docente requerido.')
         version = value.get('expectedVersion')
         if (create and version is not None) or (not create and (type(version) is not int or version < 0)):
-            raise ValueError('Versión previa inválida. Actualiza antes de editar.')
+            raise ValidationError('Versión previa inválida. Actualiza antes de editar.')
         with transaction.atomic():
             teacher = SharedUser.objects.filter(username=teacher_name.strip(), enabled=True, role='DOCENTE').first()
             if not teacher or teacher.docente_id is None:
-                raise ValueError('El responsable debe ser una cuenta docente activa.')
+                raise ValidationError('El responsable debe ser una cuenta docente activa.')
             if create:
                 item = Course.objects.create(id=cid, nombre=name.strip(), docente_id=teacher.docente_id, admin_version=0)
             else:
@@ -76,7 +83,7 @@ def courses(request, item_id=None):
                 with connection.cursor() as cursor:
                     cursor.execute('SELECT COUNT(*) FROM timetable WHERE curso_id=%s', [cid])
                     if cursor.fetchone()[0] and item.docente_id != teacher.docente_id:
-                        raise ValueError('Retira o ajusta primero el horario antes de cambiar de docente.')
+                        raise ValidationError('Retira o ajusta primero el horario antes de cambiar de docente.')
                 # Comparación atómica adicional, incluso en motores sin SELECT FOR UPDATE.
                 if not Course.objects.filter(pk=cid, admin_version=version).update(
                         nombre=name.strip(), docente_id=teacher.docente_id, admin_version=version+1):
@@ -84,8 +91,10 @@ def courses(request, item_id=None):
             record(request, 'COURSE_CREATED' if create else 'COURSE_UPDATED', cid)
             result = course_data(Course.objects.select_related('docente').get(pk=cid))
         return JsonResponse(result, status=201 if create else 200)
-    except (ValueError, UnicodeError) as exc:
+    except ValidationError as exc:
         return error(400, 'VALIDATION_ERROR', str(exc))
+    except UnicodeError:
+        return error(400, 'VALIDATION_ERROR', 'El texto contiene caracteres no válidos.')
     except IntegrityError:
         return error(409, 'DATA_CONFLICT', 'Conflicto de datos; no se guardaron cambios.')
 
@@ -107,13 +116,13 @@ def students(request, item_id):
         value = body(request, {'username', 'enrolled'})
         username, enrolled = value.get('username'), value.get('enrolled')
         if not isinstance(username, str) or not 1 <= len(username.strip()) <= 60 or type(enrolled) is not bool:
-            raise ValueError('Usuario y decisión de matrícula explícita requeridos.')
+            raise ValidationError('Usuario y decisión de matrícula explícita requeridos.')
         with transaction.atomic():
             if not Course.objects.select_for_update().filter(pk=item_id).first():
                 return error(404, 'NOT_FOUND')
             student = SharedUser.objects.filter(pk=username.strip(), role='ALUMNO').first()
             if not student or student.alumno_id is None or (enrolled and not student.enabled):
-                raise ValueError('La matrícula requiere una cuenta de estudiante activa.')
+                raise ValidationError('La matrícula requiere una cuenta de estudiante activa.')
             with connection.cursor() as cursor:
                 if enrolled:
                     cursor.execute('SELECT COUNT(*) FROM matricula WHERE curso_id=%s AND alumno_id=%s', [item_id, student.alumno_id])
@@ -126,8 +135,10 @@ def students(request, item_id):
             if changed:
                 record(request, 'ENROLLMENT_GRANTED' if enrolled else 'ENROLLMENT_REVOKED', f'{item_id}:{student.username}')
         return JsonResponse({}, status=200)
-    except (ValueError, UnicodeError) as exc:
+    except ValidationError as exc:
         return error(400, 'VALIDATION_ERROR', str(exc))
+    except UnicodeError:
+        return error(400, 'VALIDATION_ERROR', 'El texto contiene caracteres no válidos.')
     except IntegrityError:
         return error(409, 'DATA_CONFLICT', 'Conflicto de datos; no se guardaron cambios.')
 

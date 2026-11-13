@@ -84,8 +84,8 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
  val context=LocalContext.current;val scope=rememberCoroutineScope()
  var captureFile by remember{mutableStateOf<File?>(null)}
  fun readAttachment(uri:android.net.Uri,mimeOverride:String?=null){reading=true;error="";scope.launch{
-  try{attachment=withContext(Dispatchers.IO){val mime=mimeOverride?:context.contentResolver.getType(uri).orEmpty();if(mime !in listOf("image/jpeg","image/png") && !mime.startsWith("video/") && !mime.startsWith("audio/"))throw Exception("Elige JPG, PNG, video o audio.");val bytes=context.contentResolver.openInputStream(uri)?.use{readStatusBytes(it)}?:throw Exception("No se pudo leer el archivo.");if(bytes.size>12*1024*1024)throw Exception("El archivo debe pesar hasta 12 MB.");StatusAttachment(bytes,mime)};key=UUID.randomUUID().toString()}
-  catch(e:Exception){error=e.message?:"No se pudo abrir el archivo."}finally{reading=false;captureFile?.delete();captureFile=null}
+  try{attachment=withContext(Dispatchers.IO){val mime=mimeOverride?:context.contentResolver.getType(uri).orEmpty();if(mime !in listOf("image/jpeg","image/png") && !mime.startsWith("video/") && !mime.startsWith("audio/"))throw ApiFailure("Elige JPG, PNG, video o audio.");val bytes=context.contentResolver.openInputStream(uri)?.use{readStatusBytes(it)}?:throw ApiFailure("No se pudo leer el archivo.");if(bytes.size>12*1024*1024)throw ApiFailure("El archivo debe pesar hasta 12 MB.");StatusAttachment(bytes,mime)};key=UUID.randomUUID().toString()}
+  catch(e:Exception){error=userMessage(e)}finally{reading=false;captureFile?.delete();captureFile=null}
  }}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null)readAttachment(uri)}
  val photo=rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()){success->val file=captureFile;if(success && file!=null)readAttachment(androidx.core.content.FileProvider.getUriForFile(context,context.packageName+".statusfiles",file),"image/jpeg")else{file?.delete();captureFile=null}}

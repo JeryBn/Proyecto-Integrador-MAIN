@@ -82,6 +82,16 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.client.get('/api/admin/actividades').status_code, 401)
         self.assertEqual(self.create().status_code, 401)
 
+    def test_unknown_api_and_server_failure_keep_json_error_contract(self):
+        response = self.client.get('/api/admin/ruta-inexistente')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['error']['code'], 'NOT_FOUND')
+        from django.test import RequestFactory
+        from .views import api_server_error
+        response = api_server_error(RequestFactory().get('/api/admin/falla-sintetica'))
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(json.loads(response.content)['error']['code'], 'INTERNAL_ERROR')
+
     def test_csrf_required_even_for_login(self):
         self.assertEqual(self.client.post('/api/admin/login', {'username':'admin_test','password':PASSWORD}).status_code, 403)
         self.login()
@@ -176,6 +186,8 @@ class AdministrationTests(TransactionTestCase):
 
     def test_react_assets_and_unsupported_operations(self):
         self.assertContains(self.client.get('/admin.html'), '<html lang="es">')
+        self.assertEqual(self.client.get('/favicon.ico').status_code,200)
+        self.assertEqual(self.client.get('/favicon.svg').status_code,200)
         self.assertEqual(self.client.get('/assets/admin.js').status_code,200)
         self.assertEqual(self.client.get('/assets/../settings.py').status_code,404)
         self.assertEqual(self.client.delete('/api/admin/actividades/100', HTTP_X_CSRFTOKEN=self.token()).status_code,405)
@@ -243,6 +255,17 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.academic_call('audit', {}).status_code, 405)
         self.assertEqual(self.academic_call('courses/1/students', {'username':'alumno','enrolled':'false'}, 'put').status_code, 400)
 
+    def test_admin_v1_malformed_json_has_safe_error_contract(self):
+        self.login()
+        for payload in ('{"id":', b'{"name":"\xff"}'):
+            response = self.client.post('/api/admin/v1/courses', payload, content_type='application/json',
+                                        HTTP_X_CSRFTOKEN=self.token())
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json()['error'], {
+                'code': 'VALIDATION_ERROR',
+                'message': 'JSON inválido. Revisa el contenido e inténtalo nuevamente.',
+            })
+
     def test_academic_audit_failure_rolls_back_course(self):
         self.prepare_academic()
         with patch('administration.academic.record', side_effect=IntegrityError('synthetic')):
@@ -308,6 +331,10 @@ class AdministrationTests(TransactionTestCase):
         for field,invalid in [('dayOfWeek',True),('startsAt','08:00:00.1'),('endsAt','07:00')]:
             candidate=dict(value);candidate[field]=invalid
             self.assertEqual(self.academic_call('timetable',candidate).status_code,400)
+        value.update(startsAt='99:99',endsAt='10:00')
+        response=self.academic_call('timetable',value)
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(response.json()['error']['message'],'Ingresa horas válidas entre 00:00 y 23:59.')
 
     def test_grade_contract_conflict_and_revoked_enrollment(self):
         self.login()

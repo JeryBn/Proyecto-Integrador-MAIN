@@ -1,8 +1,9 @@
 export const captureLimit=12*1024*1024;
+class CaptureGuidance extends Error {}
 export function captureError(error){
  return error?.name==='NotAllowedError'?'No se autorizó la cámara o el micrófono. Puedes adjuntar un archivo.':
  error?.name==='NotFoundError'?'No hay cámara o micrófono disponible. Puedes adjuntar un archivo.':
- error?.message||'No se pudo iniciar la captura.';
+ error instanceof CaptureGuidance?error.message:'No se pudo iniciar la captura. Puedes volver a intentar o adjuntar un archivo.';
 }
 export function createCaptureSession({getMedia,Recorder,onStream,onFile,onError,
  setTimer=(fn,ms)=>setTimeout(fn,ms),clearTimer=id=>clearTimeout(id)}){
@@ -17,10 +18,10 @@ export function createCaptureSession({getMedia,Recorder,onStream,onFile,onError,
      if(request!==generation){stopTracks(next);return;}
      stream=next;onStream(next);
      if(kind==='photo')return;
-     if(!Recorder)throw Error('Este navegador no permite grabar. Puedes adjuntar un archivo.');
+     if(!Recorder)throw new CaptureGuidance('Este navegador no permite grabar. Puedes adjuntar un archivo.');
      const types=kind==='audio'?['audio/webm;codecs=opus','audio/mp4']:['video/webm;codecs=vp8,opus','video/mp4'];
      const mimeType=types.find(type=>Recorder.isTypeSupported(type));
-     if(!mimeType)throw Error('No hay un formato de grabación compatible. Puedes adjuntar un archivo.');
+     if(!mimeType)throw new CaptureGuidance('No hay un formato de grabación compatible. Puedes adjuntar un archivo.');
      const current=new Recorder(stream,{mimeType,videoBitsPerSecond:1000000,audioBitsPerSecond:64000});recorder=current;parts=[];bytes=0;
      current.ondataavailable=e=>{if(request!==generation||!e.data.size)return;bytes+=e.data.size;
        if(bytes>captureLimit){cancel();onError('La captura superó 12 MB. Intenta una grabación más corta.');return;}parts.push(e.data);};

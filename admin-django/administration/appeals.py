@@ -3,7 +3,7 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_GET, require_POST
 from . import moderation as human, retention
-from .academic import body
+from .academic import ValidationError, body
 from .identity import mutation, text
 from .views import review_only, error, pagination
 
@@ -73,7 +73,7 @@ def download(request, appeal_id):
 @mutation
 def resolve(request, appeal_id):
     value=body(request,{'outcome','reason','contentHash'})
-    if value.get('outcome') not in ('UPHELD','RETURNED','SUPERSEDED'):raise ValueError('Decisión de apelación inválida.')
+    if value.get('outcome') not in ('UPHELD','RETURNED','SUPERSEDED'):raise ValidationError('Decisión de apelación inválida.')
     reason=text(value.get('reason'),1000); appeal=find(appeal_id)
     if not appeal or not retention.parent(appeal['subject_kind'],appeal['subject_id']):return error(404,'NOT_FOUND')
     appeal=find(appeal_id)

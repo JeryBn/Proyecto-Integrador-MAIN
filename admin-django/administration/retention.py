@@ -5,7 +5,7 @@ from django.db import connection, transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from . import moderation as human
-from .academic import body
+from .academic import ValidationError, body
 from .identity import mutation, text
 from .views import review_only, error, pagination
 
@@ -50,7 +50,7 @@ def hold(request, kind, item_id):
         return JsonResponse({'active': held(kind, item_id)})
     value = body(request, {'active', 'reason'})
     if type(value.get('active')) is not bool:
-        raise ValueError('Indica explícitamente activar o resolver la protección.')
+        raise ValidationError('Indica explícitamente activar o resolver la protección.')
     reason = text(value.get('reason'), 300)
     active = value['active']; instant = human.now()
     table, column = ('message_revision', 'message_id') if kind == 'messages' else ('status_update', 'id')
@@ -131,7 +131,7 @@ def minimize(kind, selected, instant, apply):
 
 def batch(limit=100, apply=False, instant=None):
     if type(limit) is not int or not 1 <= limit <= 500:
-        raise ValueError('Lote entre 1 y 500.')
+        raise ValidationError('Lote entre 1 y 500.')
     instant = instant or human.now()
     counts = dict(eligible=0, purged=0, protected=0, changed=0, auditEligible=0, auditPurged=0, closedHoldsEligible=0, closedHoldsPurged=0, assessmentsEligible=0, assessmentsPurged=0,appealsEligible=0,appealsPurged=0)
     for kind, table, start in [('messages', 'message_revision', 'submitted_at'), ('statuses', 'status_update', 'retention_started_at')]:
