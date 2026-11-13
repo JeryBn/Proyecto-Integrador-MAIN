@@ -48,6 +48,7 @@ jobs:
       - name: Probar y compilar web
         working-directory: frontend
         run: |
+          npm audit --audit-level=moderate
           node --test test/*.test.*
           node build.mjs
       - name: Verificar que los archivos servidos están actualizados
