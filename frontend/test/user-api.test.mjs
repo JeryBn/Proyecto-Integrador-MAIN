@@ -32,3 +32,23 @@ test('subida revocada no devuelve contenido ni anuncia éxito',async()=>{
  const xhr={upload:{},open(){},setRequestHeader(){},send(){this.status=401;this.responseText='{}';queueMicrotask(()=>this.onload());}};
  await assert.rejects(()=>api.upload('/upload',new FormData(),{xhrFactory:()=>xhr}),e=>e.status===401);assert.equal(expired,1);
 });
+test('rechaza una respuesta de lectura declarada por encima de 1 MiB',async()=>{
+ const api=createUserApi({fetcher:async()=>({status:200,ok:true,headers:{get:()=>String(1024*1024+1)},text:async()=>{throw Error('no debe leerse');}})});
+ await assert.rejects(()=>api.call('/api/perfil'),e=>e.code==='INVALID_RESPONSE'&&e.message.includes('tamaño permitido'));
+});
+test('una respuesta excesiva después de escribir queda como resultado incierto',async()=>{
+ let calls=0;const api=createUserApi({fetcher:async()=>{calls++;return calls===1?response(200,{token:'csrf'}):{status:200,ok:true,headers:{get:()=>String(1024*1024+1)},text:async()=>''};}});
+ await assert.rejects(()=>api.call('/api/v1/preferences',{method:'PUT',json:{darkTheme:true}}),e=>e.code==='NETWORK_ERROR'&&e.message.includes('No se confirmó'));
+ assert.equal(calls,2);
+});
+test('el plazo de escritura abarca la lectura completa sin reenviar',async()=>{
+ let calls=0,fire;const schedule=fn=>{fire=fn;return 1;};
+ const api=createUserApi({schedule,cancel:()=>{},fetcher:async(path,options)=>{calls++;if(calls===1)return response(200,{token:'csrf'});return {status:200,ok:true,headers:{get:()=>null},body:{getReader:()=>({read:()=>new Promise((resolve,reject)=>{const fail=()=>{const error=Error('aborted');error.name='AbortError';reject(error);};if(options.signal.aborted)fail();else options.signal.addEventListener('abort',fail,{once:true});}),cancel:async()=>{},releaseLock(){}})}};}});
+ const pending=api.call('/api/v1/preferences',{method:'PUT',json:{darkTheme:true}});await new Promise(resolve=>setImmediate(resolve));fire();
+ await assert.rejects(()=>pending,e=>e.code==='NETWORK_ERROR'&&e.message.includes('No se confirmó'));assert.equal(calls,2);
+});
+test('una confirmación de subida excesiva no anuncia éxito ni reenvía',async()=>{
+ let sends=0;const api=createUserApi({fetcher:async()=>response(200,{token:'token'})});
+ const xhr={upload:{},open(){},setRequestHeader(){},send(){sends++;this.status=201;this.responseText='x'.repeat(1024*1024+1);queueMicrotask(()=>this.onload());}};
+ await assert.rejects(()=>api.upload('/upload',new FormData(),{xhrFactory:()=>xhr}),e=>e.code==='NETWORK_ERROR'&&e.message.includes('No se confirmó'));assert.equal(sends,1);
+});
