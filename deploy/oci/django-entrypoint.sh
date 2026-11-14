@@ -45,6 +45,12 @@ case "$mode" in
       --username "${MAIN_ADMIN_USERNAME:?falta MAIN_ADMIN_USERNAME}" \
       --name "${MAIN_ADMIN_DISPLAY_NAME:?falta MAIN_ADMIN_DISPLAY_NAME}"
     ;;
+  verify)
+    export MAIN_DB_USER=main_django
+    read_secret MAIN_DB_PASSWORD /run/secrets/mysql_django_password
+    exec python manage.py verify_deployment \
+      --username "${MAIN_ADMIN_USERNAME:?falta MAIN_ADMIN_USERNAME}"
+    ;;
   serve)
     export MAIN_DB_USER=main_django
     read_secret MAIN_DB_PASSWORD /run/secrets/mysql_django_password

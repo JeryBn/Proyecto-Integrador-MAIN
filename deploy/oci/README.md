@@ -50,9 +50,12 @@ La carpeta `secrets/` usa modo `0700`. Los archivos que Docker monta se dejan le
 docker compose ps
 curl --fail https://TU_DOMINIO/actuator/health
 curl --fail https://TU_DOMINIO/api/admin/health
+docker compose exec --no-TTY django /app/entrypoint.sh verify
 ./backup.sh
 ./verify-backup.sh backups/main-FECHA.sql.gz
 ```
+
+El comando `verify` reutiliza la configuración privada del contenedor para comprobar que Django se conecta a MySQL mediante TLS y que el administrador inicial conserva el estado seguro esperado. Solo devuelve un resumen sin contraseñas, certificados ni detalles internos de conexión.
 
 El temporizador `main-backup.timer` conserva respaldos comprimidos con manifiesto SHA-256 durante 14 días. Para activarlo después del primer despliegue:
 

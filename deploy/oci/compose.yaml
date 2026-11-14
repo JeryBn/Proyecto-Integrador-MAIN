@@ -123,6 +123,7 @@ services:
       MAIN_DB_NAME: main
       MAIN_DB_SSL_CA: /run/secrets/mysql_ca
       MAIN_DJANGO_SECRET_KEY_FILE: /run/secrets/django_secret
+      MAIN_ADMIN_USERNAME: ${MAIN_ADMIN_USERNAME:-jery.admin}
       MAIN_FFMPEG_EXECUTABLE: /usr/bin/ffmpeg
       MAIN_FFPROBE_EXECUTABLE: /usr/bin/ffprobe
       TZ: America/Lima
@@ -177,7 +178,6 @@ services:
     command: ["provision-admin"]
     environment:
       <<: *django-common-environment
-      MAIN_ADMIN_USERNAME: ${MAIN_ADMIN_USERNAME:-jery.admin}
       MAIN_ADMIN_DISPLAY_NAME: ${MAIN_ADMIN_DISPLAY_NAME:-Jery Becerra Ninaquispe}
     secrets:
       - mysql_django_password

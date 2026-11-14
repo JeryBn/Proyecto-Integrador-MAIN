@@ -2,6 +2,7 @@ import json
 import hashlib
 import os
 from datetime import datetime,timedelta
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 import bcrypt
@@ -132,6 +133,22 @@ class AdministrationTests(TransactionTestCase):
             os.environ.pop('MAIN_ADMIN_INITIAL_PASSWORD', None)
             with self.assertRaises(CommandError):
                 call_command('provision_admin', username='new.admin', name='Administrador')
+
+    def test_deployment_verification_requires_tls_and_expected_admin(self):
+        SharedUser.objects.filter(pk='admin_test').update(password_change_required=True)
+        output = StringIO()
+        with patch('administration.management.commands.verify_deployment.connection') as deployed_connection:
+            deployed_connection.vendor = 'mysql'
+            deployed_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+                'Ssl_cipher', 'TLS_AES_256_GCM_SHA384'
+            )
+            call_command('verify_deployment', username='admin_test', stdout=output)
+            deployed_connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
+                'Ssl_cipher', ''
+            )
+            with self.assertRaises(CommandError):
+                call_command('verify_deployment', username='admin_test')
+        self.assertTrue(json.loads(output.getvalue())['tls'])
 
     def test_login_rotates_csrf_and_session_and_logout_invalidates_cookie(self):
         before = self.token()

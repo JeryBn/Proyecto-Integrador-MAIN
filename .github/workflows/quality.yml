@@ -133,8 +133,7 @@ jobs:
         working-directory: deploy/oci
         run: |
           docker compose exec --no-TTY spring curl --fail --silent http://127.0.0.1:8088/actuator/health
-          docker compose exec --no-TTY django python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); print('Django/MySQL TLS correcto')"
-          docker compose exec --no-TTY django python manage.py shell -c "from administration.models import SharedUser; assert SharedUser.objects.filter(username='ci.admin',role='ADMIN',enabled=True,password_change_required=True).exists()"
+          docker compose exec --no-TTY django /app/entrypoint.sh verify
       - name: Mostrar diagnóstico si falla
         if: failure()
         working-directory: deploy/oci
