@@ -1,35 +1,35 @@
 import {useState} from 'react';
-import {userApi,enc} from './user-api.mjs';
+import {userApi,enc,localDate} from './user-api.mjs';
 import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
 import {ReminderSettings} from './reminder-settings.jsx';
 import {AppealHistory} from './appeals.jsx';
 import {noticeLabel,noticeTarget} from './notice-model.mjs';
+import {Icon} from './ui-icons.jsx';
 
 export function Profile({profile,preferences,onPreferences,active,onChat}){
   const {confirm,confirmation}=useConfirmation();
   const contacts=useResource('/api/v1/contacts',{enabled:active,interval:5000});
   const [error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[search,setSearch]=useState(''),[blockedOnly,setBlockedOnly]=useState(false),[report,setReport]=useState(null),[reason,setReason]=useState('');
   async function save(action,message){setBusy(true);setError('');setNotice('');try{await action();setNotice(message);contacts.reload();}catch(e){setError(e.message);}finally{setBusy(false);}}
-  return <section className="user-panel" aria-label="Perfil y privacidad">{confirmation}<h1>Perfil y ajustes</h1>
-    <div className="profile-heading"><span className="avatar">{profile.nombre?.slice(0,1)}</span><div><h2>{profile.nombre}</h2><p>{profile.rol} · {profile.usuario}</p></div></div>
-    {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
-    <ReminderSettings active={active&&profile.rol==='Alumno'}/>
-    <AppealHistory active={active}/>
-    <h2>Ajustes</h2>{preferences?<fieldset disabled={busy} className="settings-list"><legend>Preferencias de tu cuenta</legend>
-      <label><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/> Tema oscuro</label>
-      <label><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/> Avisos dentro de MAIN</label>
-      <label>Privacidad de estados<select value={preferences.statusAudience} onChange={e=>save(()=>onPreferences({...preferences,statusAudience:e.target.value}),'Privacidad guardada.')}><option value="CONTACTS">Mis contactos autorizados</option><option value="PRIVATE">Solo yo</option></select></label>
-      <p>Esta preferencia limita quién puede ver tus estados. Los bloqueos y la audiencia se comprueban también en el servidor.</p>
-    </fieldset>:<p role="status">No se cargaron tus preferencias. Usa Actualizar cuenta para reintentar.</p>}
-    <h2>Contactos y privacidad</h2><div className="toolbar"><label>Buscar contacto<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label><label><input type="checkbox" checked={blockedOnly} onChange={e=>setBlockedOnly(e.target.checked)}/> Solo bloqueados</label><button onClick={contacts.reload}>Actualizar contactos</button></div>
-    <Feedback resource={contacts}/>{contacts.data&&<><p>Solo aparecen relaciones autorizadas por tu institución. No puedes otorgarte contactos ni parentescos.</p>
-      <ul className="contact-list">{contacts.data.filter(c=>(!blockedOnly||c.blocked)&&(c.name+' '+c.username).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es'))).map(c=><li key={c.username}><span className="avatar small">{c.name.slice(0,1)}</span><div className="grow"><strong>{c.name}</strong><small>{c.role} · {c.username}{c.blocked?' · Bloqueado':''}</small></div><div className="row-actions">
+  return <section className="profile-experience" aria-label="Perfil y privacidad">{confirmation}
+    <header className="profile-hero workspace-card"><div className="profile-identity"><span className="avatar profile-avatar">{profile.nombre?.slice(0,1)}</span><div><span className="section-kicker">MI CUENTA</span><h1>{profile.nombre}</h1><p>{profile.rol} · @{profile.usuario}</p></div></div><span className="verified-badge"><Icon name="shield" size={17}/>Identidad institucional</span></header>
+    {error&&<div className="inline-error" role="alert"><p>{error}</p></div>}{notice&&<div className="success-notice" role="status"><Icon name="checkCircle"/><span>{notice}</span></div>}
+    <div className="profile-layout"><main className="profile-main">
+    <section className="workspace-card preference-card"><header><div><span className="section-kicker">EXPERIENCIA</span><h2>Preferencias de tu cuenta</h2><p>Personaliza cómo se presenta y protege tu espacio.</p></div><span className="round-icon"><Icon name="user"/></span></header>{preferences?<fieldset disabled={busy} className="settings-list modern-settings"><legend className="sr-only">Preferencias de tu cuenta</legend>
+      <label className="setting-row"><span className="setting-icon"><Icon name="layers"/></span><span><strong>Tema oscuro</strong><small>Reduce el brillo y adapta los colores de MAIN.</small></span><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/></label>
+      <label className="setting-row"><span className="setting-icon"><Icon name="bell"/></span><span><strong>Avisos dentro de MAIN</strong><small>Recibe novedades académicas y de tu comunidad.</small></span><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/></label>
+      <label className="setting-select"><span><strong>Privacidad de novedades</strong><small>Elige quién puede ver tus estados.</small></span><select value={preferences.statusAudience} onChange={e=>save(()=>onPreferences({...preferences,statusAudience:e.target.value}),'Privacidad guardada.')}><option value="CONTACTS">Mis contactos autorizados</option><option value="PRIVATE">Solo yo</option></select></label>
+    </fieldset>:<p role="status">No se cargaron tus preferencias. Actualiza la página para reintentar.</p>}</section>
+    <section className="workspace-card contacts-card"><header><div><span className="section-kicker">COMUNIDAD SEGURA</span><h2>Contactos y privacidad</h2><p>Solo aparecen relaciones autorizadas por tu institución.</p></div><span className="round-icon"><Icon name="users"/></span></header><div className="contacts-toolbar"><label className="modern-search"><Icon name="search" size={18}/><span className="sr-only">Buscar contacto</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar contacto"/></label><label className="blocked-filter"><input type="checkbox" checked={blockedOnly} onChange={e=>setBlockedOnly(e.target.checked)}/>Solo bloqueados</label><button aria-label="Actualizar contactos" onClick={contacts.reload}><Icon name="refresh" size={17}/></button></div>
+    <Feedback resource={contacts}/>{contacts.data&&<>
+      <ul className="contact-list modern-contacts">{contacts.data.filter(c=>(!blockedOnly||c.blocked)&&(c.name+' '+c.username).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es'))).map(c=><li key={c.username}><span className="avatar small">{c.name.slice(0,1)}</span><div className="grow"><strong>{c.name}</strong><small>{c.role} · @{c.username}{c.blocked?' · Bloqueado':''}</small></div><div className="row-actions">
         {onChat&&<button disabled={busy||c.blocked} onClick={()=>save(async()=>{const chat=await userApi.call('/api/v1/conversations/direct',{method:'POST',json:{username:c.username}});onChat(chat.id);},'')}>Mensaje a {c.name}</button>}
         <button disabled={busy} onClick={()=>save(()=>userApi.call('/api/v1/contacts/'+enc(c.username)+'/preferences',{method:'PUT',json:{muted:!c.muted,blocked:c.blocked}}),c.muted?'Contacto con avisos.':'Contacto silenciado.')}>{c.muted?'Activar avisos':'Silenciar'} {c.name}</button>
         <button disabled={busy} onClick={()=>{const action=()=>save(()=>userApi.call('/api/v1/contacts/'+enc(c.username)+'/preferences',{method:'PUT',json:{muted:c.muted,blocked:!c.blocked}}),c.blocked?'Contacto desbloqueado.':'Contacto bloqueado.');if(c.blocked)action();else confirm('¿Bloquear a '+c.name+'? Se impedirá el intercambio privado.',action);}}>{c.blocked?'Desbloquear':'Bloquear'} {c.name}</button>
         <button disabled={busy} onClick={()=>{setReport(c);setReason('');}}>Reportar a {c.name}</button>
-      </div></li>)}</ul>{!contacts.data.length&&<p>No tienes contactos autorizados.</p>}</>}
+      </div></li>)}</ul>{!contacts.data.length&&<div className="dashboard-empty"><span><Icon name="users"/></span><div><strong>Sin contactos todavía</strong><p>Tu institución administra las relaciones autorizadas.</p></div></div>}</>}
     {report&&<form className="card-form" onSubmit={e=>{e.preventDefault();save(async()=>{await userApi.call('/api/v1/contacts/'+enc(report.username)+'/reports',{method:'POST',json:{reason}});setReport(null);setReason('');},'Reporte enviado a administración.');}}><h3>Reportar a {report.name}</h3><label>Motivo del reporte<textarea required maxLength={1000} value={reason} onChange={e=>setReason(e.target.value)}/></label><p>El motivo se comparte únicamente con administración.</p><button disabled={busy||!reason.trim()}>Enviar reporte</button><button type="button" disabled={busy} onClick={()=>setReport(null)}>Cancelar reporte</button></form>}
+    </section></main><aside className="profile-side"><section className="workspace-card reminder-card"><span className="round-icon"><Icon name="clock"/></span><ReminderSettings active={active&&profile.rol==='Alumno'}/></section><section className="workspace-card appeals-card"><span className="round-icon"><Icon name="shield"/></span><AppealHistory active={active}/></section></aside></div>
   </section>;
 }
 
@@ -37,9 +37,9 @@ export function Notifications({active,onChat,onUpdated}){
   const [offset,setOffset]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const notices=useResource(`/api/v1/notifications?offset=${offset}&limit=30`,{enabled:active,interval:5000});
   async function mark(n){setBusy(true);setError('');try{await userApi.call('/api/v1/notifications/'+enc(n.id)+'/read',{method:'POST',json:{}});notices.reload();onUpdated();}catch(e){setError(e.message);}finally{setBusy(false);}}
-  return <section className="user-panel" aria-label="Avisos"><h1>Avisos</h1><button onClick={notices.reload}>Actualizar avisos</button><Feedback resource={notices}/>{error&&<p role="alert">{error}</p>}
-    {notices.data?.length===0&&<p>No hay avisos visibles. Los mensajes pendientes de revisión no generan avisos de entrega.</p>}
-    <ul className="contact-list">{notices.data?.map(n=><li key={n.id}><div className="grow"><strong>{noticeLabel(n)}</strong><small>{n.read?'Leído':'Sin leer'}</small></div>{noticeTarget(n)&&<a href={noticeTarget(n)}>{n.kind==='REMINDER'?'Ver actividad':'Abrir conversación'}</a>}{!n.read&&<button disabled={busy} onClick={()=>mark(n)}>Marcar leído</button>}</li>)}</ul>
-    <div className="pager"><button disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-30))}>Avisos anteriores</button><span>Página {offset/30+1}</span><button disabled={notices.data?.length!==30} onClick={()=>setOffset(offset+30)}>Más avisos</button></div>
+  return <section className="notifications-experience" aria-label="Avisos"><header className="section-hero compact-hero"><div><span className="eyebrow">BANDEJA PERSONAL</span><h1>Avisos</h1><p>Mantente al día con tus actividades, conversaciones y comunidad.</p></div><button className="secondary-action" onClick={notices.reload}><Icon name="refresh" size={17}/>Actualizar</button></header><section className="workspace-card notification-inbox"><header><div><span className="section-kicker">RECIENTES</span><h2>Tu actividad</h2></div><span className="round-icon"><Icon name="bell"/></span></header><Feedback resource={notices}/>{error&&<div className="inline-error" role="alert"><p>{error}</p></div>}
+    {notices.data?.length===0&&<div className="dashboard-empty"><span><Icon name="checkCircle"/></span><div><strong>Todo revisado</strong><p>No hay avisos visibles por ahora.</p></div></div>}
+    <ul className="notification-list">{notices.data?.map(n=><li key={n.id} className={n.read?'read':''}><span className="notification-icon"><Icon name={n.kind==='REMINDER'?'calendar':'message'} size={19}/></span><div className="grow"><strong>{noticeLabel(n)}</strong><small>{n.createdAt?localDate(n.createdAt):n.read?'Leído':'Sin leer'}</small></div><div className="notification-actions">{noticeTarget(n)&&<a href={noticeTarget(n)}>{n.kind==='REMINDER'?'Ver actividad':'Abrir'}<Icon name="arrowRight" size={15}/></a>}{!n.read&&<button disabled={busy} onClick={()=>mark(n)}>Marcar leído</button>}</div></li>)}</ul>
+    <div className="pager"><button disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-30))}>Anteriores</button><span>Página {offset/30+1}</span><button disabled={notices.data?.length!==30} onClick={()=>setOffset(offset+30)}>Siguientes</button></div></section>
   </section>;
 }

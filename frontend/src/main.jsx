@@ -10,71 +10,17 @@ import {Messages} from './messages.jsx';
 import {Statuses,emptyStatusDraft} from './statuses.jsx';
 import {Assistant,emptyAssistant} from './assistant.jsx';
 import {AppErrorBoundary,ConnectionStatus} from './resilience.jsx';
-
-const date = s => new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Lima' }).format(new Date(s + '-05:00'));
+import {Dashboard} from './dashboard.jsx';
+import {Activities,ActivityDetail} from './activities.jsx';
+import {Icon} from './ui-icons.jsx';
 
 async function request(url) {
   return userApi.call(url);
 }
 
-function ActivityCard({ activity: a }) {
-  return (
-    <article className="activity-card">
-      <span className="activity-icon">↗</span>
-      <div className="activity-body">
-        <span className="course-label">{a.curso}</span>
-        <h3>{a.titulo}</h3>
-        <p className="deadline">Fecha límite: {date(a.fechaLimite)}</p>
-      </div>
-      <div className="activity-side">
-        <span className={'badge' + (a.vencida ? ' late' : '')}>{a.vencida ? 'Vencida' : 'Pendiente'}</span>
-        <button
-          className="detail-button"
-          aria-label={'Ver detalle de ' + a.titulo}
-          onClick={() => { location.hash = 'actividad/' + a.id }}
-        >
-          Ver detalle →
-        </button>
-      </div>
-    </article>
-  );
-}
-
-function ActivityDetail({ id }) {
-  const [activity, setActivity] = useState(null), [error, setError] = useState('');
-  useEffect(() => {
-    let current = true;
-    setActivity(null);
-    setError('');
-    request('/api/actividades/' + id).then(a => { if (current) setActivity(a) }).catch(e => { if (current) setError(e.message) });
-    return () => { current = false };
-  }, [id]);
-
-  const back = () => { location.hash = '' };
-  if (error) return <section className="detail-panel" aria-label="Detalle de actividad"><h2>No pudimos abrir esta actividad</h2><p>{error}</p><button className="back-button" onClick={back}>Volver a mis actividades</button></section>;
-  if (!activity) return <section className="detail-panel"><p role="status">Cargando detalle…</p></section>;
-
-  const a = activity;
-  return (
-    <section className="detail-panel" aria-label="Detalle de actividad">
-      <button className="back-button" onClick={back}>← Volver a mis actividades</button>
-      <span className="eyebrow">{a.curso}</span>
-      <h2>{a.titulo}</h2>
-      <span className={'badge' + (a.vencida ? ' late' : '')}>{a.completada ? 'Completada' : a.vencida ? 'Vencida' : 'Pendiente'}</span>
-      <div className="metadata">
-        <p>Docente: {a.docente}</p>
-        <p>Fecha límite: {date(a.fechaLimite)}</p>
-      </div>
-      <h3>Indicaciones</h3>
-      <p className="instructions">{a.descripcion}</p>
-      <p className="detail-note">Consulta las instrucciones antes de preparar tu entrega.</p>
-    </section>
-  );
-}
-
 function App() {
   const previousRoute=useRef(null);
-  const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [search, setSearch] = useState(''), [filter, setFilter] = useState('all'), [hash, setHash] = useState(location.hash);
+  const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [hash, setHash] = useState(location.hash);
   const [preferences,setPreferences]=useState(null);
   const [chatDrafts,setChatDrafts]=useState({});
   const [statusDraft,setStatusDraft]=useState(emptyStatusDraft);
@@ -135,88 +81,50 @@ function App() {
     const changed=previousRoute.current!==null&&previousRoute.current!==hash;
     previousRoute.current=hash;
     if(!changed)return;
+    window.scrollTo(0,0);
     const frame=requestAnimationFrame(()=>document.getElementById('contenido-principal')?.focus());
     return ()=>cancelAnimationFrame(frame);
   },[hash,pageTitle]);
-  const shown = items.filter(a => (filter === 'all' || (filter === 'late' ? a.vencida : !a.vencida)) && (a.titulo + ' ' + a.curso).toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es').trim()));
+  const navigation=[
+    {route:'#inicio',label:'Inicio',icon:'home'},
+    {route:'#cursos',label:'Cursos',icon:'book'},
+    ...(profile?.rol==='Alumno'?[{route:'#actividades',label:'Actividades',icon:'clipboard'}]:[]),
+    {route:'#chats',label:'Chats',icon:'message',group:'Comunidad'},
+    {route:'#estados',label:'Novedades',icon:'status'},
+    {route:'#ia',label:'MAIN IA',icon:'spark',group:'Herramientas'},
+    {route:'#perfil',label:'Mi cuenta',icon:'user'}
+  ];
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
-      <nav className="sidebar" aria-label="Navegación principal">
-        <a className="brand" href="/"><span className="logo">M</span>MAIN</a>
-        <span className="workspace-label">ESPACIO ACADÉMICO</span>
-        {[['#inicio','Inicio'],['#chats','Chats'],['#estados','Estados'],['#ia','IA'],['#perfil','Perfil']].map(([route,label])=>{
-          const active=hash===route||(route==='#inicio'&&(!hash||hash==='#cursos'||hash==='#actividades'||!!match))||(route==='#chats'&&chatRoute);
-          return <a key={route} className={'nav-item '+(active?'active':'')} aria-current={active?'page':undefined} href={route}>{label}</a>;
+      <nav className="sidebar institutional-sidebar" aria-label="Navegación principal">
+        <a className="brand" href="#inicio"><span className="logo">M</span><span><strong>MAIN</strong><small>Campus digital</small></span></a>
+        <div className="sidebar-navigation">
+        {navigation.map((item,index)=>{
+          const active=hash===item.route||(item.route==='#inicio'&&(!hash||hash==='#inicio'))||(item.route==='#actividades'&&!!match)||(item.route==='#chats'&&chatRoute);
+          return <React.Fragment key={item.route}>{item.group&&<span className="nav-group-label">{item.group}</span>}<a className={'nav-item '+(active?'active':'')} aria-current={active?'page':undefined} href={item.route}><Icon name={item.icon}/><span>{item.label}</span>{item.route==='#avisos'&&notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}</b>}</a></React.Fragment>;
         })}
-        <div className="sidebar-bottom">
-          <span className="sprint-badge">Tu comunidad académica</span>
-          <p>Cursos, tareas y conversaciones<br/>con los mismos datos de tu app.</p>
         </div>
+        <div className="sidebar-bottom"><div className="campus-card"><span><Icon name="graduation"/></span><div><strong>Comunidad MAIN</strong><p>Aprende, participa y avanza junto a tu institución.</p></div></div></div>
       </nav>
       <div className="main-area">
-        <header className="topbar">
-          <span className="breadcrumb">MAIN <span>/</span> {profile?.rol||'Mi espacio'}</span>
-          <nav aria-label="Secciones académicas"><a href="#inicio">Inicio</a> · <a href="#cursos">Cursos y notas</a>{profile?.rol==='Alumno'&&<> · <a href="#actividades">Tareas</a></>}</nav>
+        <header className="topbar institutional-topbar">
+          <div className="topbar-context"><span className="mobile-brand"><span className="logo">M</span>MAIN</span><span className="breadcrumb"><Icon name={hash==='#cursos'?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
+          <div className="topbar-actions">
+            <a className="topbar-search" href="#actividades"><Icon name="search" size={18}/><span>Buscar en MAIN</span></a>
+            <a className="notice-button icon-notice" href="#avisos" aria-label="Ver avisos"><Icon name="bell" size={19}/>{notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}{notices.data.length===30?'+':''}</b>}</a>
+            <a className="user-identity" href="#perfil"><span className="avatar small">{profile?.nombre?.slice(0,1)||'M'}</span><span><strong>{profile?.nombre||'Mi cuenta'}</strong><small>{profile?.rol||'MAIN'}</small></span></a>
           <div className="user-area">
-            <a className="notice-button" href="#avisos" aria-label="Ver avisos">Avisos {notices.data?.some(n=>!n.read)?`(${notices.data.filter(n=>!n.read).length}${notices.data.length===30?'+':''})`:''}</a>
-            <span>{profile?.nombre || 'Alumno'}</span>
             <form onSubmit={logout}>
-              <button className="text-button" type="submit" disabled={signingOut}>{signingOut ? 'Cerrando…' : 'Salir ↗'}</button>
+              <button className="text-button logout-button" type="submit" disabled={signingOut} aria-label="Cerrar sesión"><Icon name="logout" size={18}/><span>{signingOut?'Cerrando…':'Salir'}</span></button>
               {sessionError && <p role="alert">{sessionError}</p>}
             </form>
           </div>
+          </div>
         </header>
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash === '#cursos'||profile.rol!=='Alumno' ? <Academic profile={profile} /> : <>
-          <div className="page-heading">
-            <div>
-              <span className="eyebrow">TU AGENDA ACADÉMICA</span>
-              <h1>{hash==='#actividades'||match?'Mis actividades':'Tu espacio académico'}</h1>
-              <p>Encuentra lo pendiente y prepara tu siguiente paso.</p>
-            </div>
-            <span className="date-tag">{profile.nombre}</span>
-          </div>
-          <section className="summary-grid" aria-label="Resumen">
-            <article><span>Pendientes</span><strong>{loading ? '—' : items.length}</strong><small>Actividades por completar</small></article>
-            <article><span>Vencidas</span><strong>{loading ? '—' : items.filter(a => a.vencida).length}</strong><small>Revisa sus indicaciones</small></article>
-            <article><span>Cursos con pendientes</span><strong>{loading ? '—' : new Set(items.map(a => a.curso)).size}</strong><small>Solo tus cursos</small></article>
-          </section>
-          {match ? <ActivityDetail id={match[1]} /> : (
-            <section className="list-panel">
-              <div className="list-heading">
-                <div>
-                  <h2>Lo que tienes por hacer</h2>
-                  <p>Ordenado por fecha límite</p>
-                  <button disabled={loading} onClick={load}>Actualizar actividades</button>
-                </div>
-                <label className="search-label">
-                  <span className="sr-only">Buscar actividades</span>
-                  <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por título o curso" />
-                </label>
-              </div>
-              <div className="filter-row">
-                {[['all', 'Todas'], ['late', 'Vencidas'], ['next', 'Próximas']].map(([value, text]) => (
-                  <button key={value} className={'chip' + (filter === value ? ' selected' : '')} aria-pressed={filter === value} onClick={() => setFilter(value)}>{text}</button>
-                ))}
-              </div>
-              {loading ? <p role="status">Cargando tus actividades…</p> : error ? (
-                <div role="alert">
-                  <p>{error}</p>
-                  <button className="back-button" onClick={load}>Reintentar</button>
-                </div>
-              ) : (
-                <>
-                  <p role="status">{shown.length ? '' : items.length ? 'No hay actividades que coincidan con tu búsqueda o filtro.' : 'No tienes actividades pendientes. ¡Estás al día!'}</p>
-                  <div className="activity-list">{shown.map(a => <ActivityCard key={a.id} activity={a} />)}</div>
-                </>
-              )}
-            </section>
-          )}
-          {!match&&hash!=='#actividades'&&<Academic profile={profile}/>}
-          <footer>MAIN · Información de tu cuenta según tus permisos</footer>
-          </>}
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
         </main>
       </div>
     </div>

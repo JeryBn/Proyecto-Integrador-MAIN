@@ -1,57 +1,56 @@
-import {useEffect, useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {userApi} from './user-api.mjs';
+import {Icon} from './ui-icons.jsx';
 
-async function api(path, body) {
-  return userApi.call('/api/v1/'+path,{method:body?'PUT':'GET',json:body});
+const days=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+async function api(path,body){return userApi.call('/api/v1/'+path,{method:body?'PUT':'GET',json:body});}
+
+function GradeList({grades=[]}){
+ if(!grades.length)return <div className="compact-empty"><p>Aún no hay evaluaciones registradas.</p></div>;
+ return <div className="grade-grid">{grades.map(grade=>{const percentage=Math.round(Number(grade.score)/Number(grade.maximum)*100);return <article key={grade.id||grade.assessment} className="grade-card"><div><span>{grade.assessment}</span><strong>{grade.score}<small> / {grade.maximum}</small></strong></div><div className="grade-progress" aria-label={`${percentage}%`}><span style={{width:Math.min(100,percentage)+'%'}}/></div><small>{percentage}% del puntaje</small></article>;})}</div>;
 }
-export function Academic({profile}) {
-  const [agenda,setAgenda]=useState(null),[grades,setGrades]=useState([]),[error,setError]=useState('');
-  const [course,setCourse]=useState(''),[roster,setRoster]=useState([]),[revision,setRevision]=useState(0);
-  const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
-  const [form,setForm]=useState({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});
-  const teacher=profile?.rol==='Docente';
-  useEffect(()=>{
-    if(!profile)return;
-    let active=true;setError('');setAgenda(null);
-    Promise.all([api('agenda'),profile.rol==='Alumno'?api('grades'):Promise.resolve([])])
-      .then(([a,g])=>{if(active){setAgenda(a);setGrades(g);}}).catch(e=>{if(active)setError(e.message);});
-    return ()=>{active=false;};
-  },[profile,revision]);
-  useEffect(()=>{
-    let active=true;setRoster([]);setForm({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});
-    if(teacher && course)api(`teaching/courses/${course}/grades`).then(r=>{if(active)setRoster(r);}).catch(e=>{if(active)setError(e.message);});
-    return ()=>{active=false;};
-  },[course,teacher,revision]);
-  const list=gs=>gs.length?<ul>{gs.map(g=><li key={g.id}><strong>{g.assessment}</strong>: {g.score} / {g.maximum}</li>)}</ul>:<p>Aún no se registraron notas.</p>;
-  return <section className="list-panel academic" aria-label="Cursos y notas"><h1>Cursos y notas</h1>
-    <button disabled={busy} onClick={()=>setRevision(v=>v+1)}>Actualizar cursos y notas</button>
-    {error && <div role="alert"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Actualizar cursos</button></div>}
-    {notice && <p role="status">{notice}</p>}
-    {!agenda && !error && <p role="status">Cargando cursos…</p>}
-    {agenda && <>
-      {profile?.rol==='Familiar'&&<><h2>Estudiantes vinculados</h2>{agenda.students.length?<ul>{agenda.students.map(s=><li key={s.id}>{s.name}</li>)}</ul>:<p>No tienes parentescos verificados.</p>}</>}
-      {!agenda.courses.length && <p>No tienes cursos autorizados.</p>}
-      {agenda.courses.map(c=><article className="activity-card" key={c.id}><div><h2>{c.name}</h2><p>Docente: {c.teacher}</p>
-        {profile?.rol==='Alumno' && list(grades.find(g=>g.courseId===c.id)?.grades || [])}
-        {teacher && <button disabled={busy} onClick={()=>{setCourse(String(c.id));setError('');setNotice('');}}>Registrar y editar notas de {c.name}</button>}
-      </div></article>)}
-      <h2>Horario</h2>{!agenda.timetable.length?<p>No hay horarios registrados.</p>:<ul>{agenda.timetable.map(t=><li key={t.id}>{['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][t.dayOfWeek]} {t.startsAt}–{t.endsAt} · {t.course} · {t.classroom}</li>)}</ul>}
-      {teacher && course && <section><h2>Notas del curso seleccionado</h2>
-        {roster.map(s=><article key={s.studentId} className="activity-card"><div><h3>{s.name}</h3>{list(s.grades)}
-          <button disabled={busy} onClick={()=>setForm({studentId:String(s.studentId),assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'})}>Nueva nota para {s.name}</button>
-          {s.grades.map(g=><button disabled={busy} key={g.id} onClick={()=>setForm({studentId:String(s.studentId),assessment:g.assessment,score:String(g.score),maximum:String(g.maximum),expectedRecordedAt:g.recordedAt})}>Editar {g.assessment} de {s.name}</button>)}
-        </div></article>)}
-        {!roster.length && <p>No hay estudiantes cargados. Actualiza para volver a consultar.</p>}
-        {form.studentId && <form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');setNotice('');
-          try {await api(`teaching/courses/${course}/grades`,{...form,studentId:Number(form.studentId),score:Number(form.score),maximum:Number(form.maximum)});setNotice('Nota guardada. El estudiante puede verla en la app y en la web.');setRevision(v=>v+1);}
-          catch(e){setError(e.message);}finally{setBusy(false);}
-        }}><fieldset disabled={busy}><legend>Evaluación de {roster.find(s=>String(s.studentId)===form.studentId)?.name}</legend>
-          <label>Evaluación<input required maxLength="120" readOnly={form.expectedRecordedAt!=='NEW'} value={form.assessment} onChange={e=>setForm({...form,assessment:e.target.value})}/></label>
-          <label>Nota<input required type="number" min="0" max={form.maximum} step="0.01" value={form.score} onChange={e=>setForm({...form,score:e.target.value})}/></label>
-          <label>Escala máxima<input required type="number" min="0.01" max="1000" step="0.01" value={form.maximum} onChange={e=>setForm({...form,maximum:e.target.value})}/></label>
-          <p>No se calcula un promedio oficial. Si otra persona cambia la nota, actualiza el curso antes de reintentar.</p><button type="submit">{busy?'Guardando…':'Guardar nota'}</button>
-        </fieldset></form>}
-      </section>}
-    </>}
-  </section>;
+
+function CourseNavigation({courses,selected,onSelect}){
+ return <div className="course-navigation">{courses.map((item,index)=><button key={item.id} className={String(item.id)===String(selected)?'selected':''} onClick={()=>onSelect(String(item.id))}><span className="course-cover" data-index={index%4}><Icon name="book"/></span><span><strong>{item.name}</strong><small>{item.teacher}</small></span><Icon name="arrowRight" size={17}/></button>)}</div>;
+}
+
+function Schedule({entries=[]}){
+ if(!entries.length)return <div className="compact-empty"><p>No hay horarios registrados para este curso.</p></div>;
+ return <div className="schedule-list">{entries.map(entry=><article key={entry.id}><span className="schedule-day">{days[entry.dayOfWeek]?.slice(0,3)}</span><div><strong>{entry.startsAt} – {entry.endsAt}</strong><p>{entry.course}</p><small><Icon name="layers" size={14}/>{entry.classroom||'Aula por confirmar'}</small></div></article>)}</div>;
+}
+
+export function Academic({profile}){
+ const [agenda,setAgenda]=useState(null),[grades,setGrades]=useState([]),[error,setError]=useState('');
+ const [course,setCourse]=useState(''),[roster,setRoster]=useState([]),[revision,setRevision]=useState(0);
+ const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [form,setForm]=useState({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});
+ const teacher=profile?.rol==='Docente';
+ useEffect(()=>{if(!profile)return;let active=true;setError('');setAgenda(null);Promise.all([api('agenda'),profile.rol==='Alumno'?api('grades'):Promise.resolve([])]).then(([nextAgenda,nextGrades])=>{if(active){setAgenda(nextAgenda);setGrades(nextGrades);setCourse(current=>current||String(nextAgenda.courses?.[0]?.id||''));}}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[profile,revision]);
+ useEffect(()=>{let active=true;setRoster([]);setForm({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});if(teacher&&course)api(`teaching/courses/${course}/grades`).then(value=>{if(active)setRoster(value);}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[course,teacher,revision]);
+ const selected=agenda?.courses?.find(item=>String(item.id)===String(course))||agenda?.courses?.[0];
+ const selectedGrades=grades.find(item=>String(item.courseId)===String(selected?.id))?.grades||[];
+ const timetable=useMemo(()=>agenda?.timetable?.filter(item=>!selected||item.course===selected.name)||[],[agenda,selected]);
+ async function submitGrade(event){event.preventDefault();setBusy(true);setError('');setNotice('');try{await api(`teaching/courses/${course}/grades`,{...form,studentId:Number(form.studentId),score:Number(form.score),maximum:Number(form.maximum)});setNotice('La nota se guardó y ya está disponible para el estudiante.');setRevision(value=>value+1);}catch(reason){setError(reason.message);}finally{setBusy(false);}}
+ return <section className="academic-hub" aria-label="Cursos y notas">
+  <header className="section-hero course-hero"><div><span className="eyebrow">APRENDIZAJE</span><h1>Cursos y progreso</h1><p>{teacher?'Gestiona tus cursos, estudiantes y evaluaciones.':'Explora tus cursos, horarios y resultados académicos.'}</p></div><div className="hero-summary"><span>{agenda?.courses?.length||0}</span><small>cursos activos</small></div></header>
+  {error&&<div className="inline-error" role="alert"><p>{error}</p><button onClick={()=>setRevision(value=>value+1)}>Volver a consultar</button></div>}
+  {notice&&<div className="success-notice" role="status"><Icon name="checkCircle"/><span>{notice}</span></div>}
+  {!agenda&&!error&&<div className="workspace-card detail-loading" role="status">Preparando tus cursos…</div>}
+  {agenda&&<div className="course-hub-layout">
+   <aside className="workspace-card course-sidebar"><header><span className="section-kicker">MIS CURSOS</span><button aria-label="Actualizar cursos" disabled={busy} onClick={()=>setRevision(value=>value+1)}><Icon name="refresh" size={17}/></button></header>{!agenda.courses.length?<div className="compact-empty"><p>No tienes cursos autorizados.</p></div>:<CourseNavigation courses={agenda.courses} selected={selected?.id} onSelect={setCourse}/>} {profile?.rol==='Familiar'&&<div className="linked-students"><span className="section-kicker">ESTUDIANTES VINCULADOS</span>{agenda.students.length?agenda.students.map(item=><span key={item.id}><span className="avatar small">{item.name.slice(0,1)}</span>{item.name}</span>):<p>No tienes parentescos verificados.</p>}</div>}</aside>
+   <main className="course-main">
+    {selected?<>
+     <section className="workspace-card course-overview"><div className="course-title"><span className="course-cover large"><Icon name="graduation" size={28}/></span><div><span className="section-kicker">CURSO ACTIVO</span><h2>{selected.name}</h2><p>Docente: {selected.teacher}</p></div></div><div className="course-tabs" role="tablist" aria-label="Secciones del curso"><button className="active" role="tab" aria-selected="true">Resumen</button><a href="#actividades" role="tab">Actividades</a><a href="#chats" role="tab">Comunidad</a></div></section>
+     <div className="course-content-grid">
+      <section className="workspace-card grades-section"><header><div><span className="section-kicker">EVALUACIONES</span><h2>{teacher?'Estudiantes y notas':'Mi progreso'}</h2></div><span className="round-icon"><Icon name="chart"/></span></header>
+       {!teacher&&<GradeList grades={selectedGrades}/>}
+       {teacher&&<div className="student-roster">{roster.map(student=><article key={student.studentId}><div className="student-heading"><span className="avatar small">{student.name.slice(0,1)}</span><div><strong>{student.name}</strong><small>{student.grades.length} evaluaciones</small></div><button disabled={busy} onClick={()=>setForm({studentId:String(student.studentId),assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'})}><Icon name="plus" size={17}/>Nueva nota</button></div><GradeList grades={student.grades}/><div className="grade-edit-actions">{student.grades.map(grade=><button disabled={busy} key={grade.id} onClick={()=>setForm({studentId:String(student.studentId),assessment:grade.assessment,score:String(grade.score),maximum:String(grade.maximum),expectedRecordedAt:grade.recordedAt})}>Editar {grade.assessment}</button>)}</div></article>)}{!roster.length&&<div className="compact-empty"><p>No hay estudiantes cargados en este curso.</p></div>}</div>}
+      </section>
+      <section className="workspace-card schedule-section"><header><div><span className="section-kicker">HORARIO</span><h2>Próximas sesiones</h2></div><span className="round-icon"><Icon name="calendar"/></span></header><Schedule entries={timetable}/></section>
+     </div>
+     {teacher&&form.studentId&&<section className="workspace-card grade-editor"><div className="content-heading"><span><Icon name="pencil"/></span><div><span className="section-kicker">REGISTRO ACADÉMICO</span><h2>{form.expectedRecordedAt==='NEW'?'Registrar evaluación':'Editar evaluación'} · {roster.find(item=>String(item.studentId)===form.studentId)?.name}</h2></div></div><form onSubmit={submitGrade}><fieldset disabled={busy}><div className="form-grid"><label>Evaluación<input required maxLength="120" readOnly={form.expectedRecordedAt!=='NEW'} value={form.assessment} onChange={event=>setForm({...form,assessment:event.target.value})}/></label><label>Nota<input required type="number" min="0" max={form.maximum} step="0.01" value={form.score} onChange={event=>setForm({...form,score:event.target.value})}/></label><label>Escala máxima<input required type="number" min="0.01" max="1000" step="0.01" value={form.maximum} onChange={event=>setForm({...form,maximum:event.target.value})}/></label></div><p>Los cambios quedan disponibles para el estudiante y conservan el control de concurrencia.</p><div className="form-actions"><button type="button" onClick={()=>setForm({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'})}>Cancelar</button><button className="primary-action" type="submit">{busy?'Guardando…':'Guardar nota'}</button></div></fieldset></form></section>}
+    </>:<section className="workspace-card dashboard-empty centered"><span><Icon name="book" size={30}/></span><div><strong>Selecciona un curso</strong><p>Elige un curso para revisar su información.</p></div></section>}
+   </main>
+  </div>}
+ </section>;
 }
