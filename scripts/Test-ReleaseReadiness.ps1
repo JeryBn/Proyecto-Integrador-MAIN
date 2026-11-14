@@ -44,13 +44,110 @@ function Get-ConfiguredEnvironment {
     return $value
 }
 
+function Test-LeafFile {
+    param([string]$Path)
+    if (-not (Test-ConfiguredValue $Path)) { return $false }
+    try { return Test-Path -LiteralPath $Path -PathType Leaf }
+    catch { return $false }
+}
+
+function Read-PrivateJsonFile {
+    param([string]$Path)
+    if (-not (Test-LeafFile $Path)) { return $null }
+    try {
+        $file = Get-Item -LiteralPath $Path -Force
+        if ($file.Length -le 0 -or $file.Length -gt 1MB) { return $null }
+        return [IO.File]::ReadAllText($file.FullName) | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return $null
+    }
+}
+
+function Get-FirebaseAndroidReadiness {
+    param(
+        [string]$Path,
+        [string]$PackageName
+    )
+    if (-not (Test-LeafFile $Path)) {
+        return [pscustomobject]@{ ready = $false; detail = 'Falta mobile/app/google-services.json fuera de Git.' }
+    }
+    $configuration = Read-PrivateJsonFile $Path
+    if ($null -eq $configuration) {
+        return [pscustomobject]@{ ready = $false; detail = 'google-services.json no contiene un JSON válido de hasta 1 MiB.' }
+    }
+    $projectId = [string]$configuration.project_info.project_id
+    $projectNumber = [string]$configuration.project_info.project_number
+    $matchingClient = $false
+    foreach ($client in @($configuration.client)) {
+        $clientPackage = [string]$client.client_info.android_client_info.package_name
+        $appId = [string]$client.client_info.mobilesdk_app_id
+        $hasApiKey = $false
+        foreach ($apiKey in @($client.api_key)) {
+            if (Test-ConfiguredValue ([string]$apiKey.current_key)) { $hasApiKey = $true; break }
+        }
+        if ($clientPackage -eq $PackageName -and $appId -match '^1:[0-9]+:android:[A-Za-z0-9]+$' -and $hasApiKey) {
+            $matchingClient = $true
+            break
+        }
+    }
+    $validProject = $projectId -match '^[a-z][a-z0-9-]{4,28}[a-z0-9]$' -and $projectNumber -match '^[0-9]{6,20}$'
+    if (-not $validProject -or -not $matchingClient) {
+        return [pscustomobject]@{ ready = $false; detail = "google-services.json no coincide con $PackageName o está incompleto." }
+    }
+    return [pscustomobject]@{ ready = $true; detail = "Configuración Firebase válida para $PackageName." }
+}
+
+function Get-FcmServerReadiness {
+    param(
+        [bool]$PushEnabled,
+        [string]$Path
+    )
+    if (-not $PushEnabled) {
+        return [pscustomobject]@{ ready = $false; detail = 'Falta MAIN_PUSH_ENABLED=true para la entrega.' }
+    }
+    if (-not (Test-ConfiguredValue $Path)) {
+        return [pscustomobject]@{ ready = $false; detail = 'Falta la ruta privada MAIN_FCM_CREDENTIALS_FILE.' }
+    }
+    try {
+        if (-not [IO.Path]::IsPathRooted($Path)) {
+            return [pscustomobject]@{ ready = $false; detail = 'MAIN_FCM_CREDENTIALS_FILE debe ser una ruta privada absoluta.' }
+        }
+    } catch {
+        return [pscustomobject]@{ ready = $false; detail = 'MAIN_FCM_CREDENTIALS_FILE no contiene una ruta válida.' }
+    }
+    if (-not (Test-LeafFile $Path)) {
+        return [pscustomobject]@{ ready = $false; detail = 'No se encontró el archivo privado indicado por MAIN_FCM_CREDENTIALS_FILE.' }
+    }
+    $account = Read-PrivateJsonFile $Path
+    if ($null -eq $account) {
+        return [pscustomobject]@{ ready = $false; detail = 'La cuenta de servicio FCM no contiene un JSON válido de hasta 1 MiB.' }
+    }
+    $projectId = [string]$account.project_id
+    $email = [string]$account.client_email
+    $privateKeyId = [string]$account.private_key_id
+    $privateKey = [string]$account.private_key
+    $keyBody = $privateKey.Replace('-----BEGIN PRIVATE KEY-----', '').Replace('-----END PRIVATE KEY-----', '') -replace '\s', ''
+    $valid = [string]$account.type -eq 'service_account' -and
+        $projectId -match '^[a-z][a-z0-9-]{4,62}$' -and
+        $email -match '^[^@\s]+@[^@\s]+\.gserviceaccount\.com$' -and
+        $privateKeyId -match '^[a-fA-F0-9]{20,64}$' -and
+        $privateKey.Contains('-----BEGIN PRIVATE KEY-----') -and
+        $privateKey.Contains('-----END PRIVATE KEY-----') -and
+        $keyBody.Length -ge 128 -and $keyBody -match '^[A-Za-z0-9+/=]+$' -and
+        [string]$account.token_uri -eq 'https://oauth2.googleapis.com/token'
+    if (-not $valid) {
+        return [pscustomobject]@{ ready = $false; detail = 'La cuenta de servicio FCM no tiene la estructura privada esperada.' }
+    }
+    return [pscustomobject]@{ ready = $true; detail = 'Push habilitado y cuenta de servicio FCM estructuralmente válida.' }
+}
+
 $repositoryPath = (Resolve-Path -LiteralPath $RepositoryRoot).Path
 $mobilePath = Join-Path $repositoryPath 'mobile'
 $androidAppPath = Join-Path $mobilePath 'app'
 
 $gitCommand = Get-Command git -ErrorAction SilentlyContinue
-if ($null -eq $gitCommand) {
-    Add-ReadinessCheck 'Repositorio Git' $false 'Git no está disponible.'
+if ($null -eq $gitCommand -or -not (Test-Path -LiteralPath (Join-Path $repositoryPath '.git'))) {
+    Add-ReadinessCheck 'Repositorio Git' $false $(if ($null -eq $gitCommand) { 'Git no está disponible.' } else { 'La carpeta indicada no es un repositorio Git.' })
 } else {
     $status = @(& git -C $repositoryPath status --porcelain 2>$null)
     $commit = (& git -C $repositoryPath rev-parse --short HEAD 2>$null)
@@ -95,7 +192,8 @@ if ($adbPath) {
 Add-ReadinessCheck 'Teléfono físico autorizado' ($deviceCount -gt 0) $(if ($deviceCount -gt 0) { "$deviceCount dispositivo(s) disponible(s)." } else { 'Conecta, desbloquea y autoriza un teléfono Android por USB.' })
 
 $googleServices = Join-Path $androidAppPath 'google-services.json'
-Add-ReadinessCheck 'Firebase Android' (Test-Path -LiteralPath $googleServices) $(if (Test-Path -LiteralPath $googleServices) { 'Configuración privada presente.' } else { 'Falta mobile/app/google-services.json fuera de Git.' })
+$firebaseStatus = Get-FirebaseAndroidReadiness $googleServices 'pe.tecsup.main.mobile'
+Add-ReadinessCheck 'Firebase Android' $firebaseStatus.ready $firebaseStatus.detail
 
 $signingNames = @(
     'MAIN_SIGNING_STORE_FILE',
@@ -114,9 +212,9 @@ $signingReady = ($signingNames | Where-Object { -not (Test-ConfiguredValue $sign
 Add-ReadinessCheck 'Firma Android' $signingReady $(if ($signingReady) { 'Las cuatro variables privadas y el archivo de firma están presentes.' } else { 'Falta el keystore original o alguna variable MAIN_SIGNING_*.' })
 
 $fcmCredentials = Get-ConfiguredEnvironment 'MAIN_FCM_CREDENTIALS_FILE'
-$pushEnabled = (Get-ConfiguredEnvironment 'MAIN_PUSH_ENABLED') -eq 'true'
-$fcmReady = $pushEnabled -and (Test-ConfiguredValue $fcmCredentials) -and (Test-Path -LiteralPath $fcmCredentials -PathType Leaf)
-Add-ReadinessCheck 'FCM del servidor' $fcmReady $(if ($fcmReady) { 'Push habilitado y cuenta de servicio privada presente.' } elseif (-not $pushEnabled) { 'Falta MAIN_PUSH_ENABLED=true para la entrega.' } else { 'Falta la ruta privada MAIN_FCM_CREDENTIALS_FILE.' })
+$pushEnabled = [string](Get-ConfiguredEnvironment 'MAIN_PUSH_ENABLED') -eq 'true'
+$fcmStatus = Get-FcmServerReadiness $pushEnabled $fcmCredentials
+Add-ReadinessCheck 'FCM del servidor' $fcmStatus.ready $fcmStatus.detail
 
 $pushKey = Get-ConfiguredEnvironment 'MAIN_PUSH_ENCRYPTION_KEY'
 $pushKeyReady = $false

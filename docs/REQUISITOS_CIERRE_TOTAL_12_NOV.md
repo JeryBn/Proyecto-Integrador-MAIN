@@ -4,7 +4,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 ## Estado técnico disponible
 
-- Los PR #7, #8, #9 y #10 están integrados en `main`; la preparación reproducible para Oracle Cloud Always Free y los refuerzos posteriores quedaron incorporados y verificados por CI.
+- Los PR #7 al #11 están integrados en `main`; la preparación reproducible para Oracle Cloud Always Free y los refuerzos posteriores quedaron incorporados y verificados por CI.
 - Spring: 159 pruebas aprobadas; Django: 92; web: 45; Android: 13 unitarias, `lintDebug` y `assembleDebug` aprobados.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
@@ -15,6 +15,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 - La frontera de ingreso a un grupo es estable aun cuando varias operaciones ocurren en el mismo instante: un miembro nuevo no recibe historial anterior y sí puede recibir mensajes creados después de incorporarse.
 - La herramienta de construcción web fue actualizada a una versión sin alertas conocidas; CI ejecuta `npm audit --audit-level=moderate` antes de las 45 pruebas y la compilación.
 - El rediseño administrativo de Pamela está integrado en la rama de resiliencia conservando su autoría, seguido de correcciones separadas de accesibilidad.
+- El preflight de entrega limita a 1 MiB los archivos JSON privados que inspecciona y valida el paquete Firebase Android y la estructura de la cuenta FCM sin imprimir rutas privadas, claves ni contenido.
 
 ## Acciones que debe habilitar Jery
 
