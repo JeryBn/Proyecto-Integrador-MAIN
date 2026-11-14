@@ -1,14 +1,14 @@
-# Requisitos para el cierre total de MAIN — actualizado el 13 de noviembre de 2026
+# Requisitos para el cierre total de MAIN — actualizado el 14 de noviembre de 2026
 
 Este documento separa lo técnicamente terminado de las acciones externas que no pueden sustituirse con código ni marcarse como aceptadas en nombre del equipo. No contiene secretos.
 
 ## Estado técnico disponible
 
 - PR #7 integrado en `main`; la preparación reproducible para Oracle Cloud Always Free quedó incorporada y verificada por CI.
-- Spring: 159 pruebas aprobadas; Django: 92; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
+- Spring: 159 pruebas aprobadas; Django: 92; web: 45; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
-- Administración: seis estados normales, sin conexión y al 200 % emulado sin infracciones Axe ni desbordamiento; el acceso sin red conserva el usuario, limpia la contraseña y oculta el error técnico.
+- Administración: seis estados normales, sin conexión y al 200 % emulado sin infracciones Axe ni desbordamiento; el acceso sin red conserva el usuario, limpia la contraseña y oculta el error técnico. La espera abarca conexión y lectura completa, limita las respuestas JSON a 1 MiB y trata una confirmación inválida de escritura como resultado incierto para evitar reenvíos ciegos.
 - La configuración Django de producción falla de forma segura si una base MySQL remota no proporciona una CA válida y exige `VERIFY_IDENTITY`; cuando se entrega una CA incluso en el mismo host, también verifica certificado y nombre.
 - Oracle Cloud Always Free fue elegido como destino. Existe composición reproducible para ARM64, red privada, TLS MySQL, permisos separados, primer administrador idempotente, salud, logs y respaldos; todavía no existe una VM pública creada.
 - Spring ofrece `/actuator/health` y Django `/api/admin/health`: ambos responden sin autenticación con estado mínimo, no revelan componentes, consultas ni excepciones y permiten detectar una base administrativa no disponible mediante HTTP 503.
