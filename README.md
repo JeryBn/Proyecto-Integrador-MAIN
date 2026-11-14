@@ -1,10 +1,10 @@
 # Proyecto Integrador MAIN - seccion A
 
-## Estado de cierre — actualizado el 13 de noviembre de 2026
+## Estado de cierre — actualizado el 14 de noviembre de 2026
 
-La resiliencia y accesibilidad multiplataforma están preparadas en la rama de cierre: 158 pruebas Spring, 88 Django, 42 web, 9 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. Spring y Django incluyen comprobaciones de salud mínimas, aptas para supervisión y sin detalles internos. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
+La resiliencia y accesibilidad multiplataforma están preparadas en `main`: 159 pruebas Spring, 92 Django, 45 web, 13 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. Spring y Django incluyen comprobaciones de salud mínimas, aptas para supervisión y sin detalles internos. La administración web y Android rechazan respuestas desproporcionadas sin agotar la memoria. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
 
-Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3, #4 y #5 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; el cierre global aún requiere teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3 al #10 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; el cierre global aún requiere teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
 
 Antes de preparar la entrega, ejecutar `powershell -File scripts/Test-ReleaseReadiness.ps1`. La comprobación no imprime secretos y enumera únicamente los requisitos privados o externos que todavía faltan.
 
