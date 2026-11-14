@@ -11,6 +11,7 @@
 - Multimedia local: FFmpeg 9.0.2 quedó instalado y se comprobó la extracción real de audio y video sintéticos, incluida normalización de audio, muestreo de video y derivación a revisión humana. No sustituye la prueba con proveedor externo aprobado.
 - Privacidad de grupos: la frontera temporal de incorporación se hace inequívoca y serializada; los mensajes anteriores permanecen ocultos incluso cuando el reloj asigna el mismo instante a varias operaciones, y los posteriores sí quedan disponibles.
 - Accesibilidad web: se corrigieron contrastes, reflujo, foco visible, áreas táctiles y comportamiento con movimiento reducido.
+- Preparación de entrega: el preflight distingue archivos ausentes, JSON inválido, configuración Firebase de otro paquete y cuenta FCM incompleta. Solo considera lista una estructura coherente de hasta 1 MiB y nunca muestra su contenido privado.
 
 ## Comprobaciones automatizadas
 
