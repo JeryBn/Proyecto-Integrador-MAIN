@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OpenAiGateway {
+ private static final int MAX_PROVIDER_RESPONSE_BYTES=1024*1024;
  private final String key,model;private final ObjectMapper json;
  private final HttpClient client;
  @org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +25,7 @@ public class OpenAiGateway {
     "input",List.of(Map.of("role","user","content","CONTEXTO ACADÉMICO AUTORIZADO:\n"+context+"\nCONSULTA:\n"+question)));
    var request=HttpRequest.newBuilder(URI.create("https://api.openai.com/v1/responses")).timeout(Duration.ofSeconds(45))
     .header("Authorization","Bearer "+key).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build();
-   var response=client.send(request,HttpResponse.BodyHandlers.ofString());
+   var response=client.send(request,BoundedResponseBody.utf8(MAX_PROVIDER_RESPONSE_BYTES));
    if(response.statusCode()!=200){
     String upstream=json.readTree(response.body()).path("error").path("code").asText();
     boolean quota=Set.of("insufficient_quota","credit_balance_exhausted","billing_hard_limit_reached").contains(upstream);
