@@ -8,4 +8,5 @@ INSERT INTO actividad VALUES
 (3,1,'Revisión de criterios de aceptación','Revisa HU06 y HU07 y relaciona cada criterio con una prueba verificable.',TIMESTAMP '2026-10-05 18:00:00'),
 (4,1,'Lectura introductoria de Scrum','Actividad de ejemplo ya completada; no debe aparecer como pendiente.',TIMESTAMP '2026-10-04 18:00:00'),
 (5,3,'Actividad de otro alumno','No debe ser visible para Alex Demo.',TIMESTAMP '2026-10-09 18:00:00');
-INSERT INTO entrega VALUES (1,4,TIMESTAMP '2026-10-04 17:00:00');
+INSERT INTO entrega (alumno_id, actividad_id, fecha)
+VALUES (1,4,TIMESTAMP '2026-10-04 17:00:00');

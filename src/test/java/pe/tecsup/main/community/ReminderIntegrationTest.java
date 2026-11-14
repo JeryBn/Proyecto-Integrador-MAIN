@@ -33,7 +33,7 @@ class ReminderIntegrationTest {
   notices.read("alumno",item.id());assertFalse(notices.pushVisible("alumno",item.id()));
  }
  @Test void handedInOrRevokedEnrollmentSuppressesQueuedReminder(){
-  enable();reminders.dispatch();db.update("INSERT INTO entrega VALUES(1,9001,?)",Timestamp.valueOf(LocalDateTime.now(clock)));
+  enable();reminders.dispatch();db.update("INSERT INTO entrega(alumno_id,actividad_id,fecha) VALUES(1,9001,?)",Timestamp.valueOf(LocalDateTime.now(clock)));
   assertTrue(notices.list("alumno",0,100).stream().noneMatch(n->Long.valueOf(9001).equals(n.activityId())));
   db.update("DELETE FROM entrega WHERE actividad_id=9001");db.update("DELETE FROM matricula WHERE alumno_id=1 AND curso_id=1");
   assertTrue(notices.list("alumno",0,100).isEmpty());

@@ -36,7 +36,8 @@ function CourseRow({course,index}){
 export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
  const agenda=useResource('/api/v1/agenda',{enabled:!!profile,interval:0});
  const grades=useResource('/api/v1/grades',{enabled:profile?.rol==='Alumno',interval:0});
- const ordered=[...items].sort((a,b)=>Date.parse(a.fechaLimite)-Date.parse(b.fechaLimite));
+ const pending=items.filter(item=>!item.completada);
+ const ordered=[...pending].sort((a,b)=>Date.parse(a.fechaLimite)-Date.parse(b.fechaLimite));
  const next=nextClass(agenda.data?.timetable||[]);
  const gradeProgress=progressPercent(grades.data||[]);
  const latest=recentNotices(notices);
@@ -48,7 +49,7 @@ export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
   </header>
 
   <section className="metrics-grid" aria-label="Resumen de tu cuenta">
-   <StatCard icon="clipboard" label="Actividades pendientes" value={loading?'—':items.length} detail={items.some(item=>item.vencida)?`${items.filter(item=>item.vencida).length} requieren atención`:'Todo dentro del plazo'} tone={items.some(item=>item.vencida)?'attention':''}/>
+   <StatCard icon="clipboard" label="Actividades pendientes" value={loading?'—':pending.length} detail={pending.some(item=>item.vencida)?`${pending.filter(item=>item.vencida).length} requieren atención`:'Todo dentro del plazo'} tone={pending.some(item=>item.vencida)?'attention':''}/>
    <StatCard icon="calendar" label="Próxima clase" value={next?String(next.startsAt).slice(0,5):'—'} detail={next?`${days[next.dayOfWeek]} · ${next.course}`:'Sin horario próximo'}/>
    <StatCard icon="chart" label="Rendimiento" value={gradeProgress===null?'—':gradeProgress+'%'} detail={gradeProgress===null?'Aún no hay evaluaciones':'Promedio normalizado registrado'}/>
    <StatCard icon="bell" label="Avisos nuevos" value={notices.filter(item=>!item.read).length} detail="Información de tu comunidad"/>

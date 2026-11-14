@@ -24,6 +24,12 @@ public class ActivityErrorHandler {
         if (error.getStatusCode().value() == 404) {
             return response(HttpStatus.NOT_FOUND, "NOT_FOUND", "El contenido no existe o no está disponible para tu cuenta.");
         }
+        if (error.getStatusCode().value() == 409) {
+            return response(HttpStatus.CONFLICT, "STALE_SUBMISSION", "La entrega cambió. Actualiza la actividad antes de guardar nuevamente.");
+        }
+        if (error.getStatusCode().value() == 400) {
+            return response(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Revisa la nota y el enlace de evidencia.");
+        }
         log.warn("Controlled activity API failure: status={}", error.getStatusCode().value());
         return response(HttpStatus.BAD_REQUEST, "REQUEST_FAILED", "No se pudo completar la solicitud.");
     }

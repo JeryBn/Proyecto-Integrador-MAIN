@@ -59,7 +59,7 @@ function App() {
       userApi.setIdentity(currentProfile.usuario);
       setProfile(currentProfile);
       setPreferences(await request('/api/v1/preferences'));
-      if (currentProfile.rol === 'Alumno') setItems(await request('/api/actividades/pendientes'));
+      if (currentProfile.rol === 'Alumno') setItems(await request('/api/actividades'));
       else setItems([]);
     } catch (error) { setError(error.message); }
     finally { setLoading(false); }

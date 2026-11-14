@@ -8,15 +8,50 @@ import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import static org.hamcrest.Matchers.*;
 @SpringBootTest @AutoConfigureMockMvc
 class ActividadIntegrationTest {
  @Autowired MockMvc mvc;
  @Test void anonymousRejected()throws Exception{mvc.perform(get("/api/actividades/pendientes")).andExpect(status().isUnauthorized());}
  @Test void faviconIsPublic()throws Exception{mvc.perform(get("/favicon.ico")).andExpect(status().isOk()).andExpect(content().contentType("image/svg+xml"));}
+ @Test void loginThemeIsPublic()throws Exception{mvc.perform(get("/login-modern.css")).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith("text/css"));}
  @Test @WithMockUser(username="alumno",roles="ALUMNO") void listIsScopedAndExcludesCompleted()throws Exception{
   mvc.perform(get("/api/actividades/pendientes")).andExpect(status().isOk()).andExpect(jsonPath("$",hasSize(3)))
    .andExpect(jsonPath("$[*].id",contains(3,1,2))).andExpect(jsonPath("$[*].completada",everyItem(is(false))));
+ }
+ @Test @WithMockUser(username="alumno",roles="ALUMNO") void allActivitiesIncludesCompletedHistory()throws Exception{
+  mvc.perform(get("/api/actividades")).andExpect(status().isOk()).andExpect(jsonPath("$",hasSize(4)))
+   .andExpect(jsonPath("$[0].id").value(4)).andExpect(jsonPath("$[0].completada").value(true));
+ }
+ @Test @Transactional @WithMockUser(username="alumno",roles="ALUMNO") void submissionCanBeCreatedAndRejectsStaleUpdate()throws Exception{
+  mvc.perform(put("/api/actividades/1/entrega").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+    .content("{\"note\":\"Informe revisado\",\"evidenceUrl\":\"https://example.edu/evidencia\",\"expectedRevision\":0}"))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.submitted").value(true)).andExpect(jsonPath("$.revision").value(1))
+   .andExpect(jsonPath("$.note").value("Informe revisado"));
+  mvc.perform(get("/api/actividades/1/entrega")).andExpect(status().isOk()).andExpect(jsonPath("$.evidenceUrl").value("https://example.edu/evidencia"));
+  mvc.perform(put("/api/actividades/1/entrega").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+    .content("{\"note\":\"Versión antigua\",\"expectedRevision\":0}"))
+   .andExpect(status().isConflict()).andExpect(jsonPath("$.error.code").value("STALE_SUBMISSION"));
+ }
+ @Test @Transactional @WithMockUser(username="alumno",roles="ALUMNO") void draftDoesNotCompleteActivityAndCanBeSubmitted()throws Exception{
+  mvc.perform(put("/api/actividades/2/entrega").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+    .content("{\"note\":\"Avance en proceso\",\"status\":\"DRAFT\",\"expectedRevision\":0}"))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.saved").value(true)).andExpect(jsonPath("$.submitted").value(false))
+   .andExpect(jsonPath("$.status").value("DRAFT")).andExpect(jsonPath("$.revision").value(1));
+  mvc.perform(get("/api/actividades/2")).andExpect(status().isOk()).andExpect(jsonPath("$.completada").value(false));
+  mvc.perform(put("/api/actividades/2/entrega").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+    .content("{\"note\":\"Versión final\",\"status\":\"SUBMITTED\",\"expectedRevision\":1}"))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.submitted").value(true)).andExpect(jsonPath("$.revision").value(2));
+  mvc.perform(get("/api/actividades/2")).andExpect(status().isOk()).andExpect(jsonPath("$.completada").value(true));
+ }
+ @Test @WithMockUser(username="alumno",roles="ALUMNO") void invalidSubmissionIsStableAndForeignActivityStaysHidden()throws Exception{
+  mvc.perform(put("/api/actividades/1/entrega").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+    .content("{\"note\":\"\",\"evidenceUrl\":\"javascript:alert(1)\",\"expectedRevision\":0}"))
+   .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+  mvc.perform(get("/api/actividades/5/entrega")).andExpect(status().isNotFound());
  }
  @Test @WithMockUser(username="alumno",roles="ALUMNO") void detailHasRequiredFields()throws Exception{
   mvc.perform(get("/api/actividades/1")).andExpect(status().isOk()).andExpect(jsonPath("$.titulo").value("Primer avance de MAIN"))

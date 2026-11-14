@@ -10,6 +10,9 @@ public class ActividadController {
  public ActividadController(ActividadService service,pe.tecsup.main.community.IdentityService identities){this.service=service;this.identities=identities;}
  @GetMapping("/perfil") public Map<String,String> perfil(Principal p){return identities.profile(p.getName());}
  @GetMapping("/actividades/pendientes") public List<ActividadService.Actividad> pendientes(Principal p){return service.pendientes(p.getName());}
+ @GetMapping("/actividades") public List<ActividadService.Actividad> todas(Principal p){return service.todas(p.getName());}
  @GetMapping("/actividades/{id}") public ActividadService.Actividad detalle(Principal p,@PathVariable long id){return service.detalle(p.getName(),id);}
+ @GetMapping("/actividades/{id}/entrega") public ActividadService.Entrega entrega(Principal p,@PathVariable long id){return service.entrega(p.getName(),id);}
+ @PutMapping("/actividades/{id}/entrega") public ActividadService.Entrega guardarEntrega(Principal p,@PathVariable long id,@RequestBody ActividadService.EntregaRequest request){return service.guardarEntrega(p.getName(),id,request);}
  @GetMapping("/csrf") public Map<String,String> csrf(CsrfToken t){return Map.of("parameterName",t.getParameterName(),"headerName",t.getHeaderName(),"token",t.getToken());}
 }
