@@ -1,0 +1,11 @@
+[Unit]
+Description=Respaldo diario de MAIN
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 America/Lima
+RandomizedDelaySec=15m
+Persistent=true
+Unit=main-backup.service
+
+[Install]
+WantedBy=timers.target

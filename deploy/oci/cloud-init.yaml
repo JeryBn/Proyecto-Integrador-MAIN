@@ -1,0 +1,24 @@
+#cloud-config
+package_update: true
+packages:
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - openssl
+
+write_files:
+  - path: /etc/docker/daemon.json
+    permissions: '0644'
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {"max-size": "10m", "max-file": "5"},
+        "live-restore": true
+      }
+
+runcmd:
+  - [bash, -lc, 'git clone --branch main --single-branch https://github.com/JeryBn/Proyecto-Integrador-MAIN.git /opt/main']
+  - [bash, -lc, 'bash /opt/main/deploy/oci/bootstrap-host.sh ubuntu']
+
+final_message: 'Host MAIN preparado. Revisa /var/log/cloud-init-output.log y continúa con deploy/oci/prepare.sh.'

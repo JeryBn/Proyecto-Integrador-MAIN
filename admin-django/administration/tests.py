@@ -1,10 +1,13 @@
 import json
 import hashlib
+import os
 from datetime import datetime,timedelta
 from pathlib import Path
 from unittest.mock import patch
 import bcrypt
 from django.core.cache import cache
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.db import connection, IntegrityError
 from django.test import Client, TransactionTestCase
 from .models import Activity, Audit, Course, SharedUser, Teacher
@@ -106,6 +109,29 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(self.login(username='inexistente').status_code, 401)
         SharedUser.objects.filter(pk='admin_test').update(enabled=False)
         self.assertEqual(self.login().status_code, 401)
+
+    def test_initial_admin_provisioning_is_idempotent_and_never_overwrites(self):
+        with patch.dict(os.environ, {'MAIN_ADMIN_INITIAL_PASSWORD': 'InitialAdminPassword2026!'}):
+            call_command('provision_admin', username='jery.admin', name='Jery Becerra Ninaquispe')
+        created = SharedUser.objects.get(pk='jery.admin')
+        self.assertEqual(created.role, 'ADMIN')
+        self.assertTrue(created.password_change_required)
+        original_hash = created.password_hash
+
+        with patch.dict(os.environ, {'MAIN_ADMIN_INITIAL_PASSWORD': 'DifferentPassword2026!'}):
+            call_command('provision_admin', username='jery.admin', name='Jery Becerra Ninaquispe')
+        created.refresh_from_db()
+        self.assertEqual(created.password_hash, original_hash)
+
+        with patch.dict(os.environ, {'MAIN_ADMIN_INITIAL_PASSWORD': 'DifferentPassword2026!'}):
+            with self.assertRaises(CommandError):
+                call_command('provision_admin', username='jery.admin', name='Otro nombre')
+
+    def test_initial_admin_provisioning_rejects_missing_secret(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('MAIN_ADMIN_INITIAL_PASSWORD', None)
+            with self.assertRaises(CommandError):
+                call_command('provision_admin', username='new.admin', name='Administrador')
 
     def test_login_rotates_csrf_and_session_and_logout_invalidates_cookie(self):
         before = self.token()

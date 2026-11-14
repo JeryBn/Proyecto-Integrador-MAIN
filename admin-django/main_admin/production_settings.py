@@ -28,17 +28,20 @@ database_host = os.environ.get('MAIN_DB_HOST', DATABASES['default']['HOST']).str
 DATABASES['default']['HOST'] = database_host
 normalized_database_host = database_host.lower()
 local_database_hosts = {'', '127.0.0.1', 'localhost', '::1'}
-if normalized_database_host not in local_database_hosts and not database_host.startswith('/'):
-    database_ca = os.environ.get('MAIN_DB_SSL_CA', '').strip()
-    if not database_ca or not Path(database_ca).is_file():
-        raise ImproperlyConfigured(
-            'MAIN_DB_SSL_CA debe apuntar a la CA de MySQL cuando la base no está en este servidor.'
-        )
+database_ca = os.environ.get('MAIN_DB_SSL_CA', '').strip()
+remote_database = normalized_database_host not in local_database_hosts and not database_host.startswith('/')
+if database_ca:
+    if not Path(database_ca).is_file():
+        raise ImproperlyConfigured('MAIN_DB_SSL_CA no apunta a un archivo existente.')
     DATABASES['default']['OPTIONS'] = {
         **DATABASES['default']['OPTIONS'],
         'ssl_mode': 'VERIFY_IDENTITY',
         'ssl': {'ca': database_ca},
     }
+elif remote_database:
+    raise ImproperlyConfigured(
+        'MAIN_DB_SSL_CA debe apuntar a la CA de MySQL cuando la base no está en este servidor.'
+    )
 
 DATABASES['default']['CONN_MAX_AGE'] = 60
 DATABASES['default']['CONN_HEALTH_CHECKS'] = True

@@ -1,0 +1,21 @@
+[Unit]
+Description=Respaldo verificado de la base MAIN
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/main/deploy/oci
+ExecStart=/opt/main/deploy/oci/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/main/deploy/oci/backups
+
+[Install]
+WantedBy=multi-user.target

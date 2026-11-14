@@ -4,12 +4,13 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 ## Estado técnico disponible
 
-- PR #5 integrado en `main`, sin cambios locales pendientes al cerrar esa integración.
-- Spring: 158 pruebas aprobadas; Django: 88; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
+- PR #6 integrado en `main`; la preparación Oracle Cloud se desarrolla en un incremento separado y verificable.
+- Spring: 158 pruebas aprobadas; Django: 91; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
 - Administración: seis estados normales, sin conexión y al 200 % emulado sin infracciones Axe ni desbordamiento; el acceso sin red conserva el usuario, limpia la contraseña y oculta el error técnico.
-- La configuración Django de producción falla de forma segura si una base MySQL remota no proporciona una CA válida y exige `VERIFY_IDENTITY`; las conexiones locales conservan su preparación actual.
+- La configuración Django de producción falla de forma segura si una base MySQL remota no proporciona una CA válida y exige `VERIFY_IDENTITY`; cuando se entrega una CA incluso en el mismo host, también verifica certificado y nombre.
+- Oracle Cloud Always Free fue elegido como destino. Existe composición reproducible para ARM64, red privada, TLS MySQL, permisos separados, primer administrador idempotente, salud, logs y respaldos; todavía no existe una VM pública creada.
 - Spring ofrece `/actuator/health` y Django `/api/admin/health`: ambos responden sin autenticación con estado mínimo, no revelan componentes, consultas ni excepciones y permiten detectar una base administrativa no disponible mediante HTTP 503.
 - La frontera de ingreso a un grupo es estable aun cuando varias operaciones ocurren en el mismo instante: un miembro nuevo no recibe historial anterior y sí puede recibir mensajes creados después de incorporarse.
 - La herramienta de construcción web fue actualizada a una versión sin alertas conocidas; CI ejecuta `npm audit --audit-level=moderate` antes de las 42 pruebas y la compilación.
@@ -23,7 +24,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 | Firma de entrega | Copiar el keystore original y confirmar su alias, o aprobar expresamente la creación de una identidad nueva si nunca se distribuyó otra. Configurar contraseñas solo mediante el mecanismo privado local. La carpeta `%LOCALAPPDATA%\MAIN-private\android` no existe en esta PC. | APK release no depurable, firma y huella verificadas, respaldo privado recuperable e instalación en el teléfono sin borrar datos para ocultar incompatibilidades. |
 | Android Firebase | Colocar `mobile/app/google-services.json` fuera de Git. El archivo no está presente en ninguna de las dos copias revisadas. | Compilación release con el proyecto Firebase correcto y token obtenido en el teléfono de prueba sin exponerlo. |
 | FCM del servidor | Crear o proporcionar la ruta local de un JSON de cuenta de servicio autorizado para FCM HTTP v1, fuera del repositorio; habilitar la API correspondiente. | Push genérico recibido con la app abierta, en segundo plano y cerrada; además, logout, silencio, bloqueo, permiso denegado, token revocado y red interrumpida. |
-| HTTPS definitivo | Elegir proveedor, dominio, presupuesto y custodio; proporcionar acceso seguro. No existe servidor público ni dominio configurado. | Certificado público válido, DNS, MySQL con TLS, respaldos/restauración, colección Postman de 55 comprobaciones y recorrido Android/web desde dos dispositivos. |
+| HTTPS definitivo | El proveedor técnico ya es Oracle Cloud Always Free. Falta iniciar sesión/crear la cuenta, confirmar región y costo cero, crear la VM y registrar un subdominio gratuito DuckDNS. | Certificado público válido, DNS, MySQL con TLS, respaldos/restauración, colección Postman de 55 comprobaciones y recorrido Android/web desde dos dispositivos. |
 | Cuota de IA | Habilitar saldo/cuota en el proyecto ya existente. No enviar la clave por chat ni crear otra para evadir límites. | Una respuesta académica sintética correcta en web y Android; transcripción multimedia real disponible y evaluación controlada sin datos personales. |
 | Moderación operativa | Vincular cuentas reales y verificadas para Jery como responsable y Michael o el suplente aceptado; aprobar el tratamiento externo y confirmar la política inicial 7/30/90. | Revisión, apelación, protección y retención comprobadas con cuentas operativas; aceptación humana de falsos positivos/negativos y cobertura multimedia. |
 | Aceptación del proyecto | Pamela, Michael, Jery y el docente confirman el alcance que les corresponde. La automatización no puede firmar en su nombre. | Comentario o acta por historia con fecha, responsable, resultado, limitaciones aceptadas y decisión final. |
@@ -42,7 +43,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 ## Orden mínimo para terminar
 
-1. Elegir HTTPS y recuperar o crear conscientemente la firma de entrega.
+1. Aprovisionar la VM Always Free y el subdominio HTTPS; recuperar o crear conscientemente la firma de entrega.
 2. Proporcionar las rutas privadas de Firebase Android y FCM; habilitar cuota de IA.
 3. Conectar el teléfono y ejecutar la matriz completa contra HTTPS.
 4. Corregir cualquier defecto hallado, repetir regresiones y generar el APK release final.
