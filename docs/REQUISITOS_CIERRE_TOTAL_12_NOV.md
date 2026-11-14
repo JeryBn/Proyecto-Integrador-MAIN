@@ -5,7 +5,8 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 ## Estado técnico disponible
 
 - Los PR #7 al #13 están integrados en `main`; la preparación reproducible para Oracle Cloud Always Free y los refuerzos posteriores quedaron incorporados y verificados por CI.
-- Spring: 163 pruebas aprobadas; Django: 92; web: 49; Android: 13 unitarias, `lintDebug` y `assembleDebug` aprobados.
+- Rama institucional: 173 pruebas Spring y 52 web aprobadas. El cierre anterior conserva 92 Django, 13 Android unitarias, `lintDebug`, `assembleDebug` y 16 comprobaciones HTTP compartidas.
+- Portal institucional: alumno con panel, actividades, borradores y entregas; docente con métricas, cursos, notas y publicación autorizada de actividades. El resumen docente distingue matrículas, entregas y borradores.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
 - La web de usuarios limita las respuestas JSON a 1 MiB, aplica el plazo también a la lectura completa de escrituras y cargas, y presenta una confirmación inválida como resultado incierto sin reenviar automáticamente.

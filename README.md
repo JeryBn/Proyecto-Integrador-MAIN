@@ -2,9 +2,11 @@
 
 ## Estado de cierre — actualizado el 14 de noviembre de 2026
 
-La resiliencia y accesibilidad multiplataforma están preparadas en `main`: 163 pruebas Spring, 92 Django, 49 web, 13 Android, 16 comprobaciones HTTP sobre la arquitectura compartida y auditorías de 18 vistas de usuario y 6 estados administrativos. Spring y Django incluyen comprobaciones de salud mínimas, aptas para supervisión y sin detalles internos. La web de usuarios y administración, Android y las integraciones externas de Spring rechazan respuestas desproporcionadas sin agotar la memoria. El rediseño administrativo de Pamela conserva su autoría y tiene correcciones accesibles separadas.
+La rama institucional más reciente tiene 173 pruebas Spring y 52 web aprobadas, además de las 92 Django, 13 Android y 16 comprobaciones HTTP del cierre anterior. La experiencia web fue renovada para alumnos y docentes: inicio académico, cursos, entregas con borrador, notas, chats, estados, perfil y navegación móvil. El docente puede publicar actividades únicamente en sus cursos y consultar entregas/borradores; el alumno las recibe en su lista autorizada. Spring y Django conservan comprobaciones de salud mínimas y mensajes de error sin detalles internos. El rediseño administrativo de Pamela mantiene su autoría y sus correcciones accesibles separadas.
 
 Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3 al #13 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; el cierre global aún requiere teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+
+La evidencia funcional del nuevo portal institucional está en [MEJORA_EXPERIENCIA_INSTITUCIONAL_14_NOV.md](docs/MEJORA_EXPERIENCIA_INSTITUCIONAL_14_NOV.md).
 
 Antes de preparar la entrega, ejecutar `powershell -File scripts/Test-ReleaseReadiness.ps1`. La comprobación no imprime secretos, valida la estructura privada de Firebase/FCM y enumera únicamente los requisitos privados o externos que todavía faltan.
 

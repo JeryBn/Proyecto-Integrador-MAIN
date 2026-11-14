@@ -1,0 +1,50 @@
+package pe.tecsup.main.community;
+
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import pe.tecsup.main.ActividadService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:teaching_activities_test;DB_CLOSE_DELAY=-1","main.admin.username=admin_teaching_activities","main.admin.password=SyntheticAdmin2026!"})
+@AutoConfigureMockMvc @Transactional
+class TeachingActivityIntegrationTest {
+ @Autowired TeachingActivityService activities;@Autowired IdentityService users;@Autowired ActividadService studentActivities;@Autowired MockMvc mvc;
+ @BeforeEach void setup(){users.create("admin_teaching_activities",new IdentityService.NewAccount("teacher_activities","Docente de actividades","DOCENTE","SyntheticTeacher2026!",null,1L));}
+ @Test void assignedTeacherCreatesActivityVisibleToEnrolledStudent(){
+  var created=activities.create("teacher_activities",1,new TeachingActivityService.Input("Proyecto final","Publica la evidencia revisada.","2027-12-20T18:00:00"));
+  assertEquals("Proyecto final",created.title());assertEquals(1,created.enrolled());assertEquals(0,created.submitted());
+  assertEquals(created.id(),studentActivities.detalle("alumno",created.id()).id());
+ }
+ @Test void submissionCountsDistinguishDraftsFromDeliveredWork(){
+  var created=activities.create("teacher_activities",1,new TeachingActivityService.Input("Avance verificable","Incluye el enlace del repositorio.","2027-12-21T18:00:00"));
+  studentActivities.guardarEntrega("alumno",created.id(),new ActividadService.EntregaRequest("Borrador","https://example.test/draft","DRAFT",0));
+  var draft=activities.list("teacher_activities",1).stream().filter(item->item.id()==created.id()).findFirst().orElseThrow();
+  assertEquals(1,draft.drafts());assertEquals(0,draft.submitted());
+  studentActivities.guardarEntrega("alumno",created.id(),new ActividadService.EntregaRequest("Entrega","https://example.test/final","SUBMITTED",1));
+  var submitted=activities.list("teacher_activities",1).stream().filter(item->item.id()==created.id()).findFirst().orElseThrow();
+  assertEquals(0,submitted.drafts());assertEquals(1,submitted.submitted());
+ }
+ @Test void otherRolesAndUnassignedCoursesAreRejected(){
+  assertThrows(DomainException.class,()->activities.list("alumno",1));
+  assertThrows(DomainException.class,()->activities.create("teacher_activities",3,new TeachingActivityService.Input("No autorizado","No debe guardarse.","2027-12-20T18:00:00")));
+ }
+ @Test void invalidContentAndPastDeadlineAreRejected(){
+  assertThrows(DomainException.class,()->activities.create("teacher_activities",1,new TeachingActivityService.Input(" ","Descripción","2027-12-20T18:00:00")));
+  assertThrows(DomainException.class,()->activities.create("teacher_activities",1,new TeachingActivityService.Input("Actividad","Descripción","2020-01-01T10:00:00")));
+  assertThrows(DomainException.class,()->activities.create("teacher_activities",1,new TeachingActivityService.Input("Actividad","Descripción","20/12/2027")));
+ }
+ @Test void endpointRequiresSessionCsrfAndAssignedTeacher()throws Exception{
+  String body="{\"title\":\"Actividad API\",\"description\":\"Descripción segura\",\"dueAt\":\"2027-12-20T18:00:00\"}";
+  mvc.perform(get("/api/v1/teaching/courses/1/activities")).andExpect(status().isUnauthorized());
+  mvc.perform(post("/api/v1/teaching/courses/1/activities").with(user("teacher_activities").roles("DOCENTE")).contentType("application/json").content(body)).andExpect(status().isForbidden());
+  mvc.perform(post("/api/v1/teaching/courses/1/activities").with(user("teacher_activities").roles("DOCENTE")).with(csrf()).contentType("application/json").content(body)).andExpect(status().isCreated()).andExpect(jsonPath("$.title").value("Actividad API"));
+  mvc.perform(get("/api/v1/teaching/courses/1/activities").with(user("alumno").roles("ALUMNO"))).andExpect(status().isForbidden());
+ }
+}
