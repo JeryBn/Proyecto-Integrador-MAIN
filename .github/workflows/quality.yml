@@ -12,6 +12,7 @@ on:
       - 'deploy/Caddyfile'
       - '.dockerignore'
       - 'scripts/Test-ReleaseReadiness.ps1'
+      - 'scripts/Test-ReleaseReadinessContract.ps1'
       - 'scripts/Test-OciDeployment.ps1'
       - '.github/workflows/quality.yml'
   pull_request:
@@ -24,6 +25,7 @@ on:
       - 'deploy/Caddyfile'
       - '.dockerignore'
       - 'scripts/Test-ReleaseReadiness.ps1'
+      - 'scripts/Test-ReleaseReadinessContract.ps1'
       - 'scripts/Test-OciDeployment.ps1'
       - '.github/workflows/quality.yml'
   workflow_dispatch:
@@ -45,6 +47,7 @@ jobs:
       - name: Validar preflight de entrega
         shell: pwsh
         run: |
+          & ./scripts/Test-ReleaseReadinessContract.ps1
           $output = & ./scripts/Test-ReleaseReadiness.ps1 -Json -AllowIncomplete
           $summary = $output | ConvertFrom-Json
           if ($null -eq $summary.ready -or $summary.checks.Count -lt 10) {
