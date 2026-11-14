@@ -8,7 +8,11 @@ on:
       - 'pom.xml'
       - 'frontend/**'
       - 'admin-django/**'
+      - 'deploy/oci/**'
+      - 'deploy/Caddyfile'
+      - '.dockerignore'
       - 'scripts/Test-ReleaseReadiness.ps1'
+      - 'scripts/Test-OciDeployment.ps1'
       - '.github/workflows/quality.yml'
   pull_request:
     paths:
@@ -16,7 +20,11 @@ on:
       - 'pom.xml'
       - 'frontend/**'
       - 'admin-django/**'
+      - 'deploy/oci/**'
+      - 'deploy/Caddyfile'
+      - '.dockerignore'
       - 'scripts/Test-ReleaseReadiness.ps1'
+      - 'scripts/Test-OciDeployment.ps1'
       - '.github/workflows/quality.yml'
   workflow_dispatch:
 
@@ -43,6 +51,12 @@ jobs:
             throw 'El preflight no devolvió el contrato JSON esperado.'
           }
           Write-Host "Preflight válido; bloqueos externos detectados: $($summary.blockers)."
+      - name: Validar contrato de despliegue OCI
+        shell: pwsh
+        run: ./scripts/Test-OciDeployment.ps1
+      - name: Validar scripts y composición OCI
+        shell: bash
+        run: bash -n deploy/oci/*.sh deploy/oci/mysql/*.sh
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -94,3 +108,39 @@ jobs:
       - name: Probar administración aislada
         working-directory: admin-django
         run: python manage.py test administration --settings=main_admin.test_settings --noinput -v 2
+
+  oracle-cloud:
+    name: Despliegue Oracle Cloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generar configuración privada sintética
+        working-directory: deploy/oci
+        run: bash ./prepare.sh --domain ci.main.invalid --admin-username ci.admin --admin-name 'Administrador CI'
+      - name: Construir imágenes de producción
+        working-directory: deploy/oci
+        run: |
+          docker compose pull mysql database-permissions caddy
+          docker compose build --pull spring django
+      - name: Validar proxy sin solicitar certificados
+        working-directory: deploy/oci
+        run: docker compose run --rm --no-deps --entrypoint caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - name: Iniciar base y aplicaciones privadas
+        working-directory: deploy/oci
+        run: docker compose up --detach --wait --wait-timeout 360 spring django
+      - name: Comprobar migraciones, TLS y administrador inicial
+        working-directory: deploy/oci
+        run: |
+          docker compose exec --no-TTY spring curl --fail --silent http://127.0.0.1:8088/actuator/health
+          docker compose exec --no-TTY django /app/entrypoint.sh verify
+      - name: Mostrar diagnóstico si falla
+        if: failure()
+        working-directory: deploy/oci
+        run: |
+          docker compose ps
+          docker compose logs --no-color --tail=160
+      - name: Retirar entorno sintético
+        if: always()
+        working-directory: deploy/oci
+        run: docker compose down --volumes --remove-orphans

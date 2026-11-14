@@ -2,7 +2,7 @@
 import routes.caddy
 {$MAIN_DOMAIN} {
 	encode zstd gzip
-	import main_routes 127.0.0.1:8090 127.0.0.1:8088
+	import main_routes {$MAIN_DJANGO_UPSTREAM:127.0.0.1:8090} {$MAIN_SPRING_UPSTREAM:127.0.0.1:8088}
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"

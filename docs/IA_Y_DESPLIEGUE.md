@@ -56,6 +56,8 @@ Configurar el administrador mediante las variables ya documentadas del servidor 
 No aplicar Flyway sobre una base existente sin inventario, respaldo y acuerdo de propiedad con Michael.
 Pendiente: elegir y aprovisionar hosting/dominio, verificar certificado, DB real, respaldo/restauración y acceso desde dos dispositivos. La configuración no demuestra un despliegue operativo.
 
+Actualización del 13/11/2026: se eligió Oracle Cloud Always Free y se añadió `deploy/oci`. La composición ARM64 mantiene públicos solo 80/443, cifra y verifica MySQL, separa cuentas SQL, crea el primer ADMIN sin sobrescribir identidades, supervisa salud y prepara respaldos diarios con SHA-256. La implementación y sus pruebas no sustituyen la creación externa de la VM, el subdominio DuckDNS, el certificado público ni la restauración ensayada. Detalle factual en `ORACLE_CLOUD_13_NOV.md`.
+
 ## Firma Android (M17)
 Gradle admite MAIN_SIGNING_STORE_FILE, MAIN_SIGNING_STORE_PASSWORD, MAIN_SIGNING_KEY_ALIAS y MAIN_SIGNING_KEY_PASSWORD.
 La compilación release exige las cuatro variables y un archivo existente. Debug conserva su firma de desarrollo.

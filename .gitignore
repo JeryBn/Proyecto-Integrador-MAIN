@@ -23,6 +23,12 @@ __pycache__/
 *.pyc
 admin-django/.venv/
 
+# Despliegue Oracle Cloud: configuración y datos privados generados en el servidor.
+deploy/oci/.env
+deploy/oci/secrets/
+deploy/oci/backups/
+deploy/oci/initial-access.txt
+
 frontend/node_modules/
 frontend/dist/
 

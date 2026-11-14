@@ -47,6 +47,24 @@ class HttpsDeploymentTests(SimpleTestCase):
         self.assertEqual(database['CONN_MAX_AGE'], 60)
         self.assertTrue(database['CONN_HEALTH_CHECKS'])
 
+    def test_same_host_database_also_verifies_identity_when_ca_is_supplied(self):
+        with tempfile.NamedTemporaryFile() as certificate:
+            with patch.dict(os.environ, {
+                'MAIN_PUBLIC_ORIGIN': 'https://main.example.org',
+                'MAIN_DB_HOST': '127.0.0.1',
+                'MAIN_DB_SSL_CA': certificate.name,
+            }):
+                config = runpy.run_module('main_admin.production_settings')
+        self.assertEqual(config['DATABASES']['default']['OPTIONS']['ssl_mode'], 'VERIFY_IDENTITY')
+
+        with patch.dict(os.environ, {
+            'MAIN_PUBLIC_ORIGIN': 'https://main.example.org',
+            'MAIN_DB_HOST': '127.0.0.1',
+            'MAIN_DB_SSL_CA': 'missing-private-ca.pem',
+        }):
+            with self.assertRaises(ImproperlyConfigured):
+                runpy.run_module('main_admin.production_settings')
+
     @override_settings(SECURE_PROXY_SSL_HEADER=None)
     def test_only_wsgi_scheme_not_untrusted_raw_header_marks_https(self):
         request = RequestFactory().get('/', HTTP_X_FORWARDED_PROTO='https')
