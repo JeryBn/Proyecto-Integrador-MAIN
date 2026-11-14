@@ -9,6 +9,8 @@ class FcmGatewayTest {
   assertFalse(new FcmGateway(new ObjectMapper(),"").ready());
   assertFalse(new FcmGateway(new ObjectMapper(),String.valueOf('\0')).ready());
   assertFalse(new FcmGateway(new ObjectMapper(),directory.resolve("missing.json").toString()).ready());
+  Path oversized=Files.writeString(directory.resolve("oversized.json"),"x".repeat(1024*1024+1));
+  assertFalse(new FcmGateway(new ObjectMapper(),oversized.toString()).ready());
   Path credentials=Files.writeString(directory.resolve("service-account.json"),"{}");
   assertTrue(new FcmGateway(new ObjectMapper(),credentials.toString()).ready());
  }

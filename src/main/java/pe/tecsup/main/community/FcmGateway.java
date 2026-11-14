@@ -6,13 +6,19 @@ import org.springframework.stereotype.Component;import org.springframework.beans
 @Component
 public class FcmGateway {
  public enum Outcome { ACCEPTED, RETRY, INVALID_TOKEN }
+ private static final long MAX_ACCOUNT_BYTES=1024*1024;
+ private static final int MAX_PROVIDER_RESPONSE_BYTES=256*1024;
  private final ObjectMapper json;private final String credentials;private final HttpClient client;
  private String accessToken="";private Instant accessExpiry=Instant.EPOCH;
  public FcmGateway(ObjectMapper json,@Value("${MAIN_FCM_CREDENTIALS_FILE:}") String credentials){this.json=json;this.credentials=credentials;this.client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).followRedirects(HttpClient.Redirect.NEVER).build();}
  public boolean ready(){
   if(credentials.isBlank())return false;
-  try{return Files.isRegularFile(Path.of(credentials));}
-  catch(InvalidPathException|SecurityException e){return false;}
+  try{var path=Path.of(credentials);long size=Files.size(path);return Files.isRegularFile(path)&&size>0&&size<=MAX_ACCOUNT_BYTES;}
+  catch(InvalidPathException|SecurityException|java.io.IOException e){return false;}
+ }
+ private JsonNode account()throws Exception{
+  var path=Path.of(credentials);long size=Files.size(path);if(size<=0||size>MAX_ACCOUNT_BYTES)throw new IllegalArgumentException();
+  try(var input=Files.newInputStream(path)){return json.readTree(input);}
  }
  private static String b64(byte[] bytes){return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);}
  private synchronized String token(JsonNode account)throws Exception{
@@ -26,7 +32,7 @@ public class FcmGateway {
   Signature signer=Signature.getInstance("SHA256withRSA");signer.initSign(key);signer.update(unsigned.getBytes(StandardCharsets.US_ASCII));
   String assertion=unsigned+"."+b64(signer.sign());
   var request=HttpRequest.newBuilder(URI.create("https://oauth2.googleapis.com/token")).timeout(Duration.ofSeconds(15)).header("Content-Type","application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString("grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion="+URLEncoder.encode(assertion,StandardCharsets.UTF_8))).build();
-  var response=client.send(request,HttpResponse.BodyHandlers.ofString());if(response.statusCode()!=200)throw new IllegalStateException();
+  var response=client.send(request,BoundedResponseBody.utf8(MAX_PROVIDER_RESPONSE_BYTES));if(response.statusCode()!=200)throw new IllegalStateException();
   var body=json.readTree(response.body());accessToken=body.path("access_token").asText();if(accessToken.isBlank())throw new IllegalStateException();
   accessExpiry=Instant.now().plusSeconds(Math.max(0,Math.min(3600,body.path("expires_in").asInt())-120));return accessToken;
  }
@@ -35,9 +41,9 @@ public class FcmGateway {
   return Map.of("message",Map.of("token",token,"data",Map.of("event","MAIN_UPDATE","binding",binding,"delivery",delivery),"android",Map.of("priority","high","ttl","300s","collapse_key","main_updates")));
  }
  public Outcome send(String deviceToken,String binding,String delivery){
-  try{var account=json.readTree(Files.readString(Path.of(credentials)));String project=account.path("project_id").asText();if(!project.matches("[a-z][a-z0-9-]{4,62}"))return Outcome.RETRY;
+  try{var account=account();String project=account.path("project_id").asText();if(!project.matches("[a-z][a-z0-9-]{4,62}"))return Outcome.RETRY;
    var request=HttpRequest.newBuilder(URI.create("https://fcm.googleapis.com/v1/projects/"+project+"/messages:send")).timeout(Duration.ofSeconds(15)).header("Authorization","Bearer "+token(account)).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(payload(deviceToken,binding,delivery)))).build();
-   var response=client.send(request,HttpResponse.BodyHandlers.ofString());if(response.statusCode()==200)return Outcome.ACCEPTED;
+   var response=client.send(request,BoundedResponseBody.utf8(MAX_PROVIDER_RESPONSE_BYTES));if(response.statusCode()==200)return Outcome.ACCEPTED;
    var error=json.readTree(response.body()).path("error");for(var detail:error.path("details"))if(detail.path("errorCode").asText().equals("UNREGISTERED"))return Outcome.INVALID_TOKEN;
    if(response.statusCode()==401||response.statusCode()==403)accessExpiry=Instant.EPOCH;
    return Outcome.RETRY;
