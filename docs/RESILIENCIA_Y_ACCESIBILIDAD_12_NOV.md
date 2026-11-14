@@ -1,10 +1,10 @@
-# Resiliencia y accesibilidad — actualizado el 13 de noviembre de 2026
+# Resiliencia y accesibilidad — actualizado el 14 de noviembre de 2026
 
 ## Alcance implementado
 
 - Web de usuarios: límite de errores de renderizado con recuperación, aviso accesible de desconexión y reconexión, conservación del borrador mientras la red no está disponible y mensajes seguros ante fallos de cámara o micrófono.
 - API Spring: contrato JSON estable para recurso inexistente, parámetro inválido, conflicto de datos, base no disponible y fallo inesperado, tanto en actividades como en los módulos comunitarios y administrativos. Los detalles técnicos quedan en el registro del servidor y no se exponen a la persona usuaria. `/actuator/health` queda disponible sin sesión con una respuesta mínima, sin componentes ni detalles internos.
-- Administración: se integró el rediseño visual del panel de actividades realizado por Pamela Meneses y se completó su accesibilidad con contraste legible, encabezado principal y región de contexto identificable. La interfaz React incorpora recuperación ante errores de renderizado, avisos accesibles de desconexión y reconexión, conservación del formulario sin enviar y un plazo de 30 segundos para evitar esperas indefinidas. Los fallos al renovar el token de seguridad no muestran mensajes del navegador; si una escritura queda incierta, se conserva la información y se pide actualizar antes de repetirla. Django devuelve respuestas JSON estables para rutas API inexistentes, JSON inválido y fallos internos; las páginas no API reciben mensajes de texto seguros. `/api/admin/health` comprueba la base y responde solo `UP` o `DOWN`, con HTTP 503 cuando corresponde. Se añadió un ícono local para evitar solicitudes fallidas del navegador.
+- Administración: se integró el rediseño visual del panel de actividades realizado por Pamela Meneses y se completó su accesibilidad con contraste legible, encabezado principal y región de contexto identificable. La interfaz React incorpora recuperación ante errores de renderizado, avisos accesibles de desconexión y reconexión, conservación del formulario sin enviar y un plazo de 30 segundos que cubre tanto la conexión como la lectura del cuerpo. Las respuestas JSON se leen de forma incremental y se rechazan al superar 1 MiB. Los fallos al renovar el token de seguridad no muestran mensajes del navegador; si una escritura queda incierta, se conserva la información y se pide actualizar antes de repetirla. Django devuelve respuestas JSON estables para rutas API inexistentes, JSON inválido y fallos internos; las páginas no API reciben mensajes de texto seguros. `/api/admin/health` comprueba la base y responde solo `UP` o `DOWN`, con HTTP 503 cuando corresponde. Se añadió un ícono local para evitar solicitudes fallidas del navegador.
 - Android: mensajes diferenciados para espera agotada, servidor inaccesible, error TLS, interrupción de red, credenciales inválidas y fallos inesperados. La configuración del servidor y los flujos multimedia conservan únicamente mensajes validados; los errores no reconocidos no muestran rutas ni detalles internos.
 - Inicio local: el iniciador reconoce procesos propios aunque Windows no informe correctamente el dueño del puerto, evitando levantar instancias duplicadas.
 - Producción Django: una base MySQL remota exige CA existente y verificación de certificado y nombre; la aplicación no inicia con una ruta ausente o inválida.
@@ -18,7 +18,7 @@
 |---|---:|
 | Spring | 158 pruebas, sin fallos |
 | Django | 88 pruebas, sin fallos |
-| Web | 42 pruebas, sin fallos; compilación correcta y `npm audit` sin vulnerabilidades conocidas |
+| Web | 45 pruebas, sin fallos; compilación correcta y `npm audit` sin vulnerabilidades conocidas |
 | Android | 9 pruebas unitarias, sin fallos; `lintDebug` y `assembleDebug` correctos |
 | Arquitectura compartida | 16 comprobaciones HTTP reales después del reinicio, sin fallos |
 | Web de usuarios | 18 vistas en Chrome, normal y 200 % emulado: 0 infracciones Axe, 0 errores de consola, 0 desbordamientos globales |
