@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {createCaptureSession} from './capture-session.mjs';
 import {fileError} from './user-api.mjs';
+import {Icon} from './ui-icons.jsx';
 
 export function MediaCapture({onFile,disabled=false}){
  const [kind,setKind]=useState(null),[error,setError]=useState(''),[stream,setStream]=useState(null);
@@ -29,12 +30,12 @@ export function MediaCapture({onFile,disabled=false}){
      if(invalid){setError(invalid);return;}current.cancel();setKind(null);callback.current(file);
    },'image/jpeg',.85);
  }
- return <div className="capture-panel" role="group" aria-label="Capturar contenido">
-  <p>Captura opcional. El navegador pedirá permiso al comenzar. Revisa el adjunto antes de enviarlo; seguirá sujeto a moderación.</p>
+ return <div className="capture-panel modern-capture-panel" role="group" aria-label="Capturar contenido">
+  <p className="capture-helper"><Icon name="shield" size={15}/> El permiso de cámara o micrófono se solicita únicamente al elegir una opción.</p>
   {!supported?<p>Cámara y micrófono requieren HTTPS y un navegador compatible. Puedes seleccionar un archivo.</p>:!kind?<div className="toolbar">
-   <button type="button" disabled={disabled} onClick={()=>begin('photo')}>Tomar foto</button>
-   <button type="button" disabled={disabled} onClick={()=>begin('video')}>Grabar video con audio</button>
-   <button type="button" disabled={disabled} onClick={()=>begin('audio')}>Grabar audio</button>
+   <button type="button" disabled={disabled} onClick={()=>begin('photo')}><Icon name="camera" size={17}/>Foto</button>
+   <button type="button" disabled={disabled} onClick={()=>begin('video')}><Icon name="video" size={17}/>Video</button>
+   <button type="button" disabled={disabled} onClick={()=>begin('audio')}><Icon name="mic" size={17}/>Audio</button>
   </div>:<>
    <p role="status">{stream?(kind==='photo'?'Cámara lista.':'Grabando; se detiene a los 55 segundos o 12 MB.'):'Esperando permiso del navegador…'}</p>
    {stream&&kind!=='audio'&&<video ref={camera} className="private-media" autoPlay muted playsInline aria-label="Vista previa de cámara"/>}

@@ -8,6 +8,7 @@ import {AppealAction} from './appeals.jsx';
 import {Icon} from './ui-icons.jsx';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
+const statusColors=['#087f68','#176b87','#5b4db7','#a8436c','#c06028','#27364a'];
 export function Statuses({profile,preferences,draft,setDraft,onChat}){
  const {confirm,confirmation}=useConfirmation();
  const feed=useResource('/api/v1/statuses',{interval:5000});
@@ -50,16 +51,36 @@ function StatusComposer({draft,setDraft,preferences,onSaved}){
    await userApi.upload('/api/v1/statuses',form,{signal:controller.current.signal,onProgress:setProgress});setDraft(emptyStatusDraft());if(alive.current)onSaved();
   }catch(e){if(alive.current)setError(e.message);}finally{lock.current=false;if(alive.current)setBusy(false);}
  }
- return <form className="card-form status-composer" aria-label="Crear estado" onSubmit={send}><div className="composer-heading"><span className="composer-icon"><Icon name="spark"/></span><div><span className="section-kicker">NUEVA ACTUALIZACIÓN</span><h2>Crear estado</h2><p>Comparte un momento con tu comunidad académica.</p></div></div>{error&&<p role="alert">{error}</p>}<fieldset disabled={busy}><legend>Contenido y audiencia</legend>
-  <label>Texto del estado<textarea maxLength={700} value={draft.text} onChange={e=>update({text:e.target.value})}/></label><small>{draft.text.length}/700 caracteres</small>
-  <div className="toolbar"><label>Color del fondo<input type="color" value={draft.background} onChange={e=>update({background:e.target.value})}/></label><label>Audiencia<select value={draft.audience} onChange={e=>update({audience:e.target.value})}><option value="CONTACTS">Mis contactos autorizados</option><option value="PRIVATE">Solo yo</option></select></label></div>
-  {preferences?.statusAudience==='PRIVATE'&&<p>Tu ajuste global es Solo yo. Tus contactos no verán este estado mientras mantengas esa privacidad.</p>}
-  <label>Imagen, video o audio<input ref={input} type="file" accept="image/jpeg,image/png,video/*,audio/*" onChange={e=>{const file=e.target.files?.[0]||null,invalid=fileError(file,{status:true});if(invalid){setError(invalid);e.target.value='';return;}setError('');update({file,attempt:null});}}/></label>
-  <MediaCapture disabled={busy} onFile={file=>{setError('');update({file,attempt:null});}}/>
-  {preview&&(draft.file.type.startsWith('image/')?<img className="private-media" src={preview} alt="Vista previa del estado"/>:draft.file.type.startsWith('video/')?<video className="private-media" src={preview} controls preload="metadata"/>:<audio className="private-media" src={preview} controls preload="metadata"/>)}
-  {draft.file&&<p>{draft.file.name} · {Math.ceil(draft.file.size/1024)} KB <button type="button" onClick={()=>{update({file:null,attempt:null});if(input.current)input.current.value='';}}>Quitar archivo del estado</button></p>}
-  <p>Hasta 12 MB; video y audio de hasta 60 segundos. El servidor valida y procesa el archivo antes de guardarlo para revisión.</p><button disabled={!draft.text.trim()&&!draft.file}>Guardar estado para revisión</button>
- </fieldset>{busy&&<div role="status"><p>{progress<100?`Subiendo: ${progress}%`:'Esperando confirmación del servidor…'}</p><button type="button" onClick={()=>controller.current?.abort()}>Cancelar espera del estado</button></div>}</form>;
+ return <form className="card-form status-composer modern-status-composer" aria-label="Crear estado" onSubmit={send}>
+  <div className="composer-heading"><span className="composer-icon"><Icon name="spark"/></span><div><span className="section-kicker">NUEVA ACTUALIZACIÓN</span><h2>Crear estado</h2><p>Comparte un momento con tu comunidad académica.</p></div></div>
+  {error&&<div className="composer-error" role="alert"><Icon name="alert" size={18}/><span>{error}</span></div>}
+  <fieldset className="status-composer-fields" disabled={busy}><legend className="sr-only">Contenido y audiencia</legend>
+   <div className="status-compose-grid">
+    <section className="status-live-preview" style={{backgroundColor:draft.background,color:statusTextColor(draft.background)}} aria-label="Vista previa del estado">
+     <header><span><Icon name="status" size={15}/>Vista previa</span><span>{draft.audience==='PRIVATE'?'Solo yo':'Contactos'}</span></header>
+     <div className="status-preview-body">
+      {preview&&(draft.file.type.startsWith('image/')?<img src={preview} alt="Vista previa del archivo seleccionado"/>:draft.file.type.startsWith('video/')?<video src={preview} controls preload="metadata"/>:<audio src={preview} controls preload="metadata"/>)}
+      <p className={draft.text?'':'preview-placeholder'}>{draft.text||'Escribe algo para comenzar…'}</p>
+     </div>
+     <footer><span>Tu estado</span><span>Ahora · 24 h</span></footer>
+    </section>
+    <div className="status-control-panel">
+     <label className="status-text-control"><span>Mensaje</span><textarea maxLength={700} placeholder="¿Qué quieres compartir hoy?" value={draft.text} onChange={e=>update({text:e.target.value,attempt:null})}/><small className={draft.text.length>630?'near-limit':''}>{draft.text.length}/700</small></label>
+     <div className="composer-option" role="group" aria-label="Color del fondo"><div><strong>Estilo</strong><small>Elige un color para tu estado</small></div><div className="status-color-palette">{statusColors.map(color=><button type="button" key={color} className={draft.background.toLowerCase()===color?'selected':''} style={{backgroundColor:color}} aria-label={'Usar color '+color} aria-pressed={draft.background.toLowerCase()===color} onClick={()=>update({background:color,attempt:null})}/>)}<label className="custom-status-color" title="Elegir otro color"><Icon name="pencil" size={15}/><span className="sr-only">Elegir otro color</span><input type="color" value={draft.background} onChange={e=>update({background:e.target.value,attempt:null})}/></label></div></div>
+     <div className="composer-option audience-option"><div><strong>¿Quién puede verlo?</strong><small>Controla la audiencia antes de publicar</small></div><div className="audience-buttons"><button type="button" className={draft.audience==='CONTACTS'?'selected':''} aria-pressed={draft.audience==='CONTACTS'} onClick={()=>update({audience:'CONTACTS',attempt:null})}><Icon name="users" size={17}/>Contactos</button><button type="button" className={draft.audience==='PRIVATE'?'selected':''} aria-pressed={draft.audience==='PRIVATE'} onClick={()=>update({audience:'PRIVATE',attempt:null})}><Icon name="lock" size={17}/>Solo yo</button></div></div>
+    </div>
+   </div>
+   {preferences?.statusAudience==='PRIVATE'&&<div className="privacy-warning"><Icon name="lock" size={17}/><span>Tu privacidad global está en <strong>Solo yo</strong>. Tus contactos no verán este estado hasta que cambies ese ajuste.</span></div>}
+   <section className="status-media-card"><header><span className="media-card-icon"><Icon name="paperclip"/></span><div><strong>Añade una foto, video o audio</strong><small>Opcional · máximo 12 MB y 60 segundos</small></div></header>
+    <label className="status-upload-zone"><input ref={input} className="sr-only" type="file" accept="image/jpeg,image/png,video/*,audio/*" onChange={e=>{const file=e.target.files?.[0]||null,invalid=fileError(file,{status:true});if(invalid){setError(invalid);e.target.value='';return;}setError('');update({file,attempt:null});}}/><span><Icon name="file"/></span><strong>{draft.file?'Cambiar archivo':'Seleccionar desde el equipo'}</strong><small>JPG, PNG, video o audio</small></label>
+    <MediaCapture disabled={busy} onFile={file=>{setError('');update({file,attempt:null});}}/>
+    {draft.file&&<div className="status-selected-file"><span><Icon name="checkCircle" size={17}/></span><div><strong>{draft.file.name}</strong><small>{Math.ceil(draft.file.size/1024)} KB · listo para revisar</small></div><button type="button" onClick={()=>{update({file:null,attempt:null});if(input.current)input.current.value='';}}>Quitar</button></div>}
+    {draft.file&&<div className="selected-status-file"><span><Icon name={draft.file.type.startsWith('image/')?'camera':'file'} size={18}/></span><div><strong>{draft.file.name}</strong><small>{Math.ceil(draft.file.size/1024)} KB · listo para revisar</small></div><button type="button" onClick={()=>{update({file:null,attempt:null});if(input.current)input.current.value='';}} aria-label="Quitar archivo"><Icon name="plus" size={16}/></button></div>}
+   </section>
+   <footer className="status-composer-footer"><p><Icon name="shield" size={16}/> MAIN revisará el contenido antes de mostrarlo a tu audiencia.</p><button className="publish-status-button" disabled={!draft.text.trim()&&!draft.file}><Icon name="send" size={18}/>Enviar a revisión</button></footer>
+  </fieldset>
+  {busy&&<div className="status-upload-progress" role="status"><div><span style={{width:Math.max(4,progress)+'%'}}/></div><p>{progress<100?`Subiendo ${progress}%`:'Confirmando con MAIN…'}</p><button type="button" onClick={()=>controller.current?.abort()}>Cancelar</button></div>}
+ </form>;
 }
 
 function StatusViewer({status,playlist,mine,onOpen,onClose,onDelete,onReply,busy}){
