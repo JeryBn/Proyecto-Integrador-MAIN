@@ -25,7 +25,8 @@ public class SecurityConfig {
         var users = new InMemoryUserDetailsManager(
                 User.withUsername("alumno").password(encoder.encode("MainDemo2026!")).roles("ALUMNO").build(),
                 User.withUsername("otro").password(encoder.encode("MainDemo2026!")).roles("ALUMNO").build(),
-                User.withUsername("vacio").password(encoder.encode("MainDemo2026!")).roles("ALUMNO").build());
+                User.withUsername("vacio").password(encoder.encode("MainDemo2026!")).roles("ALUMNO").build(),
+                User.withUsername("docente").password(encoder.encode("MainDemo2026!")).roles("DOCENTE").build());
         if (!adminHash.isBlank()) {
             if (adminUsername.isBlank() || users.userExists(adminUsername) || !adminHash.matches("\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}"))
                 throw new IllegalArgumentException("Cuenta administrativa inválida: usa nombre distinto de las demos y hash BCrypt válido.");

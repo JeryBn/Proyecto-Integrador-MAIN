@@ -42,11 +42,14 @@ public class GradeService {
   if(score==null||maximum==null||maximum.signum()<=0||maximum.compareTo(new BigDecimal("1000"))>0||score.signum()<0||score.compareTo(maximum)>0||score.stripTrailingZeros().scale()>2||maximum.stripTrailingZeros().scale()>2)
    throw DomainException.invalid("Nota entre 0 y la escala máxima (hasta 1000), con máximo dos decimales.");
   var previous=db.queryForList("SELECT id FROM course_grade WHERE course_id=? AND student_id=? AND assessment=?",String.class,course,input.studentId(),assessment);
+  Timestamp previousRecordedAt=previous.isEmpty()?null:db.queryForObject("SELECT recorded_at FROM course_grade WHERE id=?",Timestamp.class,previous.getFirst());
   if(input.expectedRecordedAt()!=null){
-   String actual=previous.isEmpty()?"NEW":db.queryForObject("SELECT recorded_at FROM course_grade WHERE id=?",Timestamp.class,previous.getFirst()).toString();
+   String actual=previousRecordedAt==null?"NEW":previousRecordedAt.toString();
    if(!actual.equals(input.expectedRecordedAt()))throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"CONFLICT","La nota cambió. Actualiza el curso antes de guardarla.");
   }
   String id=previous.isEmpty()?UUID.randomUUID().toString():previous.getFirst();var now=Timestamp.valueOf(LocalDateTime.now(clock));
+  if(previousRecordedAt!=null&&!now.toLocalDateTime().withNano(0).isAfter(previousRecordedAt.toLocalDateTime().withNano(0)))
+   now=Timestamp.valueOf(previousRecordedAt.toLocalDateTime().withNano(0).plusSeconds(1));
   if(previous.isEmpty())db.update("INSERT INTO course_grade VALUES(?,?,?,?,?,?,?,?)",id,course,input.studentId(),assessment,score,maximum,actor,now);
   else db.update("UPDATE course_grade SET score=?,maximum=?,recorded_by=?,recorded_at=? WHERE id=?",score,maximum,actor,now,id);
   audit.record(actor,previous.isEmpty()?"GRADE_CREATED":"GRADE_UPDATED",id);

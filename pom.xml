@@ -21,6 +21,6 @@
 </plugin>
 <plugin>
   <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId>
-  <configuration><argLine>"-javaagent:${org.mockito:mockito-core:jar}"</argLine></configuration>
+  <configuration><argLine>"-javaagent:${org.mockito:mockito-core:jar}"</argLine><systemPropertyVariables><main.demo.teacher-enabled>false</main.demo.teacher-enabled></systemPropertyVariables></configuration>
 </plugin>
 </plugins></build></project>

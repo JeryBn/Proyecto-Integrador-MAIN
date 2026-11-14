@@ -16,6 +16,7 @@ public class IdentityBootstrap implements ApplicationRunner {
  private final IdentityService identities;private final JdbcTemplate db;private final DataSource source;
  private final PasswordEncoder encoder;private final SecurityConfig security;
  @Value("${main.demo.enabled:false}") private boolean demo;
+ @Value("${main.demo.teacher-enabled:false}") private boolean demoTeacher;
  @Value("${main.admin.username:admin}") private String admin;
  @Value("${main.admin.password-hash:}") private String hash;
  @Value("${main.admin.password:}") private String password;
@@ -31,6 +32,10 @@ public class IdentityBootstrap implements ApplicationRunner {
     String username=(String)row.get("usuario");
     identities.bootstrap(username,(String)row.get("nombre"),"ALUMNO",configured.loadUserByUsername(username).getPassword(),((Number)row.get("id")).longValue(),null);
    }
+   if(demoTeacher)db.query("SELECT id,nombre FROM docente WHERE id=1",(result,row)->{
+     identities.bootstrap("docente",result.getString("nombre"),"DOCENTE",configured.loadUserByUsername("docente").getPassword(),null,result.getLong("id"));
+     return result.getLong("id");
+    });
   }
   if(configured.userExists(admin)){
    var account=configured.loadUserByUsername(admin);

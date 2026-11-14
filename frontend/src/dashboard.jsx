@@ -1,6 +1,7 @@
 import {Icon} from './ui-icons.jsx';
+import {useEffect,useState} from 'react';
 import {useResource} from './user-hooks.jsx';
-import {localDate} from './user-api.mjs';
+import {localDate,userApi} from './user-api.mjs';
 import {nextClass,progressPercent,recentNotices} from './dashboard-model.mjs';
 import {noticeLabel,noticeTarget} from './notice-model.mjs';
 
@@ -33,6 +34,19 @@ function CourseRow({course,index}){
  </a>;
 }
 
+function useTeacherOverview(courses,enabled){
+ const [state,setState]=useState({loading:false,groups:[],error:''});
+ const courseKey=courses.map(course=>course.id).join(',');
+ useEffect(()=>{let active=true;if(!enabled||!courseKey){setState({loading:false,groups:[],error:''});return()=>{active=false};}setState(current=>({...current,loading:true,error:''}));Promise.all(courses.map(course=>userApi.call(`/api/v1/teaching/courses/${course.id}/grades`).then(students=>({course,students})))).then(groups=>{if(active)setState({loading:false,groups,error:''});}).catch(reason=>{if(active)setState({loading:false,groups:[],error:reason.message});});return()=>{active=false};},[enabled,courseKey]);
+ return state;
+}
+
+function TeacherCourseRow({group}){
+ const evaluations=group.students.reduce((total,student)=>total+student.grades.length,0);
+ const withoutGrades=group.students.filter(student=>!student.grades.length).length;
+ return <a className="dashboard-task" href="#cursos"><span className={'task-state '+(withoutGrades?'late':'')}><Icon name={withoutGrades?'alert':'graduation'} size={18}/></span><span className="grow"><small>CURSO DOCENTE</small><strong>{group.course.name}</strong><span>{group.students.length} estudiantes · {evaluations} evaluaciones</span></span><span className={'badge '+(withoutGrades?'late':'')}>{withoutGrades?`${withoutGrades} sin nota`:'Al día'}</span><Icon name="arrowRight" size={17}/></a>;
+}
+
 export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
  const agenda=useResource('/api/v1/agenda',{enabled:!!profile,interval:0});
  const grades=useResource('/api/v1/grades',{enabled:profile?.rol==='Alumno',interval:0});
@@ -42,26 +56,26 @@ export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
  const gradeProgress=progressPercent(grades.data||[]);
  const latest=recentNotices(notices);
  const courses=agenda.data?.courses||[];
+ const teacher=profile?.rol==='Docente';
+ const teacherOverview=useTeacherOverview(courses,teacher);
+ const teacherStudents=new Set(teacherOverview.groups.flatMap(group=>group.students.map(student=>student.studentId))).size;
+ const teacherGrades=teacherOverview.groups.reduce((total,group)=>total+group.students.reduce((sum,student)=>sum+student.grades.length,0),0);
+ const teacherWithoutGrades=teacherOverview.groups.reduce((total,group)=>total+group.students.filter(student=>!student.grades.length).length,0);
  return <section className="institutional-dashboard" aria-label="Inicio académico">
   <header className="dashboard-hero">
    <Greeting profile={profile}/>
-   <div className="hero-actions"><a className="primary-action" href={profile?.rol==='Alumno'?'#actividades':'#cursos'}><Icon name="clipboard"/>Ver mi jornada</a><a className="secondary-action" href="#ia"><Icon name="spark"/>Preguntar a MAIN IA</a></div>
+   <div className="hero-actions"><a className="primary-action" href={profile?.rol==='Alumno'?'#actividades':'#cursos'}><Icon name={teacher?'graduation':'clipboard'}/>{teacher?'Gestionar cursos':'Ver mi jornada'}</a><a className="secondary-action" href="#ia"><Icon name="spark"/>Preguntar a MAIN IA</a></div>
   </header>
 
   <section className="metrics-grid" aria-label="Resumen de tu cuenta">
-   <StatCard icon="clipboard" label="Actividades pendientes" value={loading?'—':pending.length} detail={pending.some(item=>item.vencida)?`${pending.filter(item=>item.vencida).length} requieren atención`:'Todo dentro del plazo'} tone={pending.some(item=>item.vencida)?'attention':''}/>
-   <StatCard icon="calendar" label="Próxima clase" value={next?String(next.startsAt).slice(0,5):'—'} detail={next?`${days[next.dayOfWeek]} · ${next.course}`:'Sin horario próximo'}/>
-   <StatCard icon="chart" label="Rendimiento" value={gradeProgress===null?'—':gradeProgress+'%'} detail={gradeProgress===null?'Aún no hay evaluaciones':'Promedio normalizado registrado'}/>
+   {teacher?<><StatCard icon="book" label="Cursos activos" value={agenda.loading?'—':courses.length} detail="Asignados a tu cuenta docente"/><StatCard icon="users" label="Estudiantes" value={teacherOverview.loading?'—':teacherStudents} detail="Matrículas autorizadas"/><StatCard icon="chart" label="Evaluaciones" value={teacherOverview.loading?'—':teacherGrades} detail={teacherWithoutGrades?`${teacherWithoutGrades} matrículas aún sin nota`:'Seguimiento al día'} tone={teacherWithoutGrades?'attention':''}/></>:<><StatCard icon="clipboard" label="Actividades pendientes" value={loading?'—':pending.length} detail={pending.some(item=>item.vencida)?`${pending.filter(item=>item.vencida).length} requieren atención`:'Todo dentro del plazo'} tone={pending.some(item=>item.vencida)?'attention':''}/><StatCard icon="calendar" label="Próxima clase" value={next?String(next.startsAt).slice(0,5):'—'} detail={next?`${days[next.dayOfWeek]} · ${next.course}`:'Sin horario próximo'}/><StatCard icon="chart" label="Rendimiento" value={gradeProgress===null?'—':gradeProgress+'%'} detail={gradeProgress===null?'Aún no hay evaluaciones':'Promedio normalizado registrado'}/></>}
    <StatCard icon="bell" label="Avisos nuevos" value={notices.filter(item=>!item.read).length} detail="Información de tu comunidad"/>
   </section>
 
   <div className="dashboard-layout">
    <section className="dashboard-card dashboard-priority">
-    <header><div><span className="section-kicker">PRIORIDAD</span><h2>Lo siguiente en tu agenda</h2></div><a href="#actividades">Ver todas <Icon name="arrowRight" size={16}/></a></header>
-    {loading&&<div className="dashboard-loading" role="status">Organizando tus actividades…</div>}
-    {error&&<div className="inline-error" role="alert"><p>{error}</p><button onClick={onReload}>Reintentar</button></div>}
-    {!loading&&!error&&!ordered.length&&<div className="dashboard-empty"><span><Icon name="checkCircle" size={28}/></span><div><strong>Estás al día</strong><p>No tienes actividades pendientes en este momento.</p></div></div>}
-    {!loading&&!error&&ordered.slice(0,4).map(item=><TaskRow key={item.id} item={item}/>)}
+    <header><div><span className="section-kicker">PRIORIDAD</span><h2>{teacher?'Seguimiento de tus cursos':'Lo siguiente en tu agenda'}</h2></div><a href={teacher?'#cursos':'#actividades'}>Ver todo <Icon name="arrowRight" size={16}/></a></header>
+    {teacher?teacherOverview.loading?<div className="dashboard-loading" role="status">Preparando el seguimiento docente…</div>:teacherOverview.error?<div className="inline-error" role="alert"><p>{teacherOverview.error}</p><a href="#cursos">Abrir cursos</a></div>:teacherOverview.groups.length?teacherOverview.groups.slice(0,4).map(group=><TeacherCourseRow key={group.course.id} group={group}/>):<div className="dashboard-empty"><span><Icon name="book" size={28}/></span><div><strong>Sin cursos asignados</strong><p>Administración todavía no vinculó cursos a tu cuenta.</p></div></div>:<>{loading&&<div className="dashboard-loading" role="status">Organizando tus actividades…</div>}{error&&<div className="inline-error" role="alert"><p>{error}</p><button onClick={onReload}>Reintentar</button></div>}{!loading&&!error&&!ordered.length&&<div className="dashboard-empty"><span><Icon name="checkCircle" size={28}/></span><div><strong>Estás al día</strong><p>No tienes actividades pendientes en este momento.</p></div></div>}{!loading&&!error&&ordered.slice(0,4).map(item=><TaskRow key={item.id} item={item}/>)}</>}
    </section>
 
    <aside className="dashboard-side-stack">
