@@ -21,7 +21,7 @@ La integración continua valida sintaxis, composición, construcción de imágen
 
 ## Verificación local de este corte
 
-- Spring Boot: 158 pruebas, cero fallos.
+- Spring Boot: 159 pruebas, cero fallos; una ruta FCM inválida o inaccesible se considera configuración no disponible sin derribar el proceso de notificaciones.
 - Django: 92 pruebas, cero fallos; se añadieron la provisión idempotente del primer ADMIN, TLS verificado también cuando se proporciona CA para una base local y una comprobación de despliegue que valida MySQL, cifrado y administrador sin revelar secretos.
 - Web: 42 pruebas, auditoría npm sin vulnerabilidades conocidas y compilación reproducible.
 - Contrato OCI: validador PowerShell aprobado, YAML válido y todos los scripts Bash superan análisis sintáctico.
