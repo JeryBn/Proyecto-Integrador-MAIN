@@ -5,7 +5,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 ## Estado técnico disponible
 
 - PR #7 integrado en `main`; la preparación reproducible para Oracle Cloud Always Free quedó incorporada y verificada por CI.
-- Spring: 158 pruebas aprobadas; Django: 92; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
+- Spring: 159 pruebas aprobadas; Django: 92; web: 42; Android: 9 unitarias, `lintDebug` y `assembleDebug` aprobados.
 - Arquitectura MySQL/Spring/Django: 16 comprobaciones HTTP reales después de reiniciar.
 - Web de usuarios: 18 vistas normales y al 200 % emulado sin infracciones Axe, errores de consola ni desbordamiento global.
 - Administración: seis estados normales, sin conexión y al 200 % emulado sin infracciones Axe ni desbordamiento; el acceso sin red conserva el usuario, limpia la contraseña y oculta el error técnico.

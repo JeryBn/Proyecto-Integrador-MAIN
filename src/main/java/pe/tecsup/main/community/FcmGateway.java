@@ -9,7 +9,11 @@ public class FcmGateway {
  private final ObjectMapper json;private final String credentials;private final HttpClient client;
  private String accessToken="";private Instant accessExpiry=Instant.EPOCH;
  public FcmGateway(ObjectMapper json,@Value("${MAIN_FCM_CREDENTIALS_FILE:}") String credentials){this.json=json;this.credentials=credentials;this.client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).followRedirects(HttpClient.Redirect.NEVER).build();}
- public boolean ready(){return !credentials.isBlank()&&Files.isRegularFile(Path.of(credentials));}
+ public boolean ready(){
+  if(credentials.isBlank())return false;
+  try{return Files.isRegularFile(Path.of(credentials));}
+  catch(InvalidPathException|SecurityException e){return false;}
+ }
  private static String b64(byte[] bytes){return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);}
  private synchronized String token(JsonNode account)throws Exception{
   if(Instant.now().isBefore(accessExpiry))return accessToken;
