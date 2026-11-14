@@ -2,7 +2,9 @@ package pe.tecsup.main.mobile.data
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.HttpURLConnection
@@ -21,6 +23,29 @@ class ActivityUnavailable : IOException("La actividad no existe o no está dispo
 class InvalidCredentials : IOException("Usuario o contraseña incorrectos.")
 class ApiFailure(message: String) : IOException(message)
 class ResourceUnavailable : IOException("El recurso ya no está disponible para tu cuenta.")
+
+private const val MAX_API_RESPONSE_BYTES = 1024 * 1024
+
+internal fun readApiResponse(input: InputStream?, maxBytes: Int = MAX_API_RESPONSE_BYTES): String {
+    require(maxBytes > 0) { "El límite de respuesta debe ser positivo." }
+    if (input == null) return ""
+    val output = ByteArrayOutputStream(minOf(maxBytes, 8192))
+    val buffer = ByteArray(8192)
+    input.use { stream ->
+        var total = 0
+        while (true) {
+            val count = stream.read(buffer)
+            if (count < 0) break
+            if (count == 0) continue
+            if (count > maxBytes - total) {
+                throw ApiFailure("El servidor envió una respuesta demasiado grande. Intenta nuevamente.")
+            }
+            output.write(buffer, 0, count)
+            total += count
+        }
+    }
+    return output.toString(Charsets.UTF_8.name())
+}
 
 /** One cookie jar per login. No cookies or passwords are written to storage. */
 class MainApi(val endpoint: String) {
@@ -62,7 +87,7 @@ class MainApi(val endpoint: String) {
             val status = connection.responseCode
             cookies.put(uri, connection.headerFields.filterKeys { it != null })
             val stream = if (status >= 400) connection.errorStream else connection.inputStream
-            val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
+            val body = readApiResponse(stream)
             return Response(status, body, connection.getHeaderField("Location"), path)
         } finally {
             connection.disconnect()
@@ -221,7 +246,7 @@ class MainApi(val endpoint: String) {
                 }
                 line("--$boundary--\r\n")
             }
-            val status=connection.responseCode;val body=(if(status>=400)connection.errorStream else connection.inputStream)?.bufferedReader()?.use{it.readText()}.orEmpty()
+            val status=connection.responseCode;val body=readApiResponse(if(status>=400)connection.errorStream else connection.inputStream)
             checked(Response(status,body,null,uri.path))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
