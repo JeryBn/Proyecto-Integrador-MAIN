@@ -1,7 +1,9 @@
 import {useEffect,useState} from 'react';
+import {useConfirmation} from './confirmation.jsx';
 const actionLabels={ACCOUNT_CREATED:'Cuenta creada',ACCOUNT_DISABLED:'Cuenta deshabilitada',PASSWORD_RESET:'Contraseña restablecida',GUARDIAN_VERIFIED:'Parentesco verificado',GUARDIAN_REVOKED:'Parentesco revocado',CONTACT_APPROVED:'Contacto autorizado',COURSE_CREATED:'Curso creado',COURSE_UPDATED:'Curso editado',ENROLLMENT_GRANTED:'Matrícula registrada',ENROLLMENT_REVOKED:'Matrícula revocada',TIMETABLE_CREATED:'Horario registrado',TIMETABLE_REMOVED:'Horario retirado',GRADE_CREATED:'Nota registrada',GRADE_UPDATED:'Nota editada',GROUP_CREATED:'Grupo creado',GROUP_INVITED:'Invitación a grupo',GROUP_INVITATION_ACCEPTED:'Invitación aceptada',GROUP_INVITATION_REJECTED:'Invitación rechazada',GROUP_MEMBER_REMOVED:'Miembro retirado',GROUP_MEMBER_ROLE_CHANGED:'Rol de miembro editado',MESSAGE_APPROVED:'Mensaje aprobado',MESSAGE_REJECTED:'Mensaje rechazado',STATUS_APPROVED:'Estado aprobado',STATUS_REJECTED:'Estado rechazado'};
 
 export function AcademicAdmin({api,onExpire}) {
+  const {confirm,confirmation}=useConfirmation();
   const [courses,setCourses]=useState([]),[audit,setAudit]=useState([]),[students,setStudents]=useState([]);
   const [offset,setOffset]=useState(0),[auditOffset,setAuditOffset]=useState(0),[studentOffset,setStudentOffset]=useState(0);
   const [selected,setSelected]=useState(''),[revision,setRevision]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -25,7 +27,7 @@ export function AcademicAdmin({api,onExpire}) {
     try{await action();setNotice(message);done?.();setRevision(v=>v+1);}
     catch(e){fail(e);}finally{setBusy(false);}
   }
-  return <section aria-label="Administración académica"><h2>Cursos y matrículas</h2>
+  return <section aria-label="Administración académica">{confirmation}<h2>Cursos y matrículas</h2>
     {error && <p role="alert" className="err">{error}</p>}{notice && <p role="status" className="ok">{notice}</p>}
     <button disabled={busy} onClick={()=>setRevision(v=>v+1)}>Actualizar cursos y auditoría</button>
     {loading?<p role="status">Cargando…</p>:<div className="scroll"><table><caption>Cursos registrados</caption><thead><tr><th>ID</th><th>Curso</th><th>Docente</th><th>Acciones</th></tr></thead><tbody>
@@ -46,7 +48,7 @@ export function AcademicAdmin({api,onExpire}) {
     {selected && <section className="card"><h3>Matrículas del curso {selected}</h3>
       <p>Revocar una matrícula retira acceso a actividades y notas del curso; conserva el historial académico. No elimina contactos ni conversaciones independientes.</p>
       <ul>{students.map(s=><li key={s.studentId}>{s.name} ({s.username}) <button disabled={busy} onClick={()=>{
-        if(window.confirm(`¿Revocar la matrícula de ${s.name} en el curso ${selected}?`))save(()=>api(`/v1/courses/${selected}/students`,{method:'PUT',json:{username:s.username,enrolled:false}}),'Matrícula revocada.');
+        confirm(`¿Revocar la matrícula de ${s.name} en el curso ${selected}? Perderá acceso a sus actividades y notas visibles.`,()=>save(()=>api(`/v1/courses/${selected}/students`,{method:'PUT',json:{username:s.username,enrolled:false}}),'Matrícula revocada.'));
       }}>Revocar matrícula de {s.name}</button></li>)}</ul>{!students.length&&<p>No hay estudiantes en esta página.</p>}
       <div className="pager"><button disabled={busy||studentOffset===0} onClick={()=>setStudentOffset(studentOffset-20)}>Estudiantes anteriores</button><button disabled={busy||students.length<20} onClick={()=>setStudentOffset(studentOffset+20)}>Estudiantes siguientes</button></div>
       <form onSubmit={e=>{e.preventDefault();save(()=>api(`/v1/courses/${selected}/students`,{method:'PUT',json:{username:student,enrolled:true}}),'Estudiante matriculado.',()=>setStudent(''));}}>

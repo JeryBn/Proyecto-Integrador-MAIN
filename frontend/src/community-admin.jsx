@@ -1,6 +1,8 @@
 import {useEffect, useState} from 'react';
+import {useConfirmation} from './confirmation.jsx';
 
 export function CommunityAdmin({api, onExpire, currentUser}) {
+  const {confirm,confirmation}=useConfirmation();
   const [users, setUsers] = useState([]), [offset, setOffset] = useState(0);
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ export function CommunityAdmin({api, onExpire, currentUser}) {
   }
   const field = (key, label, type='text') => <label>{label}<input type={type} value={account[key]} required
     autoComplete={type === 'password' ? 'new-password' : 'off'} onChange={e=>setAccount({...account,[key]:e.target.value})}/></label>;
-  return <section aria-label="Administración de la comunidad">
+  return <section aria-label="Administración de la comunidad">{confirmation}
     <h2>Cuentas y vínculos</h2>
     <p>Las cuentas, contactos y parentescos se comparten con la app. Verifica la identidad antes de autorizar un vínculo.</p>
     {error && <p role="alert" className="err">{error}</p>}
@@ -33,8 +35,7 @@ export function CommunityAdmin({api, onExpire, currentUser}) {
       <div className="scroll"><table><caption>Cuentas registradas</caption><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead>
         <tbody>{users.map(u=><tr key={u.username}><td>{u.username}</td><td>{u.name}</td><td>{u.role}</td><td>{u.enabled?'Activa':'Deshabilitada'}</td><td>
           <button disabled={busy || !u.enabled || ['ADMIN','REVIEWER'].includes(u.role) || u.username === currentUser} onClick={()=>{
-            if(window.confirm(`¿Deshabilitar la cuenta ${u.username}? Se cerrarán sus sesiones.`))
-              save(()=>api(`/v1/users/${encodeURIComponent(u.username)}/disable`,{method:'POST'}),'Cuenta deshabilitada.');
+            confirm(`¿Deshabilitar la cuenta ${u.username}? Se cerrarán sus sesiones y perderá acceso hasta que administración la reactive.`,()=>save(()=>api(`/v1/users/${encodeURIComponent(u.username)}/disable`,{method:'POST'}),'Cuenta deshabilitada.'));
           }}>Deshabilitar</button></td></tr>)}</tbody></table></div>
       {!users.length && <p>No hay cuentas en esta página.</p>}
       <h3>Reportes de contactos</h3>
@@ -61,14 +62,14 @@ export function CommunityAdmin({api, onExpire, currentUser}) {
       <button type="submit">Verificar parentesco</button>
       <button type="button" onClick={()=>{
         if(!guardian || !Number.isSafeInteger(Number(student)) || Number(student)<1){setError('Indica familiar y estudiante válidos.');return;}
-        if(window.confirm('¿Revocar este parentesco y su acceso académico?')) save(()=>api(`/v1/guardians/${encodeURIComponent(guardian)}/${Number(student)}`,{method:'DELETE'}),'Parentesco revocado.');
+        confirm('¿Revocar este parentesco? El familiar perderá el acceso académico asociado al estudiante.',()=>save(()=>api(`/v1/guardians/${encodeURIComponent(guardian)}/${Number(student)}`,{method:'DELETE'}),'Parentesco revocado.'));
       }}>Revocar parentesco</button>
     </form></fieldset>
     <fieldset disabled={busy} className="card"><legend>Autorizar contacto</legend><form onSubmit={e=>{e.preventDefault();save(()=>api('/v1/contacts',{method:'POST',json:{first,second}}),'Contacto autorizado.');}}>
       <label>Primer usuario<input required value={first} onChange={e=>setFirst(e.target.value)}/></label><label>Segundo usuario<input required value={second} onChange={e=>setSecond(e.target.value)}/></label><button type="submit">Autorizar contacto</button>
     </form></fieldset>
     <fieldset disabled={busy} className="card"><legend>Restablecer contraseña</legend><form onSubmit={e=>{e.preventDefault();
-      if(window.confirm(`¿Restablecer la contraseña de ${target} y cerrar sus sesiones?`)) save(()=>api(`/v1/users/${encodeURIComponent(target)}/reset-password`,{method:'POST',json:{password}}),'Contraseña restablecida.',()=>setPassword(''));
+      confirm(`¿Restablecer la contraseña de ${target}? Se cerrarán todas sus sesiones activas.`,()=>save(()=>api(`/v1/users/${encodeURIComponent(target)}/reset-password`,{method:'POST',json:{password}}),'Contraseña restablecida.',()=>setPassword('')));
     }}><label>Usuario<input required value={target} onChange={e=>setTarget(e.target.value)}/></label><label>Nueva contraseña<input required type="password" minLength="12" autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="submit">Restablecer contraseña</button></form></fieldset>
   </section>;
 }
