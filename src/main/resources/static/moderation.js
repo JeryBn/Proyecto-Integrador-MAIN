@@ -12,7 +12,7 @@ async function request(path,options={}){
 }
 function element(tag,text){const item=document.createElement(tag);if(text!==undefined)item.textContent=text;return item;}
 function automaticSummary(value){
- const panel=element('aside');panel.append(element('h3','Evaluación automática orientativa'));
+ const panel=element('aside');panel.className='automatic-summary';panel.append(element('h3','Evaluación automática orientativa'));
  if(!value){panel.append(element('p','No hay evaluación automática de esta versión. La revisión humana sigue disponible.'));return panel;}
  const states={HUMAN_REQUIRED:'Revisión humana necesaria',CLEAR_SHADOW:'Sin alertas en el análisis de texto',PROVIDER_UNAVAILABLE:'Proveedor no disponible; contenido privado',RUNNING:'Evaluación en curso',WAITING:'Evaluación pendiente'};
  const coverage={TEXT:'Texto',IMAGE_PARTIAL:'Imagen con cobertura parcial',AUDIO_TRANSCRIPT_PARTIAL:'Transcripción de audio con cobertura parcial',VIDEO_SAMPLED_PARTIAL:'Video muestreado y audio con cobertura parcial',NOT_ANALYZED:'Sin análisis completo'};
@@ -48,7 +48,7 @@ async function load(){
    const card=element('article');card.append(element('h2',message.senderName+' · versión '+message.revision),element('p',message.createdAt),element('pre',message.text),automaticSummary(message.automaticReview));
    const label=element('label','Norma o categoría de rechazo (según reglas aprobadas del equipo)');
    const reason=element('input');reason.maxLength=300;label.append(reason);
-   const approve=element('button','Aprobar esta versión'),reject=element('button','Rechazar esta versión');
+   const approve=element('button','Aprobar esta versión'),reject=element('button','Rechazar esta versión');approve.className='approve-action';reject.className='reject-action';
    let attachmentReviewed=null;
    if(message.attachmentKind&&message.attachmentKind!=='NONE'){
     const source='/api/admin/v1/moderation/messages/'+encodeURIComponent(message.id)+'/attachment?revision='+message.revision;
@@ -100,7 +100,7 @@ async function loadStatuses(){
    card.append(media,confirmation);
   }
   const reason=element('input');reason.placeholder='Motivo del rechazo';reason.maxLength=300;
-  const approve=element('button','Aprobar estado'),reject=element('button','Rechazar estado');
+  const approve=element('button','Aprobar estado'),reject=element('button','Rechazar estado');approve.className='approve-action';reject.className='reject-action';
   if(mediaReviewed){approve.disabled=!mediaReviewed.checked;mediaReviewed.addEventListener('change',()=>{approve.disabled=!mediaReviewed.checked;});}
   async function decide(approved){
    if(approved&&mediaReviewed&&!mediaReviewed.checked){notice.textContent='Revisa el archivo completo y confirma la revisión antes de aprobar.';return;}
