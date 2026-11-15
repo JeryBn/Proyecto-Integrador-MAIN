@@ -49,7 +49,7 @@ Las instrucciones y paquetes siguientes corresponden a la base HU06/HU07. Para c
 ## Descargar el paquete completo
 [Descargar MAIN_LOCAL_PAMELA.zip](entregables/MAIN_LOCAL_PAMELA.zip?raw=true). Abre el archivo y pulsa Download raw file si GitHub muestra su pagina. Extrae todo y ejecuta INICIAR-MAIN.cmd. Necesita Java JDK 21 o superior. No requiere Node, Maven o MySQL para esta demostracion.
 
-Lee [LEEME-LOCAL.md](LEEME-LOCAL.md) para ejecutar, modificar y resolver errores. Abre http://127.0.0.1:8088/login.html cuando el servidor indique Started MainApplication. Cuentas sinteticas: alumno, otro y vacio; contraseña MainDemo2026!. Login en /login.html, POST /login, redireccion a /; cierre de sesion POST /logout con CSRF.
+Lee [LEEME-LOCAL.md](LEEME-LOCAL.md) para ejecutar, modificar y resolver errores. La [auditoría integral de experiencia y modernización](docs/AUDITORIA_INTEGRAL_MODERNIZACION_14_NOV_2026.md) resume el estado actual de alumno, docente, administración, moderación y Android. Abre http://127.0.0.1:8088/login.html cuando el servidor indique Started MainApplication. Cuentas sinteticas: alumno, otro y vacio; contraseña MainDemo2026!. Login en /login.html, POST /login, redireccion a /; cierre de sesion POST /logout con CSRF.
 
 ## Desarrollo
 Abre el proyecto Maven en IntelliJ con JDK 21. Desde frontend: npm ci y npm run build. Desde la raiz: mvn clean package. Para usar el iniciador copia target/main-sprint1-0.1.0.jar a la raiz y reinicia. El ZIP contiene ese JAR ya compilado y todo el codigo fuente. El build de React genera index.html y copia los assets al backend.

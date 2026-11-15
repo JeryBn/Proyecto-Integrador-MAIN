@@ -15,7 +15,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 - Oracle Cloud Always Free fue elegido como destino. Existe composición reproducible para ARM64, red privada, TLS MySQL, permisos separados, primer administrador idempotente, salud, logs y respaldos; todavía no existe una VM pública creada.
 - Spring ofrece `/actuator/health` y Django `/api/admin/health`: ambos responden sin autenticación con estado mínimo, no revelan componentes, consultas ni excepciones y permiten detectar una base administrativa no disponible mediante HTTP 503.
 - La frontera de ingreso a un grupo es estable aun cuando varias operaciones ocurren en el mismo instante: un miembro nuevo no recibe historial anterior y sí puede recibir mensajes creados después de incorporarse.
-- La herramienta de construcción web fue actualizada a una versión sin alertas conocidas; CI ejecuta `npm audit --audit-level=moderate` antes de las 49 pruebas y la compilación.
+- La herramienta de construcción web fue actualizada a una versión sin alertas conocidas; CI ejecuta `npm audit --audit-level=moderate` antes de las 52 pruebas y la compilación.
 - El rediseño administrativo de Pamela está integrado en la rama de resiliencia conservando su autoría, seguido de correcciones separadas de accesibilidad.
 - El preflight de entrega limita a 1 MiB los archivos JSON privados que inspecciona y valida el paquete Firebase Android y la estructura de la cuenta FCM sin imprimir rutas privadas, claves ni contenido.
 - Spring limita a 1 MiB la respuesta de OpenAI, a 256 KiB las respuestas de FCM y a 1 MiB el archivo privado FCM; una respuesta excesiva se cancela y conserva el error seguro del módulo.
