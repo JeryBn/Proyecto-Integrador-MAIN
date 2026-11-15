@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {userApi} from './user-api.mjs';
 import {createReadPoller} from './read-poller.mjs';
+import {Icon} from './ui-icons.jsx';
 
 export function useResource(path,{enabled=true,interval=0}={}){
   const [state,setState]=useState({data:null,error:'',loading:true});
@@ -51,9 +52,9 @@ function Confirmation({message,onFinish}){
   const dialog=useRef(null);
   useEffect(()=>{dialog.current?.showModal();},[]);
   return <dialog ref={dialog} className="confirmation-dialog" aria-label="Confirmar acción" onCancel={e=>{e.preventDefault();onFinish(false);}}>
-    <h2>Confirmar acción</h2><p>{message}</p><div className="toolbar">
-      <button autoFocus onClick={()=>onFinish(false)}>Cancelar acción</button>
-      <button onClick={()=>onFinish(true)}>Confirmar acción</button>
+    <div className="confirmation-heading"><span><Icon name="alert" size={23}/></span><div><small>ACCIÓN IMPORTANTE</small><h2>¿Quieres continuar?</h2></div></div><p>{message}</p><div className="confirmation-note"><Icon name="shield" size={15}/> MAIN protege tus cambios y te pedirá confirmación en acciones sensibles.</div><div className="confirmation-actions">
+      <button autoFocus onClick={()=>onFinish(false)}>No, volver</button>
+      <button className="confirm-action" onClick={()=>onFinish(true)}>Sí, continuar</button>
     </div>
   </dialog>;
 }
