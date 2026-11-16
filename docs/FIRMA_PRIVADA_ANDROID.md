@@ -7,3 +7,9 @@ Una segunda ejecución sin parámetros recupera temporalmente la contraseña, ej
 Guardar una copia privada del keystore y su contraseña recuperable antes de distribuir a terceros. El archivo DPAPI depende de esta cuenta Windows; copiarlo solo a otra máquina no garantiza recuperación. La pérdida de la clave impide actualizar instalaciones con la misma identidad. Los archivos privados nunca se suben a GitHub ni al paquete local.
 
 El manifiesto `entrega.json` deja explícitamente pendientes la aceptación en teléfono físico y el entorno HTTPS. Una firma válida no acredita funcionamiento de FCM, despliegue ni aceptación funcional.
+
+## Identidad creada el 16 de noviembre de 2026
+
+Jery confirmó que MAIN no tenía una identidad anterior. Se creó la identidad nueva con el procedimiento de este documento y se verificó un APK release no depurable del commit `36e2d6a`. Huella pública SHA-256 del certificado: `250bdbefd60597b2be57c0020fd67d3c87a61a0fdbf47ee439251c48cccfd230`.
+
+La clave y la contraseña no están en Git ni en este documento. Antes de distribuir el APK sigue siendo obligatorio guardar el `.p12` en un medio externo privado y la contraseña en un gestor recuperable; la copia DPAPI local depende de esta cuenta Windows.

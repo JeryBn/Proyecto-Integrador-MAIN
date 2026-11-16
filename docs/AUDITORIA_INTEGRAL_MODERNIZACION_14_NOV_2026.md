@@ -41,10 +41,10 @@ El producto técnicamente ejecutable está completo hasta el límite del entorno
 | Web React | 52 pruebas, 0 fallos; compilación correcta |
 | Administración Django | 92 pruebas, 0 fallos |
 | Android | 13 pruebas unitarias, 0 fallos; `lintDebug` y `assembleDebug` correctos |
-| Android físico (16/11) | Instalación y recorrido manual correctos; 5/5 pruebas instrumentadas generales y 1/1 con fuente al 200 % |
+| Android físico (16/11) | Instalación y recorrido manual correctos; 5/5 pruebas instrumentadas generales, 1/1 con fuente al 200 % y APK release firmado/no depurable instalado |
 | APK de desarrollo | Generado correctamente (`app-debug.apk`) |
 | Despliegue Oracle Cloud | Contrato, red privada, TLS, secretos, salud y respaldos validados |
-| Preflight de entrega | 6 de 12 requisitos disponibles al confirmar estos cambios; 6 bloqueos externos identificados con mensajes accionables |
+| Preflight de entrega | 7 de 12 requisitos disponibles al confirmar estos cambios; 5 bloqueos externos identificados con mensajes accionables |
 | Prueba visual | Chats y estados revisados en móvil/escritorio; confirmación sensible probada; sin desborde global móvil |
 
 ## Riesgos técnicos y operativos restantes
@@ -52,9 +52,9 @@ El producto técnicamente ejecutable está completo hasta el límite del entorno
 No se detectó un defecto de código que impida continuar con la puesta en producción. Los riesgos restantes son operativos:
 
 - La aplicación pública todavía no existe: falta la VM gratuita, origen HTTPS y variables MySQL de producción.
-- Android ya acredita instalación debug, permiso de notificaciones, segundo plano/reanudación, rotación, fuente al 200 % y recuperación local en un teléfono autorizado. Aún faltan firma release, push real, material multimedia sintético y recorrido contra HTTPS final.
+- Android ya acredita instalación debug, permiso de notificaciones, segundo plano/reanudación, rotación, fuente al 200 %, recuperación local y una instalación release firmada/no depurable. Aún faltan respaldo externo recuperable, push real, material multimedia sintético y recorrido contra HTTPS final.
 - Las notificaciones push requieren dos configuraciones privadas: Firebase Android y cuenta de servicio FCM del servidor.
-- No existe firma release configurada en esta PC; el APK generado es de desarrollo.
+- Existe una identidad release nueva protegida con DPAPI y un APK firmado verificado. Antes de distribuirlo falta el respaldo externo recuperable de clave y contraseña.
 - MAIN IA necesita una clave con cuota activa. La interfaz y los límites ya están preparados.
 - Moderación requiere cuentas operativas reales, confirmación de responsables y aceptación de la política de conservación.
 - La aceptación visual, de accesibilidad y académica debe realizarla una persona; las pruebas automáticas no pueden firmar por el equipo o docente.
@@ -62,7 +62,7 @@ No se detectó un defecto de código que impida continuar con la puesta en produ
 ## Interacción necesaria de Jery
 
 1. Crear o facilitar acceso a una VM Oracle Cloud Always Free y elegir el subdominio gratuito.
-2. Indicar si existe una firma Android anterior; si no existe, aprobar la creación y respaldo de una identidad nueva.
+2. Respaldar fuera de esta PC la nueva identidad Android y guardar su contraseña en un gestor privado antes de distribuir el APK.
 3. Descargar de Firebase el `google-services.json` correcto y una cuenta de servicio FCM, manteniéndolos fuera de Git.
 4. Habilitar cuota del proyecto de OpenAI si se desea demostrar MAIN IA con respuestas reales.
 5. Confirmar responsables de moderación y coordinar la aceptación de Pamela, Michael y el docente.

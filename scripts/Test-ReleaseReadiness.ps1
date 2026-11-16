@@ -207,9 +207,36 @@ $storeFile = $signingValues['MAIN_SIGNING_STORE_FILE']
 if (Test-ConfiguredValue $storeFile -and -not [IO.Path]::IsPathRooted($storeFile)) {
     $storeFile = Join-Path $androidAppPath $storeFile
 }
-$signingReady = ($signingNames | Where-Object { -not (Test-ConfiguredValue $signingValues[$_]) }).Count -eq 0 -and
+$environmentSigningReady = ($signingNames | Where-Object { -not (Test-ConfiguredValue $signingValues[$_]) }).Count -eq 0 -and
     (Test-Path -LiteralPath $storeFile -PathType Leaf)
-Add-ReadinessCheck 'Firma Android' $signingReady $(if ($signingReady) { 'Las cuatro variables privadas y el archivo de firma están presentes.' } else { 'Falta el keystore original o alguna variable MAIN_SIGNING_*.' })
+$privateSigningReady = $false
+$privateSigningConfiguration = Join-Path $env:LOCALAPPDATA 'MAIN-private\android\signing.json'
+if (Test-Path -LiteralPath $privateSigningConfiguration -PathType Leaf) {
+    try {
+        if ((Get-Item -LiteralPath $privateSigningConfiguration).Length -gt 1MB) { throw 'Configuración privada demasiado grande.' }
+        $privateSigning = Get-Content -LiteralPath $privateSigningConfiguration -Raw | ConvertFrom-Json
+        $privateSigningReady =
+            (Test-ConfiguredValue $privateSigning.store) -and
+            [IO.Path]::IsPathRooted([string]$privateSigning.store) -and
+            (Test-Path -LiteralPath $privateSigning.store -PathType Leaf) -and
+            (Test-ConfiguredValue $privateSigning.alias) -and
+            (Test-ConfiguredValue $privateSigning.protectedPassword) -and
+            ([string]$privateSigning.certificateSha256 -match '^[0-9a-fA-F]{64}$')
+        if ($privateSigningReady) {
+            $protectedSigningPassword = ConvertTo-SecureString $privateSigning.protectedPassword
+            $protectedSigningPassword.Dispose()
+        }
+    } catch { $privateSigningReady = $false }
+}
+$signingReady = $environmentSigningReady -or $privateSigningReady
+$signingDetail = if ($environmentSigningReady) {
+    'Las cuatro variables privadas y el archivo de firma están presentes.'
+} elseif ($privateSigningReady) {
+    'Identidad de entrega local protegida con DPAPI y archivo de firma presentes.'
+} else {
+    'Falta el keystore original, la identidad privada DPAPI o las variables MAIN_SIGNING_*.'
+}
+Add-ReadinessCheck 'Firma Android' $signingReady $signingDetail
 
 $fcmCredentials = Get-ConfiguredEnvironment 'MAIN_FCM_CREDENTIALS_FILE'
 $pushEnabled = [string](Get-ConfiguredEnvironment 'MAIN_PUSH_ENABLED') -eq 'true'
