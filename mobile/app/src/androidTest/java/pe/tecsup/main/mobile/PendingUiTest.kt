@@ -48,7 +48,7 @@ class PendingUiTest {
     }
     @Test fun unreachableServerShowsRecoverableLoginError() {
         login("alumno", "http://127.0.0.1:65530", expectSuccess = false)
-        waitFor("No pudimos conectar con el servidor.")
+        waitFor("No encontramos el servidor. Revisa tu conexión y la dirección configurada.")
         capture("05_error_conexion.png")
         ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
         ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")

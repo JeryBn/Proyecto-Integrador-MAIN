@@ -4,7 +4,7 @@
 
 MAIN ya no se presenta como una colección de pantallas de curso. La rama `feat/institutional-experience` ofrece una experiencia institucional coherente para estudiante, docente y administración, conserva las reglas de seguridad y está respaldada por regresiones de servidor, web, administración y Android.
 
-El producto técnicamente ejecutable está completo hasta el límite de esta PC. Lo que permanece abierto depende de cuentas de terceros, infraestructura pública, credenciales privadas, un teléfono físico o aceptación humana; no corresponde simular esas evidencias ni cerrar tarjetas en nombre de otras personas.
+El producto técnicamente ejecutable está completo hasta el límite del entorno disponible. El 16 de noviembre se añadió una verificación en un teléfono Android físico. Lo que permanece abierto depende de cuentas de terceros, infraestructura pública, credenciales privadas, firma release o aceptación humana; no corresponde simular esas evidencias ni cerrar tarjetas en nombre de otras personas.
 
 ## Evaluación por experiencia
 
@@ -18,7 +18,7 @@ El producto técnicamente ejecutable está completo hasta el límite de esta PC.
 | Perfil | Preferencias, privacidad, contactos, recordatorios, apelaciones y canal confidencial de reporte | Controles sensibles comprensibles y protegidos |
 | MAIN IA | Espacio de consulta con sugerencias, privacidad, límites y errores seguros | Interfaz lista; respuesta real depende de cuota del proveedor |
 | Administración | Actividades, cuentas, vínculos, cursos, matrículas, auditoría y moderación | Herramienta institucional funcional; las confirmaciones nativas fueron sustituidas por diálogos accesibles |
-| Android | Material 3, navegación, actividades, mensajes, estados, avisos y asistente | Compila y pasa análisis; falta aceptación en dispositivo físico y servicios externos |
+| Android | Material 3, navegación, actividades, mensajes, estados, avisos y asistente | Compila y pasa análisis; instalación y seis pruebas instrumentadas aprobadas en un Motorola con Android 15; faltan release, servicios externos y aceptación humana |
 
 ## Cambios implementados durante la modernización
 
@@ -41,9 +41,10 @@ El producto técnicamente ejecutable está completo hasta el límite de esta PC.
 | Web React | 52 pruebas, 0 fallos; compilación correcta |
 | Administración Django | 92 pruebas, 0 fallos |
 | Android | 13 pruebas unitarias, 0 fallos; `lintDebug` y `assembleDebug` correctos |
+| Android físico (16/11) | Instalación y recorrido manual correctos; 5/5 pruebas instrumentadas generales y 1/1 con fuente al 200 % |
 | APK de desarrollo | Generado correctamente (`app-debug.apk`) |
 | Despliegue Oracle Cloud | Contrato, red privada, TLS, secretos, salud y respaldos validados |
-| Preflight de entrega | 5 de 12 requisitos ya disponibles; 7 bloqueos externos identificados con mensajes accionables |
+| Preflight de entrega | 6 de 12 requisitos disponibles al confirmar estos cambios; 6 bloqueos externos identificados con mensajes accionables |
 | Prueba visual | Chats y estados revisados en móvil/escritorio; confirmación sensible probada; sin desborde global móvil |
 
 ## Riesgos técnicos y operativos restantes
@@ -51,7 +52,7 @@ El producto técnicamente ejecutable está completo hasta el límite de esta PC.
 No se detectó un defecto de código que impida continuar con la puesta en producción. Los riesgos restantes son operativos:
 
 - La aplicación pública todavía no existe: falta la VM gratuita, origen HTTPS y variables MySQL de producción.
-- Android no puede acreditar instalación, permisos, segundo plano ni recuperación sin un teléfono autorizado.
+- Android ya acredita instalación debug, permiso de notificaciones, segundo plano/reanudación, rotación, fuente al 200 % y recuperación local en un teléfono autorizado. Aún faltan firma release, push real, material multimedia sintético y recorrido contra HTTPS final.
 - Las notificaciones push requieren dos configuraciones privadas: Firebase Android y cuenta de servicio FCM del servidor.
 - No existe firma release configurada en esta PC; el APK generado es de desarrollo.
 - MAIN IA necesita una clave con cuota activa. La interfaz y los límites ya están preparados.
@@ -61,11 +62,10 @@ No se detectó un defecto de código que impida continuar con la puesta en produ
 ## Interacción necesaria de Jery
 
 1. Crear o facilitar acceso a una VM Oracle Cloud Always Free y elegir el subdominio gratuito.
-2. Conectar y autorizar un teléfono Android por USB.
-3. Indicar si existe una firma Android anterior; si no existe, aprobar la creación y respaldo de una identidad nueva.
-4. Descargar de Firebase el `google-services.json` correcto y una cuenta de servicio FCM, manteniéndolos fuera de Git.
-5. Habilitar cuota del proyecto de OpenAI si se desea demostrar MAIN IA con respuestas reales.
-6. Confirmar responsables de moderación y coordinar la aceptación de Pamela, Michael y el docente.
+2. Indicar si existe una firma Android anterior; si no existe, aprobar la creación y respaldo de una identidad nueva.
+3. Descargar de Firebase el `google-services.json` correcto y una cuenta de servicio FCM, manteniéndolos fuera de Git.
+4. Habilitar cuota del proyecto de OpenAI si se desea demostrar MAIN IA con respuestas reales.
+5. Confirmar responsables de moderación y coordinar la aceptación de Pamela, Michael y el docente.
 
 ## Criterio de cierre
 

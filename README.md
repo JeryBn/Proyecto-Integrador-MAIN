@@ -1,10 +1,10 @@
 # Proyecto Integrador MAIN - seccion A
 
-## Estado de cierre — actualizado el 14 de noviembre de 2026
+## Estado de cierre — actualizado el 16 de noviembre de 2026
 
 La rama institucional más reciente tiene 173 pruebas Spring y 52 web aprobadas, además de las 92 Django, 13 Android y 16 comprobaciones HTTP del cierre anterior. La experiencia web fue renovada para alumnos y docentes: inicio académico, cursos, entregas con borrador, notas, chats, estados, perfil y navegación móvil. El docente puede publicar actividades únicamente en sus cursos y consultar entregas/borradores; el alumno las recibe en su lista autorizada. Spring y Django conservan comprobaciones de salud mínimas y mensajes de error sin detalles internos. El rediseño administrativo de Pamela mantiene su autoría y sus correcciones accesibles separadas.
 
-Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3 al #13 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; el cierre global aún requiere teléfono físico, firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
+Consulta [resiliencia y evidencia actual](docs/RESILIENCIA_Y_ACCESIBILIDAD_12_NOV.md), la [verificación Android física del 16 de noviembre](docs/informes/2026-11-16-android-fisico/LEEME.md) y la [matriz exacta para el cierre total](docs/REQUISITOS_CIERRE_TOTAL_12_NOV.md). Los PR #3 al #13 ya están integrados. GitHub verifica automáticamente Spring, Django, web y Android; la instalación debug y seis pruebas instrumentadas ya pasaron en un Motorola con Android 15. El cierre global aún requiere firma recuperable, Firebase/FCM, HTTPS definitivo, cuota de IA y aceptación real del equipo/docente.
 
 La evidencia funcional del nuevo portal institucional está en [MEJORA_EXPERIENCIA_INSTITUCIONAL_14_NOV.md](docs/MEJORA_EXPERIENCIA_INSTITUCIONAL_14_NOV.md).
 

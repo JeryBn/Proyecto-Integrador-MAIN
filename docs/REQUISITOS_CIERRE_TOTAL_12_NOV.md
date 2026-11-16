@@ -1,4 +1,4 @@
-# Requisitos para el cierre total de MAIN — actualizado el 14 de noviembre de 2026
+# Requisitos para el cierre total de MAIN — actualizado el 16 de noviembre de 2026
 
 Este documento separa lo técnicamente terminado de las acciones externas que no pueden sustituirse con código ni marcarse como aceptadas en nombre del equipo. No contiene secretos.
 
@@ -18,13 +18,14 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 - La herramienta de construcción web fue actualizada a una versión sin alertas conocidas; CI ejecuta `npm audit --audit-level=moderate` antes de las 52 pruebas y la compilación.
 - El rediseño administrativo de Pamela está integrado en la rama de resiliencia conservando su autoría, seguido de correcciones separadas de accesibilidad.
 - El preflight de entrega limita a 1 MiB los archivos JSON privados que inspecciona y valida el paquete Firebase Android y la estructura de la cuenta FCM sin imprimir rutas privadas, claves ni contenido.
+- Un Motorola moto g86 power 5G con Android 15 fue autorizado e instalado el 16/11. Pasaron 5/5 pruebas instrumentadas generales y 1/1 con fuente al 200 %, además del recorrido manual documentado en `docs/informes/2026-11-16-android-fisico/LEEME.md`.
 - Spring limita a 1 MiB la respuesta de OpenAI, a 256 KiB las respuestas de FCM y a 1 MiB el archivo privado FCM; una respuesta excesiva se cancela y conserva el error seguro del módulo.
 
 ## Acciones que debe habilitar Jery
 
 | Bloqueo | Qué se necesita | Evidencia de cierre |
 |---|---|---|
-| Teléfono físico | Conectar un Android 8 o superior por USB, desbloquearlo y aceptar depuración e instalación. No hay dispositivos ADB conectados en esta revisión. | Acceso, listado, detalle, permisos, medios, segundo plano, cierre de app, desconexión y recuperación documentados con fecha y dispositivo. |
+| Teléfono físico | Completado parcialmente el 16/11 en Motorola moto g86 power 5G: instalación debug, acceso, navegación, permisos, selectores multimedia, segundo plano, rotación, fuente 200 % y recuperación local. | Falta repetir con APK release, Firebase/FCM, material multimedia sintético y servidor HTTPS final; TalkBack requiere confirmación humana. |
 | Firma de entrega | Copiar el keystore original y confirmar su alias, o aprobar expresamente la creación de una identidad nueva si nunca se distribuyó otra. Configurar contraseñas solo mediante el mecanismo privado local. La carpeta `%LOCALAPPDATA%\MAIN-private\android` no existe en esta PC. | APK release no depurable, firma y huella verificadas, respaldo privado recuperable e instalación en el teléfono sin borrar datos para ocultar incompatibilidades. |
 | Android Firebase | Colocar `mobile/app/google-services.json` fuera de Git. El archivo no está presente en ninguna de las dos copias revisadas. | Compilación release con el proyecto Firebase correcto y token obtenido en el teléfono de prueba sin exponerlo. |
 | FCM del servidor | Crear o proporcionar la ruta local de un JSON de cuenta de servicio autorizado para FCM HTTP v1, fuera del repositorio; habilitar la API correspondiente. | Push genérico recibido con la app abierta, en segundo plano y cerrada; además, logout, silencio, bloqueo, permiso denegado, token revocado y red interrumpida. |
@@ -49,7 +50,7 @@ Este documento separa lo técnicamente terminado de las acciones externas que no
 
 1. Aprovisionar la VM Always Free y el subdominio HTTPS; recuperar o crear conscientemente la firma de entrega.
 2. Proporcionar las rutas privadas de Firebase Android y FCM; habilitar cuota de IA.
-3. Conectar el teléfono y ejecutar la matriz completa contra HTTPS.
+3. Reutilizar el teléfono ya autorizado y ejecutar la matriz completa contra HTTPS con APK release y Firebase.
 4. Corregir cualquier defecto hallado, repetir regresiones y generar el APK release final.
 5. Recoger la aceptación real de Pamela, Michael, Jery y el docente.
 6. Solo entonces completar las listas y mover las tarjetas globales a `FINALIZADO`.
