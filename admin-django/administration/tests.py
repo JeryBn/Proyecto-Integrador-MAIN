@@ -183,6 +183,24 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(Audit.objects.count(), 1)
         self.assertEqual(Audit.objects.get().action, 'ACTIVITY_CREATED')
 
+    def test_generated_activity_can_be_filtered_and_edited(self):
+        self.login()
+        payload = self.payload()
+        del payload['id']
+        response = self.create(payload)
+        self.assertEqual(response.status_code, 201)
+        activity_id = response.json()['id']
+        self.assertTrue(0 < activity_id <= 2**53 - 1)
+
+        payload['titulo'] = 'Actividad editada para prueba'
+        response = self.client.put(f'/api/admin/actividades/{activity_id}', json.dumps(payload),
+                                   content_type='application/json', HTTP_X_CSRFTOKEN=self.token())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['id'], activity_id)
+        results = self.client.get('/api/admin/actividades', {'q': 'editada', 'cursoId': payload['cursoId']}).json()
+        self.assertEqual([item['id'] for item in results['items']], [activity_id])
+        self.assertTrue(Audit.objects.filter(action='ACTIVITY_UPDATED', subject=str(activity_id)).exists())
+
     def test_invalid_numbers_strings_unknown_fields_and_dates(self):
         self.login()
         for key, value in [('id',True),('id',1.5),('id','100'),('id',-1),('id',9007199254740992),
@@ -328,6 +346,15 @@ class AdministrationTests(TransactionTestCase):
         value.update(username='admin_injected', role='ADMIN')
         self.assertEqual(self.academic_call('users', value).status_code, 400)
         self.assertEqual(Audit.objects.count(), 1)
+
+    def test_admin_can_reenable_regular_account(self):
+        self.login()
+        self.assertEqual(self.academic_call('users/alumno/disable', {}).status_code, 200)
+        self.assertEqual(self.academic_call('users/alumno/enable', {}).status_code, 200)
+        self.assertTrue(SharedUser.objects.get(pk='alumno').enabled)
+        self.assertEqual(self.academic_call('users/alumno/enable', {}).status_code, 200)
+        self.assertEqual(Audit.objects.filter(action='ACCOUNT_ENABLED', subject='alumno').count(), 1)
+        self.assertEqual(self.academic_call('users/admin_test/enable', {}).status_code, 403)
 
     def test_identity_reset_disable_and_admin_protection(self):
         self.login()

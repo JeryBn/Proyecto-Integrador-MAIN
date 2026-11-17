@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/admin/v1/courses/<int:item_id>/grades', grades.save),
     path('api/admin/v1/users', identity.users),
     path('api/admin/v1/users/<str:username>/reset-password', identity.change_account, {'action':'reset-password'}),
+    path('api/admin/v1/users/<str:username>/enable', identity.change_account, {'action':'enable'}),
     path('api/admin/v1/users/<str:username>/disable', identity.change_account, {'action':'disable'}),
     path('api/admin/v1/guardians', identity.guardians),
     path('api/admin/v1/guardians/<str:guardian>/<int:student_id>', identity.guardians),

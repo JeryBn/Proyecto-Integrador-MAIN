@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import connection, transaction, IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods, require_GET
-from .models import Course, SharedUser, Audit
+from .models import Activity, Course, SharedUser, Audit
 from .views import admin_only, error, pagination
 
 
@@ -150,6 +150,18 @@ def audit(request):
     if page is None:
         return error(400, 'VALIDATION_ERROR', 'Paginación inválida.')
     offset, limit = page
-    return JsonResponse([dict(id=a.id, actor=a.actor, action=a.action, subject=a.subject,
-                             occurredAt=a.occurred_at.isoformat(timespec='seconds'))
-                         for a in Audit.objects.order_by('-occurred_at', '-id')[offset:offset+limit]], safe=False)
+    entries = list(Audit.objects.order_by('-occurred_at', '-id')[offset:offset+limit])
+    activity_actions = {'ACTIVITY_CREATED', 'ACTIVITY_UPDATED'}
+    activity_ids = {
+        int(entry.subject) for entry in entries
+        if entry.action in activity_actions and entry.subject.isascii()
+        and entry.subject.isdecimal() and len(entry.subject) <= 16
+    }
+    titles = dict(Activity.objects.filter(pk__in=activity_ids).values_list('id', 'titulo'))
+    return JsonResponse([
+        dict(id=entry.id, actor=entry.actor, action=entry.action, subject=entry.subject,
+             activityTitle=titles.get(int(entry.subject)) if entry.action in activity_actions
+             and entry.subject.isascii() and entry.subject.isdecimal() and len(entry.subject) <= 16 else None,
+             occurredAt=entry.occurred_at.isoformat(timespec='seconds'))
+        for entry in entries
+    ], safe=False)
