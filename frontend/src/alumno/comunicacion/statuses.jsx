@@ -1,10 +1,10 @@
 import {useEffect,useRef,useState} from 'react';
-import {userApi,enc,fileError,submissionKey,localDate} from './user-api.mjs';
-import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
-import {PrivateMedia} from './private-media.jsx';
+import {userApi,enc,fileError,submissionKey,localDate} from '../datos/user-api.mjs';
+import {useResource,Feedback,useConfirmation} from '../datos/user-hooks.jsx';
+import {PrivateMedia} from './medios/private-media.jsx';
 import {canPublish,ownerPlaylist,statusTextColor} from './status-model.mjs';
-import {MediaCapture} from './media-capture.jsx';
-import {AppealAction} from './appeals.jsx';
+import {MediaCapture} from './medios/media-capture.jsx';
+import {AppealAction} from '../apelaciones/appeals.jsx';
 
 export const emptyStatusDraft=()=>({text:'',background:'#087f68',audience:'CONTACTS',file:null,attempt:null});
 export function Statuses({profile,preferences,draft,setDraft,onChat}){

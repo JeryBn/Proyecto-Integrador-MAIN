@@ -1,8 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
-import {userApi,enc,fileError,submissionKey,labels,localDate} from './user-api.mjs';
-import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
-import {PrivateMedia} from './private-media.jsx';
-import {AppealAction} from './appeals.jsx';
+import {userApi,enc,fileError,submissionKey,labels,localDate} from '../datos/user-api.mjs';
+import {useResource,Feedback,useConfirmation} from '../datos/user-hooks.jsx';
+import {PrivateMedia} from './medios/private-media.jsx';
+import {AppealAction} from '../apelaciones/appeals.jsx';
 
 const emptyDraft=()=>({text:'',file:null,edit:null,attempt:null});
 export function Messages({profile,conversationId,onOpen,drafts,setDrafts}){
@@ -90,4 +90,4 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
   <p>La revisión previa aplica a todos los emisores. Solo las versiones aprobadas llegan a los demás.</p></form></>}
  </article>;
 }
-import {MediaCapture} from './media-capture.jsx';
+import {MediaCapture} from './medios/media-capture.jsx';

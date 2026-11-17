@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
-import {userApi,submissionKey} from './user-api.mjs';
+import {userApi,submissionKey} from '../datos/user-api.mjs';
 import {assistantRecovery} from './assistant-model.mjs';
 export const emptyAssistant=()=>({question:'',attempt:null,answer:'',answeredQuestion:'',model:'',error:'',code:''});
 export function Assistant({draft,setDraft}){

@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {userApi} from './user-api.mjs';
+import {userApi} from '../datos/user-api.mjs';
 
 async function api(path, body) {
   return userApi.call('/api/v1/'+path,{method:body?'PUT':'GET',json:body});

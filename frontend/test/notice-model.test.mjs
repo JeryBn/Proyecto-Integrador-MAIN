@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {noticeLabel,noticeTarget} from '../src/notice-model.mjs';
+import {noticeLabel,noticeTarget} from '../src/alumno/comunicacion/notice-model.mjs';
 test('recordatorio abre actividad y no una conversación nula',()=>{
  const notice={kind:'REMINDER',activityId:9001,conversationId:null};assert.equal(noticeTarget(notice),'#actividad/9001');assert.equal(noticeLabel(notice),'Actividad próxima a vencer');
 });

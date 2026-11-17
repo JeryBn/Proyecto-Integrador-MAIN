@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import {useResource,Feedback} from './user-hooks.jsx';
-import {userApi} from './user-api.mjs';
+import {useResource,Feedback} from '../datos/user-hooks.jsx';
+import {userApi} from '../datos/user-api.mjs';
 export function ReminderSettings({active}){
  const resource=useResource('/api/v1/reminders/preferences',{enabled:active});
  const [busy,setBusy]=useState(false),[error,setError]=useState('');
