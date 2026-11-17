@@ -2,7 +2,7 @@ import {buildSync} from 'esbuild';
 import {mkdirSync,writeFileSync,cpSync} from 'node:fs';
 
 buildSync({
-  entryPoints:{main:'src/main.jsx',admin:'src/admin.jsx'},
+  entryPoints:{main:'src/main.jsx',admin:'src/administracion/admin.jsx'},
   bundle:true,jsx:'automatic',minify:true,
   outdir:'dist/assets',
   define:{'process.env.NODE_ENV':'"production"'}

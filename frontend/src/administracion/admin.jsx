@@ -1,12 +1,12 @@
 import {useCallback, useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import './admin.css';
-import './admin-design.css';
-import {CommunityAdmin} from './community-admin.jsx';
-import {AcademicAdmin} from './academic-admin.jsx';
-import {ReviewerPortal} from './reviewer-portal.jsx';
-import {AppErrorBoundary, ConnectionStatus} from './resilience.jsx';
-import {api, loadCsrf} from './admin-api.mjs';
+import './estilos/admin.css';
+import './estilos/admin-design.css';
+import {CommunityAdmin} from './cuentas/community-admin.jsx';
+import {AcademicAdmin} from './gestion-academica/academic-admin.jsx';
+import {ReviewerPortal} from './revision/reviewer-portal.jsx';
+import {AppErrorBoundary, ConnectionStatus} from '../resilience.jsx';
+import {api, loadCsrf} from '../admin-api.mjs';
 
 /* ---------- Acceso a la API ---------- */
 const sessionLost = x => x.status === 401 || x.status === 403;
