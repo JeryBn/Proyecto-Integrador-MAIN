@@ -290,6 +290,26 @@ class MainApi(val endpoint: String) {
             checked(Response(status,body,null,uri.path,connection.getHeaderField("X-Request-ID")))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
+    fun justifications(courseId: Long?,offset: Int): List<AttendanceJustification> {
+        val path="/api/v1/attendance/justifications?offset=$offset"+(courseId?.let{"&courseId=$it"}?:"")
+        return rows(JSONArray(checked(request(path)))) { item ->
+            fun nullable(field: String) = if(item.isNull(field))null else item.getString(field)
+            AttendanceJustification(item.getLong("courseId"),item.getLong("studentId"),item.getString("course"),
+                item.getString("student"),item.getString("date"),item.getInt("session"),item.getString("attendance"),
+                nullable("id"),nullable("state"),nullable("reason"),nullable("decisionNote"))
+        }
+    }
+
+    fun requestJustification(item: AttendanceJustification,reason: String) {
+        mutate("/api/v1/attendance/justifications",JSONObject().put("courseId",item.courseId)
+            .put("studentId",item.studentId).put("date",item.date).put("session",item.session).put("reason",reason),"POST")
+    }
+
+    fun decideJustification(id: String,approved: Boolean,note: String) {
+        mutate("/api/v1/attendance/justifications/"+URLEncoder.encode(id,"UTF-8"),
+            JSONObject().put("approved",approved).put("note",note))
+    }
+
     fun familyWeekly(): List<FamilyStudent> = rows(json("/api/v1/family/weekly").getJSONArray("students")) { student ->
         val marks=student.getJSONObject("attendance")
         FamilyStudent(student.getString("name"),marks.getInt("present"),marks.getInt("absent"),marks.getInt("late"),

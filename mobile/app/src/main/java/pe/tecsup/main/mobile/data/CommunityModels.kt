@@ -19,5 +19,10 @@ data class AppealTarget(val kind:String,val subjectId:String,val revision:Int,va
 data class AppealItem(val id:String,val kind:String,val revision:Int,val state:String,val reason:String,val createdAt:String,val decisionReason:String,val decidedAt:String)
 data class StatusAttachment(val bytes:ByteArray,val mime:String)
 
+data class AttendanceJustification(
+    val courseId: Long,val studentId: Long,val course: String,val student: String,
+    val date: String,val session: Int,val attendance: String,val id: String?,
+    val state: String?,val reason: String?,val decisionNote: String?
+)
 data class FamilyTask(val title: String,val course: String,val dueAt: String,val overdue: Boolean)
 data class FamilyStudent(val name: String,val present: Int,val absent: Int,val late: Int,val tasks: List<FamilyTask>)

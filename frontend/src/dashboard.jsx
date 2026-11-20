@@ -1,3 +1,4 @@
+import {AttendanceJustifications} from './alumno/academico/attendance-justifications.jsx';
 import {Icon} from './ui-icons.jsx';
 import {useEffect,useState} from 'react';
 import {useResource} from './alumno/datos/user-hooks.jsx';
@@ -68,6 +69,7 @@ function FamilyDashboard({profile}){
     <strong>{task.title}</strong> · {task.course} · {localDate(task.dueAt)}{task.overdue?' · Vencida':''}
    </li>)}</ul>:<p>Sin entregas pendientes para los próximos días.</p>}
   </article>)}
+  <AttendanceJustifications/>
  </section>;
 }
 
@@ -100,6 +102,7 @@ function AcademicDashboard({profile,items,loading,error,onReload,notices=[]}){
    <StatCard icon="bell" label="Avisos nuevos" value={notices.filter(item=>!item.read).length} detail="Información de tu comunidad"/>
   </section>
 
+  {profile?.rol==='Alumno'&&<details className="dashboard-card"><summary>Justificar una falta o tardanza</summary><AttendanceJustifications/></details>}
   <div className="dashboard-layout">
    <section className="dashboard-card dashboard-priority">
     <header><div><span className="section-kicker">PRIORIDAD</span><h2>{teacher?'Seguimiento de tus cursos':'Lo siguiente en tu agenda'}</h2></div><a href={teacher?'#cursos':'#actividades'}>Ver todo <Icon name="arrowRight" size={16}/></a></header>

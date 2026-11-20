@@ -413,6 +413,20 @@ class MainViewModel : ViewModel() {
         val result=withContext(Dispatchers.IO){client.teachingGrades(course.id)}
         if(api===client && teachingCourse==course)teachingGrades=result
     }
+    fun loadJustifications(courseId: Long?,offset: Int,onLoaded:(List<AttendanceJustification>)->Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.justifications(courseId,offset)}
+        if(api===client)onLoaded(result)
+    }
+
+    fun saveJustification(item: AttendanceJustification,approved: Boolean?,reason: String,onSaved:()->Unit) =
+        accountOperation(if(approved==null)"Justificación enviada." else "Decisión guardada.") { client ->
+            withContext(Dispatchers.IO){
+                if(approved==null)client.requestJustification(item,reason)
+                else client.decideJustification(requireNotNull(item.id),approved,reason)
+            }
+            if(api===client)onSaved()
+        }
+
     fun loadFamilyWeekly(onLoaded: (List<FamilyStudent>) -> Unit) = accountOperation { client ->
         val result=withContext(Dispatchers.IO){client.familyWeekly()}
         if(api===client&&profile?.rol=="Familiar")onLoaded(result)

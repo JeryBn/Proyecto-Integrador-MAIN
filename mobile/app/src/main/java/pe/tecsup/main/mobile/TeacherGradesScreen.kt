@@ -16,6 +16,11 @@ import pe.tecsup.main.mobile.data.StudentGrades
 @Composable internal fun TeacherGradesScreen(model:MainViewModel) {
  var showingAttendance by androidx.compose.runtime.saveable.rememberSaveable(model.teachingCourse?.id){mutableStateOf(false)}
  val course=model.teachingCourse ?: return
+ var showingJustifications by androidx.compose.runtime.saveable.rememberSaveable(course.id){mutableStateOf(false)}
+ if(showingJustifications){
+  JustificationScreen(model,course.id){showingJustifications=false}
+  return
+ }
  if(showingAttendance){
   TeacherAttendanceScreen(model,course){showingAttendance=false}
   return
@@ -30,6 +35,7 @@ import pe.tecsup.main.mobile.data.StudentGrades
   PageHeading("Calificaciones"){model.teachingCourse=null}
   Text(model.teachingCourse?.name.orEmpty(),style=MaterialTheme.typography.titleLarge)
   Button(enabled=!model.accountBusy,onClick={showingAttendance=true}){Text("Pasar lista")}
+  TextButton(enabled=!model.accountBusy,onClick={showingJustifications=true}){Text("Justificaciones")}
   AccountFeedback(model)
   TextButton(onClick=model::loadTeaching,enabled=!model.accountBusy){Text("Actualizar estudiantes")}
   if(!model.accountBusy && model.teachingGrades.isEmpty())Text("No hay estudiantes matriculados en este curso.")

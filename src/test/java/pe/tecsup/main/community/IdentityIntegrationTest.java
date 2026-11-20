@@ -31,6 +31,34 @@ class IdentityIntegrationTest {
    .andExpect(status().isForbidden());
   assertTrue(academic.agenda("familia_test").courses().isEmpty());
  }
+ @Test void attendanceJustificationsRequireTheRightFamilyAndTeacher() throws Exception {
+  String path="/api/v1/attendance/justifications";
+  var family=user("familia_test").roles("FAMILIAR");
+  var teacher=user("profe_test").roles("DOCENTE");
+  var today=java.time.LocalDate.now(clock);
+  db.update("INSERT INTO course_attendance(course_id,student_id,class_date,status,recorded_by,recorded_at) VALUES(?,?,?,?,?,?)",
+   1,1,java.sql.Date.valueOf(today),"ABSENT","profe_test",java.sql.Timestamp.valueOf(java.time.LocalDateTime.now(clock)));
+  String request=json.writeValueAsString(new AttendanceJustifications.Request(1,1,today,1,"Motivo de prueba"));
+  mvc.perform(post(path).with(family).with(csrf()).contentType("application/json").content(request))
+   .andExpect(status().isNotFound());
+  users.verifyGuardian(admin,"familia_test",1);
+  String response=mvc.perform(post(path).with(family).with(csrf()).contentType("application/json").content(request))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("PENDING")).andReturn().getResponse().getContentAsString();
+  String id=json.readTree(response).get("id").asText();
+  mvc.perform(post(path).with(family).with(csrf()).contentType("application/json").content(request))
+   .andExpect(jsonPath("$.id").value(id));
+  mvc.perform(get(path).with(teacher).param("courseId","1")).andExpect(jsonPath("$[0].id").value(id));
+  mvc.perform(get(path).with(teacher).param("courseId","3")).andExpect(status().isNotFound());
+  var decision=json.writeValueAsString(new AttendanceJustifications.Decision(true,"Revisado"));
+  mvc.perform(put(path+"/"+id).with(family).with(csrf()).contentType("application/json").content(decision))
+   .andExpect(status().isForbidden());
+  mvc.perform(put(path+"/"+id).with(teacher).with(csrf()).contentType("application/json").content(decision))
+   .andExpect(jsonPath("$.state").value("APPROVED"));
+  mvc.perform(get(path).with(user("alumno").roles("ALUMNO")))
+   .andExpect(jsonPath("$[0].state").value("APPROVED")).andExpect(jsonPath("$[0].attendance").value("ABSENT"));
+  users.revokeGuardian(admin,"familia_test",1);
+  mvc.perform(get(path).with(family)).andExpect(jsonPath("$.length()").value(0));
+ }
  @Test void familySummaryRestrictsAttendanceAndTasksToVerifiedStudents() throws Exception {
   var path="/api/v1/family/weekly";
   var family=user("familia_test").roles("FAMILIAR");

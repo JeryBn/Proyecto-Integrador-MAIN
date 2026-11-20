@@ -135,6 +135,13 @@ internal fun MainNavigationScreen(model: MainViewModel) {
 
 @Composable
 private fun HomeSection(model: MainViewModel) {
+    val showJustifications = androidx.compose.runtime.saveable.rememberSaveable(model.profile?.usuario) {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
+    if(showJustifications.value){
+        JustificationScreen(model){showJustifications.value=false}
+        return
+    }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
@@ -196,6 +203,9 @@ private fun HomeSection(model: MainViewModel) {
         }
         if(model.profile?.rol=="Alumno") CourseGradesContent(model)
         if(model.profile?.rol=="Familiar") FamilyWeekly(model)
+        if(model.profile?.rol in listOf("Alumno","Familiar")){
+            TextButton(onClick={showJustifications.value=true}){Text("Justificar faltas o tardanzas")}
+        }
         AgendaContent(model)
         Text(
             "Consulta tus cursos y horarios en el asistente académico.",
