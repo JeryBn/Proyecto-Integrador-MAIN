@@ -28,4 +28,3 @@ export function recentNotices(notices = [], limit = 3) {
     .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0))
     .slice(0, limit);
 }
-
