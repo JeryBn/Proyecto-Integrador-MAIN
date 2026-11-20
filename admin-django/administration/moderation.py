@@ -25,7 +25,7 @@ def campus_queue(request):
         return error(400, 'INVALID_PAGINATION')
     offset, limit = page
     return JsonResponse(rows("""SELECT p.id,p.body,u.display_name FROM campus_post p
-        JOIN main_user u ON u.username=p.author WHERE p.state='PENDING'
+        JOIN main_user u ON u.username=p.author WHERE p.state='PENDING' AND p.withdrawn=FALSE
         ORDER BY p.created_at,p.id LIMIT %s OFFSET %s""", [limit,offset]), safe=False)
 
 
@@ -42,7 +42,7 @@ def campus_review(request, item_id):
     state = 'PUBLISHED' if value['approved'] else 'REJECTED'
     with transaction.atomic():
         if execute("""UPDATE campus_post SET state=%s,reviewed_at=%s
-                WHERE id=%s AND state='PENDING'""", [state,now(),item_id]) != 1:
+                WHERE id=%s AND state='PENDING' AND withdrawn=FALSE""", [state,now(),item_id]) != 1:
             return error(409, 'CONFLICT', 'La publicación ya fue revisada o retirada.')
         record(request,'CAMPUS_POST_'+state,item_id)
     return JsonResponse({'state':state})

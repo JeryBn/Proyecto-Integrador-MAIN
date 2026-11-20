@@ -19,6 +19,8 @@ import pe.tecsup.main.mobile.data.MainApi
 internal fun CampusFeedScreen(model:MainViewModel) {
     var course by rememberSaveable { mutableStateOf<Long?>(null) }
     var pinned by rememberSaveable { mutableStateOf(false) }
+    var question by rememberSaveable { mutableStateOf(false) }
+    var thread by remember { mutableStateOf<String?>(null) }
     var choosing by remember { mutableStateOf(false) }
     val canPublish = model.profile?.rol=="Alumno" || course!=null
     var view by rememberSaveable { mutableStateOf("for-you") }
@@ -41,10 +43,10 @@ internal fun CampusFeedScreen(model:MainViewModel) {
                 Text(model.agenda.courses.firstOrNull{it.id==course}?.name ?: "Todo el colegio")
             }
             DropdownMenu(expanded=choosing,onDismissRequest={choosing=false}) {
-                DropdownMenuItem(text={Text("Todo el colegio")},onClick={course=null;pinned=false;view="for-you";offset=0;choosing=false})
+                DropdownMenuItem(text={Text("Todo el colegio")},onClick={course=null;pinned=false;question=false;thread=null;view="for-you";offset=0;choosing=false})
                 model.agenda.courses.forEach { entry ->
                     DropdownMenuItem(text={Text(entry.name+(entry.placement?.let { " · "+it.section } ?: ""))},
-                        onClick={course=entry.id;pinned=false;view="for-you";offset=0;choosing=false})
+                        onClick={course=entry.id;pinned=false;question=false;thread=null;view="for-you";offset=0;choosing=false})
                 }
             }
         }
@@ -52,7 +54,7 @@ internal fun CampusFeedScreen(model:MainViewModel) {
             if(canPublish)listOf("mine" to "Mis publicaciones") else emptyList()
         Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             choices.forEach { (key,label) ->
-                FilterChip(selected=view==key,enabled=!model.accountBusy,onClick={view=key;offset=0},
+                FilterChip(selected=view==key,enabled=!model.accountBusy,onClick={view=key;thread=null;offset=0},
                     label={Text(label)},colors=FilterChipDefaults.filterChipColors(
                         selectedContainerColor=campusLime,selectedLabelColor=campusInk))
             }
@@ -60,13 +62,17 @@ internal fun CampusFeedScreen(model:MainViewModel) {
         if(canPublish){
             OutlinedTextField(draft,{if(it.length<=1000)draft=it},label={Text("Publicación")},
                 modifier=Modifier.fillMaxWidth(),enabled=!model.accountBusy,minLines=2)
+            if(course!=null)Row(verticalAlignment=Alignment.CenterVertically){
+                Checkbox(checked=question,onCheckedChange={question=it;pinned=false},enabled=!model.accountBusy)
+                Text("Pregunta")
+            }
             if(model.profile?.rol=="Docente")Row(verticalAlignment=Alignment.CenterVertically){
-                Checkbox(checked=pinned,onCheckedChange={pinned=it},enabled=!model.accountBusy)
+                Checkbox(checked=pinned,onCheckedChange={pinned=it;question=false},enabled=!model.accountBusy)
                 Text("Fijar anuncio")
             }
             Button(modifier=Modifier.fillMaxWidth(),enabled=draft.isNotBlank()&&!model.accountBusy,
                 colors=ButtonDefaults.buttonColors(containerColor=campusLime,contentColor=campusInk),onClick={
-                model.publishCampus(draft,course,pinned) { draft="";pinned=false;view="mine";offset=0;revision++ }
+                model.publishCampus(draft,course,pinned,question) { draft="";pinned=false;question=false;view="mine";offset=0;revision++ }
             }) { Text("Enviar a revisión") }
         }
         if(model.accountBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -89,6 +95,12 @@ internal fun CampusFeedScreen(model:MainViewModel) {
                     if(post.course.isNotBlank())Text(post.course,style=MaterialTheme.typography.labelMedium)
                     if(post.pinned)Text("Anuncio fijado",style=MaterialTheme.typography.labelMedium)
                     Text(post.text,style=MaterialTheme.typography.bodyLarge)
+                    if(post.kind=="QUESTION"&&post.state=="PUBLISHED"){
+                        TextButton(onClick={thread=if(thread==post.id)null else post.id}){
+                            Text(if(thread==post.id)"Cerrar respuestas" else "Ver respuestas")
+                        }
+                        if(thread==post.id)CampusReplies(model,post.id)
+                    }
                     if(view=="mine") {
                         Text(when(post.state){"PENDING"->"En revisión";"PUBLISHED"->"Publicada";else->"Rechazada"})
                         TextButton(enabled=!model.accountBusy,onClick={removing=post.id}) { Text("Retirar") }
@@ -105,5 +117,36 @@ internal fun CampusFeedScreen(model:MainViewModel) {
         AlertDialog(onDismissRequest={removing=null},title={Text("¿Retirar esta publicación?")},
             confirmButton={TextButton(onClick={removing=null;model.withdrawCampus(id){offset=0;revision++}}){Text("Retirar")}},
             dismissButton={TextButton(onClick={removing=null}){Text("Cancelar")}})
+    }
+}
+
+
+@Composable
+private fun CampusReplies(model: MainViewModel,id: String){
+    var rows by remember(id){mutableStateOf<List<MainApi.CampusPost>?>(null)}
+    var draft by remember(id){mutableStateOf("")}
+    var offset by remember(id){mutableIntStateOf(0)}
+    var revision by remember(id){mutableIntStateOf(0)}
+    LaunchedEffect(id,offset,revision){
+        snapshotFlow{model.accountBusy}.first{!it}
+        model.loadCampusReplies(id,offset){rows=it}
+    }
+    if(rows?.isEmpty()==true)Text("Todavía no hay respuestas.")
+    rows.orEmpty().forEach { reply ->
+        Text(reply.author,style=MaterialTheme.typography.titleSmall)
+        Text(reply.text)
+        if(reply.state!="PUBLISHED")Text(if(reply.state=="PENDING")"En revisión" else "Rechazada",
+            style=MaterialTheme.typography.labelSmall)
+    }
+    if(offset>0||rows?.size==20)Row{
+        TextButton(enabled=offset>0&&!model.accountBusy,onClick={offset-=20}){Text("Anteriores")}
+        TextButton(enabled=rows?.size==20&&!model.accountBusy,onClick={offset+=20}){Text("Más respuestas")}
+    }
+    OutlinedTextField(draft,{draft=it.take(1000)},label={Text("Respuesta")},modifier=Modifier.fillMaxWidth())
+    Row{
+        TextButton(enabled=!model.accountBusy&&draft.isNotBlank(),onClick={
+            model.publishCampusReply(id,draft.trim()){draft="";revision++}
+        }){Text("Responder")}
+        TextButton(enabled=!model.accountBusy,onClick={revision++}){Text("Actualizar")}
     }
 }

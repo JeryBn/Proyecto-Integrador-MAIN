@@ -167,3 +167,8 @@
     clip-path: none;
   }
 }
+
+.campus-thread{margin-top:14px;padding:12px 0 0 14px;border-inline-start:3px solid var(--campus-edge)}
+.campus-thread ul{padding:0;list-style:none}
+.campus-thread li{padding:10px 0;border-bottom:1px solid var(--border)}
+.campus-thread .campus-composer{margin-top:12px}

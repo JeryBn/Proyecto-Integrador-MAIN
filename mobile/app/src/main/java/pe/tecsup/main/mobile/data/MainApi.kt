@@ -98,15 +98,27 @@ class MainApi(val endpoint: String) {
 
     private fun json(path: String): JSONObject = JSONObject(checked(request(path)))
 
-    data class CampusPost(val id:String,val author:String,val text:String,val state:String,val course:String,val pinned:Boolean)
+    data class CampusPost(val id:String,val author:String,val text:String,val state:String,val course:String,
+                          val pinned:Boolean,val kind:String)
+
+    private fun campusRows(data: JSONArray): List<CampusPost> = rows(data) {
+        CampusPost(it.getString("id"),it.getString("author"),it.getString("text"),it.getString("state"),
+            if(it.isNull("course"))"" else it.getString("course"),it.optBoolean("pinned"),it.optString("kind","POST"))
+    }
 
     fun campusPosts(view:String, offset:Int,courseId:Long?=null): List<CampusPost> =
-        rows(JSONArray(checked(request("/api/v1/campus/feed?view=$view&offset=$offset"+(courseId?.let { "&courseId=$it" } ?: ""))))) {
-            CampusPost(it.getString("id"),it.getString("author"),it.getString("text"),it.getString("state"),if(it.isNull("course"))"" else it.getString("course"),it.optBoolean("pinned"))
-        }
+        campusRows(JSONArray(checked(request("/api/v1/campus/feed?view=$view&offset=$offset"+(courseId?.let{"&courseId=$it"}?:"")))))
 
-    fun publishCampusPost(text:String,courseId:Long?=null,pinned:Boolean=false) {
-        mutate("/api/v1/campus/feed",JSONObject().put("text",text).put("courseId",courseId ?: JSONObject.NULL).put("pinned",pinned),"POST")
+    fun publishCampusPost(text:String,courseId:Long?=null,pinned:Boolean=false,question:Boolean=false) {
+        mutate("/api/v1/campus/feed",JSONObject().put("text",text).put("courseId",courseId ?: JSONObject.NULL)
+            .put("pinned",pinned).put("question",question),"POST")
+    }
+
+    fun campusReplies(id: String,offset: Int): List<CampusPost> =
+        campusRows(JSONArray(checked(request("/api/v1/campus/feed/"+URLEncoder.encode(id,"UTF-8")+"/replies?offset=$offset"))))
+
+    fun publishCampusReply(id: String,text: String) {
+        mutate("/api/v1/campus/feed/"+URLEncoder.encode(id,"UTF-8")+"/replies",JSONObject().put("text",text),"POST")
     }
 
     fun withdrawCampusPost(id:String) {

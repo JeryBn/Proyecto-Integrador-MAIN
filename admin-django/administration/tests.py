@@ -37,10 +37,10 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__','V26__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__','V26__','V29__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
-                    if sql.strip():
+                    if sql.strip() and 'ADD CONSTRAINT fk_campus_post_parent' not in sql:
                         cursor.execute(sql)
 
     @classmethod

@@ -83,8 +83,18 @@ class MainViewModel : ViewModel() {
         if(api===client)onLoaded(result)
     }
 
-    fun publishCampus(text:String, courseId:Long?, pinned:Boolean, onSaved:()->Unit) = accountOperation("Publicación enviada a revisión.") { client ->
-        withContext(Dispatchers.IO) { client.publishCampusPost(text,courseId,pinned) }
+    fun publishCampus(text:String, courseId:Long?, pinned:Boolean, question:Boolean, onSaved:()->Unit) = accountOperation("Publicación enviada a revisión.") { client ->
+        withContext(Dispatchers.IO) { client.publishCampusPost(text,courseId,pinned,question) }
+        if(api===client)onSaved()
+    }
+
+    fun loadCampusReplies(id: String,offset: Int,onLoaded: (List<MainApi.CampusPost>)->Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.campusReplies(id,offset)}
+        if(api===client)onLoaded(result)
+    }
+
+    fun publishCampusReply(id: String,text: String,onSaved:()->Unit) = accountOperation("Respuesta enviada a revisión.") { client ->
+        withContext(Dispatchers.IO){client.publishCampusReply(id,text)}
         if(api===client)onSaved()
     }
 

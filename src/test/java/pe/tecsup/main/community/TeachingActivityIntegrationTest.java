@@ -41,6 +41,32 @@ class TeachingActivityIntegrationTest {
   mvc.perform(get(path).with(peer)).andExpect(jsonPath("$.length()").value(0));
  }
 
+ @Test void campusQuestionsKeepPendingRepliesPrivateAndRespectCourseMembership() throws Exception {
+  String root="/api/v1/campus/feed";
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  var enrolled=user("alumno").roles("ALUMNO");
+  var outsider=user("otro").roles("ALUMNO");
+  var question=json.writeValueAsString(new CampusFeedController.Draft("Pregunta de clase",1L,false,true));
+  String draft=mvc.perform(post(root).with(teacher).with(csrf()).contentType("application/json").content(question))
+   .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+  String id=json.readTree(draft).get("id").asText(), thread=root+"/"+id+"/replies";
+  mvc.perform(get(thread).with(enrolled)).andExpect(status().isNotFound());
+  jdbc.update("UPDATE campus_post SET state='PUBLISHED' WHERE id=?",id);
+  var answer=json.writeValueAsString(new CampusFeedController.Reply("Respuesta de prueba"));
+  String pending=mvc.perform(post(thread).with(enrolled).with(csrf()).contentType("application/json").content(answer))
+   .andExpect(status().isCreated()).andExpect(jsonPath("$.state").value("PENDING"))
+   .andReturn().getResponse().getContentAsString();
+  String reply=json.readTree(pending).get("id").asText();
+  mvc.perform(get(thread).with(teacher)).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(get(thread).with(enrolled)).andExpect(jsonPath("$[0].id").value(reply));
+  mvc.perform(get(thread).with(outsider)).andExpect(status().isNotFound());
+  jdbc.update("UPDATE campus_post SET state='PUBLISHED' WHERE id=?",reply);
+  mvc.perform(get(thread).with(teacher)).andExpect(jsonPath("$[0].id").value(reply));
+  mvc.perform(get(root).with(enrolled).param("courseId","1")).andExpect(jsonPath("$.length()").value(1));
+  mvc.perform(delete(root+"/"+id).with(teacher).with(csrf())).andExpect(status().isOk());
+  mvc.perform(get(thread).with(enrolled)).andExpect(status().isNotFound());
+ }
+
  @Test void campusCoursePostsRequireEnrollmentAndNeverAppearInTheSchoolFeed() throws Exception {
   String path="/api/v1/campus/feed";
   var teacher=user("teacher_activities").roles("DOCENTE");
