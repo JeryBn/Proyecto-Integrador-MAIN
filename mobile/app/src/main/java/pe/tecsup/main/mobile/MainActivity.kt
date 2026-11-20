@@ -97,7 +97,8 @@ class MainActivity : ComponentActivity() {
 @Composable private fun LoginScreen(model: MainViewModel) {
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    var endpoint by rememberSaveable { mutableStateOf(if (BuildConfig.DEBUG) "http://127.0.0.1:8088" else "") }
+    var debugEndpoint by rememberSaveable { mutableStateOf("http://127.0.0.1:8088") }
+    val endpoint = if (BuildConfig.DEBUG) debugEndpoint else BuildConfig.PUBLIC_ORIGIN
     var username by rememberSaveable { mutableStateOf("") }
     // Password is deliberately neither saved across process recreation nor persisted.
     var password by remember { mutableStateOf("") }
@@ -106,10 +107,10 @@ class MainActivity : ComponentActivity() {
         Spacer(Modifier.height(32.dp))
         Text("MAIN", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary)
-        Text("Tu aprendizaje, organizado", style = MaterialTheme.typography.titleLarge)
-        Text("Ingresa para consultar tus actividades y sus indicaciones.")
-        OutlinedTextField(value = endpoint, onValueChange = { endpoint = it }, label = { Text("Servidor") },
-            singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
+        if (BuildConfig.DEBUG) {
+            OutlinedTextField(value = debugEndpoint, onValueChange = { debugEndpoint = it }, label = { Text("Servidor") },
+                singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
+        }
         OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Usuario") },
             singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
@@ -121,7 +122,5 @@ class MainActivity : ComponentActivity() {
             Text(if (model.busy) "Conectando…" else "Ingresar")
         }
         if (model.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-        Text("La sesión se conserva mientras la app está abierta. No guardamos tu contraseña.",
-            style = MaterialTheme.typography.bodySmall)
     }
 }

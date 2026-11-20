@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -10,6 +12,12 @@ val deliveryStorePassword = System.getenv("MAIN_SIGNING_STORE_PASSWORD")
 val deliveryAlias = System.getenv("MAIN_SIGNING_KEY_ALIAS")
 val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
 val deliveryReady = listOf(deliveryStore, deliveryStorePassword, deliveryAlias, deliveryKeyPassword).all { !it.isNullOrBlank() }
+val deliveryOrigin = System.getenv("MAIN_PUBLIC_ORIGIN").orEmpty().trim().trimEnd('/')
+val deliveryUri = runCatching { URI(deliveryOrigin) }.getOrNull()
+val deliveryOriginReady = deliveryUri != null && deliveryUri.scheme == "https" &&
+    deliveryUri.host != null && deliveryUri.rawUserInfo == null && deliveryUri.rawQuery == null &&
+    deliveryUri.rawFragment == null && deliveryUri.rawPath.isEmpty() &&
+    (deliveryUri.port == -1 || deliveryUri.port in 1..65535)
 
 android {
     namespace = "pe.tecsup.main.mobile"
@@ -21,6 +29,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "PUBLIC_ORIGIN", if (deliveryOriginReady) "\"$deliveryOrigin\"" else "\"\"")
     }
     buildFeatures { compose = true; buildConfig = true }
     signingConfigs {
@@ -43,6 +52,7 @@ android {
 
 tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle" }.configureEach {
     doFirst {
+        require(deliveryOriginReady) { "Configura MAIN_PUBLIC_ORIGIN con la URL HTTPS de MAIN, sin rutas ni credenciales." }
         require(deliveryReady && file(deliveryStore!!).isFile) {
             "Configura las cuatro variables MAIN_SIGNING_* y el archivo de firma antes de generar una entrega."
         }
