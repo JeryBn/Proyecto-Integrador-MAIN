@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
-import {userApi,submissionKey} from './user-api.mjs';
+import {userApi,submissionKey} from '../datos/user-api.mjs';
 import {assistantRecovery} from './assistant-model.mjs';
-import {Icon} from './ui-icons.jsx';
+import {Icon} from '../../ui-icons.jsx';
 export const emptyAssistant=()=>({question:'',attempt:null,answer:'',answeredQuestion:'',model:'',error:'',code:''});
 export function Assistant({draft,setDraft}){
  const [busy,setBusy]=useState(false);const control=useRef(null),lock=useRef(false),alive=useRef(true);

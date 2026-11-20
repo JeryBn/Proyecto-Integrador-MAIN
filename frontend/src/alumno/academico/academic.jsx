@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react';
-import {localDate,userApi} from './user-api.mjs';
-import {Icon} from './ui-icons.jsx';
+import {localDate,userApi} from '../datos/user-api.mjs';
+import {Icon} from '../../ui-icons.jsx';
 
 const days=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 async function api(path,body,method=body?'PUT':'GET'){return userApi.call('/api/v1/'+path,{method,json:body});}

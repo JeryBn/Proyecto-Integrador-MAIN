@@ -3,6 +3,7 @@ import hmac
 import json
 import logging
 import re
+import secrets
 import uuid
 from datetime import datetime
 from functools import wraps
@@ -163,10 +164,18 @@ def activities(request):
         return error(400, 'VALIDATION_ERROR', 'Paginación inválida.')
     offset, limit = page
     values = Activity.objects.select_related('curso__docente').order_by('fecha_limite', 'id')
+    query = request.GET.get('q', '').strip()
+    course = request.GET.get('cursoId', '')
+    if len(query) > 150 or (course and not re.fullmatch(r'[0-9]{1,16}', course)):
+        return error(400, 'VALIDATION_ERROR', 'Filtros inválidos.')
+    if query:
+        values = values.filter(titulo__icontains=query)
+    if course:
+        values = values.filter(curso_id=int(course))
     return JsonResponse(dict(items=[activity_data(a) for a in values[offset:offset+limit]],
                              total=values.count(), offset=offset, limit=limit))
 
-def create_activity(request):
+def create_activity(request, item_id=None):
     if request.content_type != 'application/json':
         return error(415, 'UNSUPPORTED_MEDIA_TYPE', 'Se requiere JSON.')
     if len(request.body) > 32768:
@@ -179,7 +188,9 @@ def create_activity(request):
         return error(400, 'INVALID_REQUEST', 'Se requiere objeto JSON.')
     allowed = {'id', 'cursoId', 'titulo', 'descripcion', 'fechaLimite'}
     fields = {key: 'Campo desconocido.' for key in body.keys() - allowed}
-    for key in ('id', 'cursoId'):
+    if item_id is not None and 'id' in body:
+        fields['id'] = 'El identificador no se puede editar.'
+    for key in ('id', 'cursoId') if 'id' in body else ('cursoId',):
         if type(body.get(key)) is not int or not 1 <= body[key] <= 9_007_199_254_740_991:
             fields[key] = 'Entero positivo seguro para JavaScript requerido.'
     for key, limit in (('titulo', 150), ('descripcion', 2000)):
@@ -202,19 +213,33 @@ def create_activity(request):
         return error(400, 'VALIDATION_ERROR', 'Curso inexistente.', {'cursoId': 'Selecciona un curso existente.'})
     try:
         with transaction.atomic():
-            item = Activity.objects.create(id=body['id'], curso_id=body['cursoId'], titulo=body['titulo'].strip(),
-                                           descripcion=body['descripcion'].strip(), fecha_limite=date)
-            Audit.objects.create(id=str(uuid.uuid4()), actor=request.admin_actor, action='ACTIVITY_CREATED',
+            values = dict(curso_id=body['cursoId'], titulo=body['titulo'].strip(),
+                          descripcion=body['descripcion'].strip(), fecha_limite=date)
+            if item_id is None:
+                activity_id = body['id'] if 'id' in body else secrets.randbelow(2**52) + 2**52
+                item = Activity.objects.create(id=activity_id, **values)
+                action = 'ACTIVITY_CREATED'
+            else:
+                item = Activity.objects.select_for_update().filter(pk=item_id).first()
+                if item is None:
+                    return error(404, 'NOT_FOUND', 'Actividad no disponible.')
+                for field, value in values.items():
+                    setattr(item, field, value)
+                item.save(update_fields=list(values))
+                action = 'ACTIVITY_UPDATED'
+            Audit.objects.create(id=str(uuid.uuid4()), actor=request.admin_actor, action=action,
                                  subject=str(item.id), occurred_at=datetime.now(ZoneInfo(settings.TIME_ZONE)).replace(tzinfo=None))
     except IntegrityError:
         return error(409, 'DATA_CONFLICT', 'Identificador duplicado o conflicto de curso. No se sobrescribió la actividad.')
-    response = JsonResponse(activity_data(Activity.objects.select_related('curso__docente').get(pk=item.id)), status=201)
+    response = JsonResponse(activity_data(Activity.objects.select_related('curso__docente').get(pk=item.id)), status=201 if item_id is None else 200)
     response['Location'] = f'/api/admin/actividades/{item.id}'
     return response
 
-@require_GET
+@require_http_methods(['GET', 'PUT'])
 @admin_only
 def detail(request, item_id):
+    if request.method == 'PUT':
+        return create_activity(request, item_id)
     item = Activity.objects.select_related('curso__docente').filter(pk=item_id).first()
     return JsonResponse(activity_data(item)) if item else error(404, 'NOT_FOUND', 'Actividad no disponible.')
 

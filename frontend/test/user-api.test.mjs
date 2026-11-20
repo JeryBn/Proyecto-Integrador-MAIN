@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createUserApi,fileError,submissionKey,localDate} from '../src/user-api.mjs';
+import {createUserApi,fileError,submissionKey,localDate} from '../src/alumno/datos/user-api.mjs';
 const response=(status,value)=>({status,ok:status>=200&&status<300,json:async()=>value});
 test('renueva CSRF, protege identidad y no almacena respuestas privadas',async()=>{
  const calls=[];const api=createUserApi({fetcher:async(path,options)=>{calls.push({path,options});return response(200,path==='/api/csrf'?{token:'fresh',headerName:'X-CSRF-TOKEN'}:{saved:true});}});

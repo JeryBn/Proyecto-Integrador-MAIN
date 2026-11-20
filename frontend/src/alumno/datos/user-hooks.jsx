@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {userApi} from './user-api.mjs';
 import {createReadPoller} from './read-poller.mjs';
-export {useConfirmation} from './confirmation.jsx';
+export {useConfirmation} from '../../confirmation.jsx';
 
 export function useResource(path,{enabled=true,interval=0}={}){
   const [state,setState]=useState({data:null,error:'',loading:true});

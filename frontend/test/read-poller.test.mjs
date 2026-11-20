@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createReadPoller} from '../src/read-poller.mjs';
+import {createReadPoller} from '../src/alumno/datos/read-poller.mjs';
 function fixture(read,available=()=>true){
  const timers=new Map();let id=0;
  const poller=createReadPoller({read,available,schedule:(fn,ms)=>{timers.set(++id,{fn,ms});return id;},cancel:key=>timers.delete(key)});

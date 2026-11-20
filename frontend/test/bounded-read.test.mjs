@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {boundedRead} from '../src/bounded-read.mjs';
+import {boundedRead} from '../src/alumno/datos/bounded-read.mjs';
 
 const stalled=signal=>new Promise((resolve,reject)=>{
  signal.addEventListener('abort',()=>{const error=new Error('aborted');error.name='AbortError';reject(error);},{once:true});

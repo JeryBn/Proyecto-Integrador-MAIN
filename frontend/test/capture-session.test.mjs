@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {captureError,createCaptureSession,captureLimit} from '../src/capture-session.mjs';
+import {captureError,createCaptureSession,captureLimit} from '../src/alumno/comunicacion/medios/capture-session.mjs';
 function fixture(getMedia){
  let stopped=0,stream,recorder,timer,cleared=0;const files=[],errors=[];
  const device={getTracks:()=>[{stop(){stopped++;}}]};

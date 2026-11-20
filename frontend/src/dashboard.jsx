@@ -1,9 +1,9 @@
 import {Icon} from './ui-icons.jsx';
 import {useEffect,useState} from 'react';
-import {useResource} from './user-hooks.jsx';
-import {localDate,userApi} from './user-api.mjs';
+import {useResource} from './alumno/datos/user-hooks.jsx';
+import {localDate,userApi} from './alumno/datos/user-api.mjs';
 import {nextClass,progressPercent,recentNotices} from './dashboard-model.mjs';
-import {noticeLabel,noticeTarget} from './notice-model.mjs';
+import {noticeLabel,noticeTarget} from './alumno/comunicacion/notice-model.mjs';
 
 const days=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 

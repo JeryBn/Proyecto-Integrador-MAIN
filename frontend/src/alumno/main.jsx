@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import './app.css';
-import {Academic} from './academic.jsx';
-import {Profile,Notifications} from './profile.jsx';
-import {userApi} from './user-api.mjs';
-import {useResource} from './user-hooks.jsx';
-import './workspace.css';
-import {Messages} from './messages.jsx';
-import {Statuses,emptyStatusDraft} from './statuses.jsx';
-import {Assistant,emptyAssistant} from './assistant.jsx';
-import {AppErrorBoundary,ConnectionStatus} from './resilience.jsx';
-import {Dashboard} from './dashboard.jsx';
-import {Activities,ActivityDetail} from './activities.jsx';
-import {Icon} from './ui-icons.jsx';
+import './estilos/app.css';
+import {Academic} from './academico/academic.jsx';
+import {Profile,Notifications} from './perfil/profile.jsx';
+import {userApi} from './datos/user-api.mjs';
+import {useResource} from './datos/user-hooks.jsx';
+import './estilos/workspace.css';
+import {Messages} from './comunicacion/messages.jsx';
+import {Statuses,emptyStatusDraft} from './comunicacion/statuses.jsx';
+import {Assistant,emptyAssistant} from './asistente/assistant.jsx';
+import {AppErrorBoundary,ConnectionStatus} from '../resilience.jsx';
+import {Dashboard} from '../dashboard.jsx';
+import {Activities,ActivityDetail} from '../activities.jsx';
+import {Icon} from '../ui-icons.jsx';
 
 async function request(url) {
   return userApi.call(url);

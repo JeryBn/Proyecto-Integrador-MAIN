@@ -1,10 +1,10 @@
 import {useState} from 'react';
-import {userApi,enc,localDate} from './user-api.mjs';
-import {useResource,Feedback,useConfirmation} from './user-hooks.jsx';
-import {ReminderSettings} from './reminder-settings.jsx';
-import {AppealHistory} from './appeals.jsx';
-import {noticeLabel,noticeTarget} from './notice-model.mjs';
-import {Icon} from './ui-icons.jsx';
+import {userApi,enc,localDate} from '../datos/user-api.mjs';
+import {useResource,Feedback,useConfirmation} from '../datos/user-hooks.jsx';
+import {ReminderSettings} from '../academico/reminder-settings.jsx';
+import {AppealHistory} from '../apelaciones/appeals.jsx';
+import {noticeLabel,noticeTarget} from '../comunicacion/notice-model.mjs';
+import {Icon} from '../../ui-icons.jsx';
 
 export function Profile({profile,preferences,onPreferences,active,onChat}){
   const {confirm,confirmation}=useConfirmation();

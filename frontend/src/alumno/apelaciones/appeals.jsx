@@ -1,6 +1,6 @@
 import {useRef,useState} from 'react';
-import {userApi,localDate} from './user-api.mjs';
-import {useResource,Feedback} from './user-hooks.jsx';
+import {userApi,localDate} from '../datos/user-api.mjs';
+import {useResource,Feedback} from '../datos/user-hooks.jsx';
 export const appealLabels={OPEN:'En revisión',UPHELD:'Se mantiene el rechazo',RETURNED:'Devuelto a revisión humana',SUPERSEDED:'Cerrada: contenido cambiado o caducado'};
 
 export function AppealAction({kind,item}){

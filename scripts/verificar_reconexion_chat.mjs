@@ -2,8 +2,8 @@
 import http from 'node:http';
 import assert from 'node:assert/strict';
 import {performance} from 'node:perf_hooks';
-import {createReadPoller} from '../frontend/src/read-poller.mjs';
-import {createUserApi} from '../frontend/src/user-api.mjs';
+import {createReadPoller} from '../frontend/src/alumno/datos/read-poller.mjs';
+import {createUserApi} from '../frontend/src/alumno/datos/user-api.mjs';
 let input='';for await (const chunk of process.stdin) input+=chunk;
 const fixture=JSON.parse(input);
 assert.match(fixture.path,/^\/api\/v1\/conversations\/[a-zA-Z0-9-]+\/messages$/);

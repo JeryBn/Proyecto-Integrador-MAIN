@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {userApi,localDate} from './user-api.mjs';
+import {userApi,localDate} from './alumno/datos/user-api.mjs';
 import {Icon} from './ui-icons.jsx';
 
 function ActivityCard({activity:a}){

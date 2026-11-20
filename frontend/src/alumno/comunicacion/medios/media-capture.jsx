@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {createCaptureSession} from './capture-session.mjs';
-import {fileError} from './user-api.mjs';
-import {Icon} from './ui-icons.jsx';
+import {fileError} from '../../datos/user-api.mjs';
+import {Icon} from '../../../ui-icons.jsx';
 
 export function MediaCapture({onFile,disabled=false}){
  const [kind,setKind]=useState(null),[error,setError]=useState(''),[stream,setStream]=useState(null);

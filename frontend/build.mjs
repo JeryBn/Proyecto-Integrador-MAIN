@@ -2,7 +2,7 @@ import {buildSync} from 'esbuild';
 import {mkdirSync,writeFileSync,cpSync} from 'node:fs';
 
 buildSync({
-  entryPoints:{main:'src/main.jsx',admin:'src/admin.jsx'},
+  entryPoints:{main:'src/alumno/main.jsx',admin:'src/administracion/admin.jsx'},
   bundle:true,jsx:'automatic',minify:true,
   outdir:'dist/assets',
   define:{'process.env.NODE_ENV':'"production"'}
@@ -16,7 +16,7 @@ writeFileSync('dist/index.html',html);
 writeFileSync('dist/admin.html',adminHtml);
 mkdirSync('../src/main/resources/static/assets',{recursive:true});
 cpSync('dist/assets','../src/main/resources/static/assets',{recursive:true});
-cpSync('src/app.css','../src/main/resources/static/app.css');
+cpSync('src/alumno/estilos/app.css','../src/main/resources/static/app.css');
 writeFileSync('../src/main/resources/static/index.html',html);
 writeFileSync('../src/main/resources/static/admin.html',adminHtml);
 console.log('React compilado y copiado al backend.');

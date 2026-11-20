@@ -1,4 +1,4 @@
-import {boundedRead} from './bounded-read.mjs';
+import {boundedRead} from './alumno/datos/bounded-read.mjs';
 
 export class ApiError extends Error {
   constructor(status, code, message, fields) {

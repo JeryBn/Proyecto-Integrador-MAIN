@@ -111,9 +111,11 @@ def change_account(request, username, action):
         user.save(update_fields=['password_hash'])
         record(request, 'PASSWORD_RESET', username)
     else:
-        user.enabled = False
-        user.save(update_fields=['enabled'])
-        record(request, 'ACCOUNT_DISABLED', username)
+        enabled = action == 'enable'
+        if user.enabled != enabled:
+            user.enabled = enabled
+            user.save(update_fields=['enabled'])
+            record(request, 'ACCOUNT_ENABLED' if enabled else 'ACCOUNT_DISABLED', username)
     return JsonResponse({})
 
 
