@@ -1,4 +1,5 @@
 import java.net.URI
+import groovy.json.JsonOutput
 
 plugins {
     id("com.android.application")
@@ -13,6 +14,7 @@ val deliveryAlias = System.getenv("MAIN_SIGNING_KEY_ALIAS")
 val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
 val deliveryReady = listOf(deliveryStore, deliveryStorePassword, deliveryAlias, deliveryKeyPassword).all { !it.isNullOrBlank() }
 val deliveryOrigin = System.getenv("MAIN_PUBLIC_ORIGIN").orEmpty().trim().trimEnd('/')
+val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "MAIN"
 val deliveryUri = runCatching { URI(deliveryOrigin) }.getOrNull()
 val deliveryOriginReady = deliveryUri != null && deliveryUri.scheme == "https" &&
     deliveryUri.host != null && deliveryUri.rawUserInfo == null && deliveryUri.rawQuery == null &&
@@ -30,6 +32,7 @@ android {
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "PUBLIC_ORIGIN", if (deliveryOriginReady) "\"$deliveryOrigin\"" else "\"\"")
+        buildConfigField("String", "CAMPUS_NAME", JsonOutput.toJson(campusName))
     }
     buildFeatures { compose = true; buildConfig = true }
     signingConfigs {

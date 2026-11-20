@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
     Column(Modifier.fillMaxSize().safeDrawingPadding().imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Spacer(Modifier.height(32.dp))
-        Text("MAIN", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold,
+        Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary)
         if (BuildConfig.DEBUG) {
             OutlinedTextField(value = debugEndpoint, onValueChange = { debugEndpoint = it }, label = { Text("Servidor") },

@@ -38,6 +38,10 @@ Para **Android**, consulta la [guía de compilación](mobile/README.md). La vari
 
 La presentación puede usar HTTPS temporal con datos ficticios y la laptop encendida. Antes de distribuir el APK firmado, guarda un respaldo recuperable de la firma. Mantén fuera de Git las contraseñas, credenciales de proveedores, archivos privados de configuración y claves de firma.
 
+## Identidad institucional
+
+Para una instalación dedicada, configura `MAIN_CAMPUS_NAME` y `MAIN_CAMPUS_COLOR` (formato `#RRGGBB`) antes de iniciar Spring. El portal muestra estos valores en su cabecera. Usa el mismo `MAIN_CAMPUS_NAME` al compilar Android para cambiar el nombre visible dentro de la app. Cada instalación debe usar su propia configuración y su propia base. La personalización visual no habilita el alojamiento compartido entre escuelas.
+
 ## Equipo e historial
 
 Trabajo integrado en `main` con los aportes de Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua y Michael Julian Fernandez Camarena. Consulta las [pautas de colaboración](CONTRIBUTING.md) y la [documentación histórica](docs/REVISION_2026_10_20.md).

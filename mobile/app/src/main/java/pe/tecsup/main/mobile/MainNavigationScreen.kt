@@ -137,7 +137,7 @@ private fun HomeSection(model: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("MAIN", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
+            Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary)
             Text("Hola, ${model.profile?.nombre.orEmpty()}", style = MaterialTheme.typography.headlineMedium)
             Text("Tu espacio académico", color = MaterialTheme.colorScheme.onSurfaceVariant)

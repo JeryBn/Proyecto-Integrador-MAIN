@@ -19,6 +19,10 @@ async function request(url) {
 }
 
 function App() {
+  const campus = useResource('/api/campus/brand');
+  const campusName = campus.data?.name || 'MAIN';
+  const campusMark = Array.from(campusName)[0].toUpperCase();
+  const campusStyle = {'--campus-brand':campus.data?.color || '#087f68'};
   const previousRoute=useRef(null);
   const [items, setItems] = useState([]), [profile, setProfile] = useState(null), [signingOut, setSigningOut] = useState(false), [sessionError, setSessionError] = useState(''), [loading, setLoading] = useState(true), [error, setError] = useState(''), [hash, setHash] = useState(location.hash);
   const [preferences,setPreferences]=useState(null);
@@ -99,7 +103,7 @@ function App() {
     <div className="app-shell">
       <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
       <nav className="sidebar institutional-sidebar" aria-label="Navegación principal">
-        <a className="brand" href="#inicio"><span className="logo">M</span><span><strong>MAIN</strong><small>Campus digital</small></span></a>
+        <a className="brand" href="#inicio" style={campusStyle}><span className="logo campus-mark">{campusMark}</span><span><strong>{campusName}</strong><small>Campus digital</small></span></a>
         <div className="sidebar-navigation">
         {navigation.map((item,index)=>{
           const active=hash===item.route||(item.route==='#inicio'&&(!hash||hash==='#inicio'))||(item.route==='#actividades'&&!!match)||(item.route==='#chats'&&chatRoute);
@@ -110,7 +114,7 @@ function App() {
       </nav>
       <div className="main-area">
         <header className="topbar institutional-topbar">
-          <div className="topbar-context"><span className="mobile-brand"><span className="logo">M</span>MAIN</span><span className="breadcrumb"><Icon name={hash==='#cursos'?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
+          <div className="topbar-context"><span className="mobile-brand" style={campusStyle}><span className="logo campus-mark">{campusMark}</span>{campusName}</span><span className="breadcrumb"><Icon name={hash==='#cursos'?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
           <div className="topbar-actions">
             <a className="topbar-search" href="#actividades"><Icon name="search" size={18}/><span>Buscar en MAIN</span></a>
             <a className="notice-button icon-notice" href="#avisos" aria-label="Ver avisos"><Icon name="bell" size={19}/>{notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}{notices.data.length===30?'+':''}</b>}</a>
