@@ -13,6 +13,8 @@ import java.net.URLEncoder
 
 data class Profile(val usuario: String, val nombre: String, val rol: String)
 data class Notice(val id:String,val kind:String,val conversationId:String,val read:Boolean,val activityId:Long?=null)
+data class AttendanceMark(val studentId: Long, val name: String, val status: String?)
+data class AttendanceChange(val studentId: Long, val status: String, val expectedStatus: String?)
 data class ReminderPreferences(val enabled:Boolean=false,val minutesBefore:Int=60)
 data class Activity(
     val id: Long, val titulo: String, val descripcion: String, val curso: String,
@@ -284,6 +286,27 @@ class MainApi(val endpoint: String) {
             checked(Response(status,body,null,uri.path))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
+    private fun attendanceRows(data: JSONArray): List<AttendanceMark> = rows(data) {
+        AttendanceMark(it.getLong("studentId"),it.getString("name"),
+            if(it.isNull("status"))null else it.getString("status"))
+    }
+
+    fun attendance(course: Long,date: String): List<AttendanceMark> =
+        attendanceRows(JSONArray(checked(request("/api/v1/teaching/courses/$course/attendance/$date"))))
+
+    fun saveAttendance(course: Long,date: String,changes: List<AttendanceChange>): List<AttendanceMark> {
+        val values=JSONArray()
+        changes.forEach { change ->
+            values.put(JSONObject().put("studentId",change.studentId).put("status",change.status)
+                .put("expectedStatus",change.expectedStatus ?: JSONObject.NULL))
+        }
+        val path="/api/v1/teaching/courses/$course/attendance/$date/batch"
+        val token=json("/api/csrf")
+        val response=request(path,payload=JSONObject().put("changes",values),method="PUT",
+            headers=mapOf(token.optString("headerName","X-CSRF-TOKEN") to token.getString("token")))
+        return attendanceRows(JSONArray(checked(response)))
+    }
+
     fun teachingGrades(course:Long):List<StudentGrades> = rows(JSONArray(checked(request("/api/v1/teaching/courses/$course/grades")))) { student ->
         StudentGrades(student.getLong("studentId"),student.getString("name"),rows(student.getJSONArray("grades")) {
             Grade(it.getString("assessment"),it.get("score").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.get("maximum").toString().toBigDecimal().stripTrailingZeros().toPlainString(),it.getString("recordedAt"))

@@ -9,19 +9,34 @@ const todayInLima = () => new Intl.DateTimeFormat('sv-SE', {
 
 export function Attendance({courseId}) {
   const [date,setDate] = useState(todayInLima);
+  const [draft,setDraft] = useState({});
   const [saving,setSaving] = useState(false);
   const [feedback,setFeedback] = useState(null);
   const path = '/api/v1/teaching/courses/'+encodeURIComponent(courseId)+'/attendance/'+date;
   const roster = useResource(path,{enabled:!!date});
 
-  async function save(student,status) {
+  const changes = Object.values(draft);
+  function select(student,status) {
+    setFeedback(null);
+    setDraft(current=>{
+      const next={...current};
+      if(status===student.status)delete next[student.studentId];
+      else next[student.studentId]={studentId:student.studentId,status,expectedStatus:student.status};
+      return next;
+    });
+  }
+
+  async function save() {
+    if(saving||!changes.length)return;
     setFeedback(null);
     setSaving(true);
     try {
-      await userApi.call(path,{method:'PUT',json:{studentId:student.studentId,status}});
+      await userApi.call(path+'/batch',{method:'PUT',json:{changes}});
+      setDraft({});
       roster.reload();
       setFeedback({text:'Asistencia guardada.'});
     } catch (error) {
+      roster.reload();
       setFeedback({error:true,text:error.message});
     } finally {
       setSaving(false);
@@ -30,7 +45,7 @@ export function Attendance({courseId}) {
 
   return <section className="workspace-card grades-section" aria-label="Asistencia">
     <header><h2>Asistencia</h2><label>Fecha{' '}
-      <input type="date" value={date} min="1970-01-01" max={todayInLima()} disabled={saving}
+      <input type="date" value={date} min="1970-01-01" max={todayInLima()} disabled={saving||changes.length>0}
         onChange={event=>{setFeedback(null);setDate(event.target.value);}}/>
     </label></header>
     {roster.error&&<p role="alert">{roster.error} <button type="button" onClick={roster.reload}>Reintentar</button></p>}
@@ -42,8 +57,8 @@ export function Attendance({courseId}) {
         <strong>{student.name}</strong>
         <div className="grade-edit-actions" role="group" aria-label={'Asistencia de '+student.name}>
           {states.map(([status,label])=><button type="button" key={status}
-            aria-pressed={student.status===status} disabled={saving||student.status===status}
-            onClick={()=>save(student,status)}>{label}{student.status===status?' ✓':''}</button>)}
+            aria-pressed={(draft[student.studentId]?.status||student.status)===status} disabled={saving}
+            onClick={()=>select(student,status)}>{label}{(draft[student.studentId]?.status||student.status)===status?' ✓':''}</button>)}
         </div>
       </article>
     )}</div>}

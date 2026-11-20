@@ -5,10 +5,12 @@ import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,6 +41,11 @@ public class AttendanceController {
     @GetMapping
     public List<Mark> roster(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date) {
         requireTeacher(principal.getName(), courseId, false);
+        validateDate(date);
+        return marks(courseId,date);
+    }
+
+    private List<Mark> marks(long courseId, LocalDate date) {
         return db.query("""
             SELECT a.id,a.nombre,r.status FROM matricula m JOIN alumno a ON a.id=m.alumno_id
             LEFT JOIN course_attendance r ON r.course_id=m.curso_id AND r.student_id=a.id AND r.class_date=?
@@ -48,14 +55,48 @@ public class AttendanceController {
     }
 
     @PutMapping
-    @Transactional
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public Mark save(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date,
                      @RequestBody Input input) {
         String actor = principal.getName();
         requireTeacher(actor, courseId, true);
-        if (date.isAfter(LocalDate.now(clock)) || date.getYear() < 1970 || input.status() == null) {
-            throw DomainException.invalid("Selecciona una fecha válida y un estado de asistencia.");
+        validateDate(date);
+        if(input.status()==null)throw DomainException.invalid("Selecciona un estado de asistencia.");
+        return saveMark(actor,courseId,date,input);
+    }
+
+    @PutMapping("/batch")
+    @Transactional(isolation=Isolation.READ_COMMITTED)
+    public List<Mark> saveBatch(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date,
+                                @RequestBody Batch batch) {
+        String actor=principal.getName();
+        requireTeacher(actor,courseId,true);
+        validateDate(date);
+        if(batch.changes()==null||batch.changes().isEmpty()||batch.changes().size()>300)
+            throw DomainException.invalid("Envía entre 1 y 300 registros de asistencia.");
+        var ids=new HashSet<Long>();
+        var roster=new java.util.HashMap<Long,String>();
+        for(Mark mark:marks(courseId,date))roster.put(mark.studentId(),mark.status());
+        for(Change change:batch.changes()){
+            if(change==null||change.status()==null||!ids.add(change.studentId()))
+                throw DomainException.invalid("Revisa los estados y estudiantes duplicados.");
+            if(!roster.containsKey(change.studentId()))throw DomainException.missing();
+            String current=roster.get(change.studentId());
+            String expected=change.expectedStatus()==null?null:change.expectedStatus().name();
+            if(!Objects.equals(current,expected)&&!Objects.equals(current,change.status().name()))
+                throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"ATTENDANCE_CONFLICT",
+                    "Otra sesión modificó la asistencia. Actualiza la lista antes de guardar.");
         }
+        for(Change change:batch.changes())saveMark(actor,courseId,date,new Input(change.studentId(),change.status()));
+        return marks(courseId,date);
+    }
+
+    private void validateDate(LocalDate date){
+        if(date.isAfter(LocalDate.now(clock))||date.getYear()<1970)
+            throw DomainException.invalid("Selecciona una fecha válida.");
+    }
+
+    private Mark saveMark(String actor,long courseId,LocalDate date,Input input){
         var names = db.queryForList("""
             SELECT a.nombre FROM matricula m JOIN alumno a ON a.id=m.alumno_id
             WHERE m.curso_id=? AND a.id=? FOR UPDATE
@@ -85,6 +126,8 @@ public class AttendanceController {
     }
 
     public enum Status { PRESENT, ABSENT, LATE }
+    public record Batch(List<Change> changes) {}
+    public record Change(long studentId,Status status,Status expectedStatus) {}
     public record Input(long studentId, Status status) {}
     public record Mark(long studentId, String name, String status) {}
 }

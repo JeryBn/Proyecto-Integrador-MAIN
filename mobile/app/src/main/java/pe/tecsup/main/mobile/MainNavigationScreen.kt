@@ -140,7 +140,7 @@ private fun HomeSection(model: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            CampusBanner("Hola, ${model.profile?.nombre.orEmpty()}")
+            CampusBanner("Hoy en mi colegio", subtitle = BuildConfig.CAMPUS_NAME)
             Text("Tu espacio académico", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if(model.profile?.rol in listOf("Alumno","Docente")){
                 TextButton(onClick={model.selectSection(MainSection.CAMPUS)}) { Text("Abrir campus") }

@@ -404,6 +404,17 @@ class MainViewModel : ViewModel() {
         val result=withContext(Dispatchers.IO){client.teachingGrades(course.id)}
         if(api===client && teachingCourse==course)teachingGrades=result
     }
+    fun loadAttendance(course: Long,date: String,onLoaded: (List<AttendanceMark>) -> Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.attendance(course,date)}
+        if(api===client&&teachingCourse?.id==course)onLoaded(result)
+    }
+
+    fun saveAttendance(course: Long,date: String,changes: List<AttendanceChange>,
+                      onSaved: (List<AttendanceMark>) -> Unit) = accountOperation("Asistencia guardada.") { client ->
+        val result=withContext(Dispatchers.IO){client.saveAttendance(course,date,changes)}
+        if(api===client&&teachingCourse?.id==course)onSaved(result)
+    }
+
     fun saveGrade(student:Long,assessment:String,score:String,maximum:String,expected:String,onSaved:()->Unit) = accountOperation("Nota guardada.") { client ->
         val course=teachingCourse ?: return@accountOperation
         val result=withContext(Dispatchers.IO){client.saveGrade(course.id,student,assessment,score,maximum,expected);client.teachingGrades(course.id)}

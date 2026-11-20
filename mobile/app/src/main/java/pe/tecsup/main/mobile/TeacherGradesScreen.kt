@@ -14,6 +14,12 @@ import pe.tecsup.main.mobile.data.Grade
 import pe.tecsup.main.mobile.data.StudentGrades
 
 @Composable internal fun TeacherGradesScreen(model:MainViewModel) {
+ var showingAttendance by androidx.compose.runtime.saveable.rememberSaveable(model.teachingCourse?.id){mutableStateOf(false)}
+ val course=model.teachingCourse ?: return
+ if(showingAttendance){
+  TeacherAttendanceScreen(model,course){showingAttendance=false}
+  return
+ }
  var student by remember(model.teachingCourse?.id){mutableStateOf<StudentGrades?>(null)}
  var editing by remember {mutableStateOf<Grade?>(null)}
  var assessment by remember {mutableStateOf("")}
@@ -23,7 +29,7 @@ import pe.tecsup.main.mobile.data.StudentGrades
  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
   PageHeading("Calificaciones"){model.teachingCourse=null}
   Text(model.teachingCourse?.name.orEmpty(),style=MaterialTheme.typography.titleLarge)
-  Text("Registra las evaluaciones de tus estudiantes. Las notas guardadas aparecen en su Inicio.")
+  Button(enabled=!model.accountBusy,onClick={showingAttendance=true}){Text("Pasar lista")}
   AccountFeedback(model)
   TextButton(onClick=model::loadTeaching,enabled=!model.accountBusy){Text("Actualizar estudiantes")}
   if(!model.accountBusy && model.teachingGrades.isEmpty())Text("No hay estudiantes matriculados en este curso.")

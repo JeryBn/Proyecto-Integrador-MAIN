@@ -63,6 +63,26 @@ class TeachingActivityIntegrationTest {
       .content("{\"accept\":true}")).andExpect(status().isOk());
   assertTrue(users.contacts("alumno","otro"));
  }
+ @Test void attendanceBatchIsAtomicAndSafeToRepeatAfterConnectionLoss() throws Exception {
+  jdbc.update("INSERT INTO matricula(alumno_id,curso_id) VALUES(?,1)",users.active("otro").alumnoId());
+  long first=users.active("alumno").alumnoId(), second=users.active("otro").alumnoId();
+  String path="/api/v1/teaching/courses/1/attendance/"+java.time.LocalDate.now(clock);
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  String body=json.writeValueAsString(new AttendanceController.Batch(java.util.List.of(
+   new AttendanceController.Change(first,AttendanceController.Status.PRESENT,null),
+   new AttendanceController.Change(second,AttendanceController.Status.LATE,null))));
+  for(int i=0;i<2;i++)mvc.perform(put(path+"/batch").with(teacher).with(csrf()).contentType("application/json").content(body))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
+  assertEquals(2,jdbc.queryForObject("SELECT COUNT(*) FROM course_attendance",Integer.class));
+  String stale=json.writeValueAsString(new AttendanceController.Batch(java.util.List.of(
+   new AttendanceController.Change(first,AttendanceController.Status.ABSENT,AttendanceController.Status.PRESENT),
+   new AttendanceController.Change(second,AttendanceController.Status.ABSENT,null))));
+  mvc.perform(put(path+"/batch").with(teacher).with(csrf()).contentType("application/json").content(stale))
+   .andExpect(status().isConflict()).andExpect(jsonPath("$.error.code").value("ATTENDANCE_CONFLICT"));
+  assertEquals("PRESENT",jdbc.queryForObject("SELECT status FROM course_attendance WHERE student_id=?",String.class,first));
+  mvc.perform(get("/api/v1/teaching/courses/1/attendance/2099-01-01").with(teacher)).andExpect(status().isBadRequest());
+ }
+
  @Test void attendanceRequiresCourseOwnershipAndPersistsCorrections() throws Exception {
   var date=java.time.LocalDate.now(clock);
   String path="/api/v1/teaching/courses/1/attendance/"+date;
