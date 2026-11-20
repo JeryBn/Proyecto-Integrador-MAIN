@@ -11,6 +11,20 @@ class TeacherAndStatusUiTest {
  @get:Rule val ui=createAndroidComposeRule<MainActivity>()
  private fun waitFor(text:String){try{ui.waitUntil(30000){ui.onAllNodesWithText(text,substring=true).fetchSemanticsNodes().isNotEmpty()}}catch(error:Throwable){Evidence.capture("fallo_notas_estados.png");throw AssertionError("Esperando: $text\n"+ui.onRoot().printToString(),error)}}
  private fun login(user:String,password:String){ui.onNodeWithText("Usuario").performTextReplacement(user);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")}
+ @Test fun teacherSelectsAttendanceSessionAndKeepsDraftUntilSaving(){
+  login("docente","MainDemo2026!")
+  ui.onAllNodesWithText("Registrar y editar notas").onFirst().performScrollTo().performClick()
+  ui.onNodeWithText("Pasar lista").performClick()
+  waitFor("Alex Demo")
+  ui.onNodeWithText("Sesión 1").performClick()
+  ui.onNodeWithText("Sesión 2").performClick()
+  waitFor("Alex Demo")
+  ui.onNodeWithText("Sesión 2").assertIsDisplayed()
+  ui.onNodeWithText("Tardanza").performClick()
+  ui.onNodeWithText("Guardar lista").assertIsEnabled()
+  ui.onNodeWithText("Descartar").performClick()
+  ui.onNodeWithText("Guardar lista").assertDoesNotExist()
+ }
  @Test fun teacherRecordsEditsAndStudentReadsTheSavedGrade(){
   val admin=AdminTestApi();val records=admin.list("/api/admin/v1/users?limit=100")
   if((0 until records.length()).none{records.getJSONObject(it).getString("username")=="docente_revision"})admin.post("/api/admin/v1/users",JSONObject().put("username","docente_revision").put("name","Profesor de revisión").put("role","DOCENTE").put("password","MainReview2026!").put("docenteId",1))

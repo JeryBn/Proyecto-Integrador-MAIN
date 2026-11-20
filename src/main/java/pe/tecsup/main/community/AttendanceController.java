@@ -39,44 +39,45 @@ public class AttendanceController {
     }
 
     @GetMapping
-    public List<Mark> roster(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date) {
+    public List<Mark> roster(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date,
+                             @RequestParam(defaultValue="1") int session) {
         requireTeacher(principal.getName(), courseId, false);
-        validateDate(date);
-        return marks(courseId,date);
+        validateSession(date,session);
+        return marks(courseId,date,session);
     }
 
-    private List<Mark> marks(long courseId, LocalDate date) {
+    private List<Mark> marks(long courseId, LocalDate date, int session) {
         return db.query("""
             SELECT a.id,a.nombre,r.status FROM matricula m JOIN alumno a ON a.id=m.alumno_id
-            LEFT JOIN course_attendance r ON r.course_id=m.curso_id AND r.student_id=a.id AND r.class_date=?
+            LEFT JOIN course_attendance r ON r.course_id=m.curso_id AND r.student_id=a.id AND r.class_date=? AND r.session_no=?
             WHERE m.curso_id=? ORDER BY a.nombre,a.id
             """, (rs, index) -> new Mark(rs.getLong(1), rs.getString(2), rs.getString(3)),
-            Date.valueOf(date), courseId);
+            Date.valueOf(date), session, courseId);
     }
 
     @PutMapping
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public Mark save(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date,
-                     @RequestBody Input input) {
+                     @RequestParam(defaultValue="1") int session, @RequestBody Input input) {
         String actor = principal.getName();
         requireTeacher(actor, courseId, true);
-        validateDate(date);
+        validateSession(date,session);
         if(input.status()==null)throw DomainException.invalid("Selecciona un estado de asistencia.");
-        return saveMark(actor,courseId,date,input);
+        return saveMark(actor,courseId,date,session,input);
     }
 
     @PutMapping("/batch")
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public List<Mark> saveBatch(Principal principal, @PathVariable long courseId, @PathVariable LocalDate date,
-                                @RequestBody Batch batch) {
+                                @RequestParam(defaultValue="1") int session, @RequestBody Batch batch) {
         String actor=principal.getName();
         requireTeacher(actor,courseId,true);
-        validateDate(date);
+        validateSession(date,session);
         if(batch.changes()==null||batch.changes().isEmpty()||batch.changes().size()>300)
             throw DomainException.invalid("Envía entre 1 y 300 registros de asistencia.");
         var ids=new HashSet<Long>();
         var roster=new java.util.HashMap<Long,String>();
-        for(Mark mark:marks(courseId,date))roster.put(mark.studentId(),mark.status());
+        for(Mark mark:marks(courseId,date,session))roster.put(mark.studentId(),mark.status());
         for(Change change:batch.changes()){
             if(change==null||change.status()==null||!ids.add(change.studentId()))
                 throw DomainException.invalid("Revisa los estados y estudiantes duplicados.");
@@ -87,16 +88,17 @@ public class AttendanceController {
                 throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"ATTENDANCE_CONFLICT",
                     "Otra sesión modificó la asistencia. Actualiza la lista antes de guardar.");
         }
-        for(Change change:batch.changes())saveMark(actor,courseId,date,new Input(change.studentId(),change.status()));
-        return marks(courseId,date);
+        for(Change change:batch.changes())saveMark(actor,courseId,date,session,new Input(change.studentId(),change.status()));
+        return marks(courseId,date,session);
     }
 
-    private void validateDate(LocalDate date){
+    private void validateSession(LocalDate date,int session){
+        if(session<1||session>8)throw DomainException.invalid("Selecciona una sesión entre 1 y 8.");
         if(date.isAfter(LocalDate.now(clock))||date.getYear()<1970)
             throw DomainException.invalid("Selecciona una fecha válida.");
     }
 
-    private Mark saveMark(String actor,long courseId,LocalDate date,Input input){
+    private Mark saveMark(String actor,long courseId,LocalDate date,int session,Input input){
         var names = db.queryForList("""
             SELECT a.nombre FROM matricula m JOIN alumno a ON a.id=m.alumno_id
             WHERE m.curso_id=? AND a.id=? FOR UPDATE
@@ -105,23 +107,23 @@ public class AttendanceController {
         var sqlDate = Date.valueOf(date);
         var now = LocalDateTime.now(clock);
         var prior = db.queryForList("""
-            SELECT status FROM course_attendance WHERE course_id=? AND student_id=? AND class_date=?
-            """, String.class, courseId, input.studentId(), sqlDate);
+            SELECT status FROM course_attendance WHERE course_id=? AND student_id=? AND class_date=? AND session_no=?
+            """, String.class, courseId, input.studentId(), sqlDate, session);
         String status = input.status().name();
         if (prior.isEmpty()) {
             db.update("""
-                INSERT INTO course_attendance(course_id,student_id,class_date,status,recorded_by,recorded_at)
-                VALUES(?,?,?,?,?,?)
-                """, courseId, input.studentId(), sqlDate, status, actor, now);
+                INSERT INTO course_attendance(course_id,student_id,class_date,session_no,status,recorded_by,recorded_at)
+                VALUES(?,?,?,?,?,?,?)
+                """, courseId, input.studentId(), sqlDate, session, status, actor, now);
         } else if (!status.equals(prior.getFirst())) {
             db.update("""
                 UPDATE course_attendance SET status=?,recorded_by=?,recorded_at=?
-                WHERE course_id=? AND student_id=? AND class_date=?
-                """, status, actor, now, courseId, input.studentId(), sqlDate);
+                WHERE course_id=? AND student_id=? AND class_date=? AND session_no=?
+                """, status, actor, now, courseId, input.studentId(), sqlDate, session);
         } else {
             return new Mark(input.studentId(), names.getFirst(), status);
         }
-        audit.record(actor, "ATTENDANCE_RECORDED", courseId + ":" + input.studentId() + ":" + date);
+        audit.record(actor, "ATTENDANCE_RECORDED", courseId + ":" + input.studentId() + ":" + date + ":" + session);
         return new Mark(input.studentId(), names.getFirst(), status);
     }
 

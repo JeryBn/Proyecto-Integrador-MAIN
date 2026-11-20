@@ -9,11 +9,13 @@ const todayInLima = () => new Intl.DateTimeFormat('sv-SE', {
 
 export function Attendance({courseId}) {
   const [date,setDate] = useState(todayInLima);
+  const [session,setSession] = useState(1);
   const [draft,setDraft] = useState({});
   const [saving,setSaving] = useState(false);
   const [feedback,setFeedback] = useState(null);
   const path = '/api/v1/teaching/courses/'+encodeURIComponent(courseId)+'/attendance/'+date;
-  const roster = useResource(path,{enabled:!!date});
+  const query = "?session="+session;
+  const roster = useResource(path+query,{enabled:!!date});
 
   const changes = Object.values(draft);
   function select(student,status) {
@@ -31,7 +33,7 @@ export function Attendance({courseId}) {
     setFeedback(null);
     setSaving(true);
     try {
-      await userApi.call(path+'/batch',{method:'PUT',json:{changes}});
+      await userApi.call(path+'/batch'+query,{method:'PUT',json:{changes}});
       setDraft({});
       roster.reload();
       setFeedback({text:'Asistencia guardada.'});
@@ -47,7 +49,10 @@ export function Attendance({courseId}) {
     <header><h2>Asistencia</h2><label>Fecha{' '}
       <input type="date" value={date} min="1970-01-01" max={todayInLima()} disabled={saving||changes.length>0}
         onChange={event=>{setFeedback(null);setDate(event.target.value);}}/>
-    </label></header>
+    </label><label>Sesión <select value={session} disabled={saving||changes.length>0}
+      onChange={event=>{setFeedback(null);setSession(Number(event.target.value));}}>
+      {Array.from({length:8},(_,index)=><option key={index+1} value={index+1}>Sesión {index+1}</option>)}
+    </select></label></header>
     {roster.error&&<p role="alert">{roster.error} <button type="button" onClick={roster.reload}>Reintentar</button></p>}
     {feedback&&<p role={feedback.error?'alert':'status'}>{feedback.text}</p>}
     {date&&roster.loading&&<p role="status">Cargando lista…</p>}

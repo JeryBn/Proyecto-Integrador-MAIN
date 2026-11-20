@@ -20,18 +20,20 @@ import pe.tecsup.main.mobile.data.Course
 internal fun TeacherAttendanceScreen(model: MainViewModel,course: Course,onBack: () -> Unit) {
     val today = LocalDate.now(ZoneId.of("America/Lima"))
     var date by remember(course.id) { mutableStateOf(today) }
-    var roster by remember(course.id,date) { mutableStateOf<List<AttendanceMark>?>(null) }
-    var drafts by remember(course.id,date) { mutableStateOf<Map<Long,AttendanceChange>>(emptyMap()) }
+    var session by remember(course.id,date) { mutableIntStateOf(1) }
+    var choosingSession by remember { mutableStateOf(false) }
+    var roster by remember(course.id,date,session) { mutableStateOf<List<AttendanceMark>?>(null) }
+    var drafts by remember(course.id,date,session) { mutableStateOf<Map<Long,AttendanceChange>>(emptyMap()) }
     var confirmExit by remember { mutableStateOf(false) }
     val states = listOf("PRESENT" to "Presente","ABSENT" to "Ausente","LATE" to "Tardanza")
-    fun reload() { model.loadAttendance(course.id,date.toString()) { roster = it } }
+    fun reload() { model.loadAttendance(course.id,date.toString(),session) { roster = it } }
     fun back() {
         if (model.accountBusy) return
         if (drafts.isEmpty()) onBack() else confirmExit = true
     }
 
     BackHandler { back() }
-    LaunchedEffect(course.id,date) { reload() }
+    LaunchedEffect(course.id,date,session) { reload() }
     Column(Modifier.fillMaxSize().padding(horizontal=16.dp)) {
         PageHeading("Asistencia",::back)
         CampusBanner(course.name)
@@ -42,6 +44,16 @@ internal fun TeacherAttendanceScreen(model: MainViewModel,course: Course,onBack:
             Text(date.toString())
             TextButton(enabled=!model.accountBusy&&drafts.isEmpty()&&date<today,
                 onClick={date=date.plusDays(1)}) { Text("Siguiente") }
+        }
+        Box {
+            OutlinedButton(enabled=!model.accountBusy&&drafts.isEmpty(),onClick={choosingSession=true}) {
+                Text("Sesión $session")
+            }
+            DropdownMenu(expanded=choosingSession,onDismissRequest={choosingSession=false}) {
+                (1..8).forEach { number ->
+                    DropdownMenuItem(text={Text("Sesión $number")},onClick={session=number;choosingSession=false})
+                }
+            }
         }
         AccountFeedback(model)
         TextButton(enabled=!model.accountBusy,onClick=::reload) { Text("Actualizar lista") }
@@ -70,7 +82,7 @@ internal fun TeacherAttendanceScreen(model: MainViewModel,course: Course,onBack:
                 Text("${drafts.size} sin guardar",Modifier.weight(1f))
                 TextButton(enabled=!model.accountBusy,onClick={drafts=emptyMap()}) { Text("Descartar") }
                 Button(enabled=!model.accountBusy,onClick={
-                    model.saveAttendance(course.id,date.toString(),drafts.values.toList()) {
+                    model.saveAttendance(course.id,date.toString(),session,drafts.values.toList()) {
                         roster=it
                         drafts=emptyMap()
                     }

@@ -295,16 +295,16 @@ class MainApi(val endpoint: String) {
             if(it.isNull("status"))null else it.getString("status"))
     }
 
-    fun attendance(course: Long,date: String): List<AttendanceMark> =
-        attendanceRows(JSONArray(checked(request("/api/v1/teaching/courses/$course/attendance/$date"))))
+    fun attendance(course: Long,date: String,session: Int): List<AttendanceMark> =
+        attendanceRows(JSONArray(checked(request("/api/v1/teaching/courses/$course/attendance/$date?session=$session"))))
 
-    fun saveAttendance(course: Long,date: String,changes: List<AttendanceChange>): List<AttendanceMark> {
+    fun saveAttendance(course: Long,date: String,session: Int,changes: List<AttendanceChange>): List<AttendanceMark> {
         val values=JSONArray()
         changes.forEach { change ->
             values.put(JSONObject().put("studentId",change.studentId).put("status",change.status)
                 .put("expectedStatus",change.expectedStatus ?: JSONObject.NULL))
         }
-        val path="/api/v1/teaching/courses/$course/attendance/$date/batch"
+        val path="/api/v1/teaching/courses/$course/attendance/$date/batch?session=$session"
         val token=json("/api/csrf")
         val response=request(path,payload=JSONObject().put("changes",values),method="PUT",
             headers=mapOf(token.optString("headerName","X-CSRF-TOKEN") to token.getString("token")))

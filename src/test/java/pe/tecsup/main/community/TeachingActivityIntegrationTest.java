@@ -63,6 +63,21 @@ class TeachingActivityIntegrationTest {
       .content("{\"accept\":true}")).andExpect(status().isOk());
   assertTrue(users.contacts("alumno","otro"));
  }
+ @Test void attendanceKeepsTwoSessionsOfTheSameDayIndependent() throws Exception {
+  long student=users.active("alumno").alumnoId();
+  String path="/api/v1/teaching/courses/1/attendance/"+java.time.LocalDate.now(clock);
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  var first=json.writeValueAsString(new AttendanceController.Input(student,AttendanceController.Status.PRESENT));
+  var second=json.writeValueAsString(new AttendanceController.Input(student,AttendanceController.Status.LATE));
+  mvc.perform(put(path).with(teacher).with(csrf()).contentType("application/json").content(first))
+   .andExpect(status().isOk());
+  mvc.perform(put(path).param("session","2").with(teacher).with(csrf()).contentType("application/json").content(second))
+   .andExpect(status().isOk());
+  mvc.perform(get(path).with(teacher)).andExpect(jsonPath("$[0].status").value("PRESENT"));
+  mvc.perform(get(path).param("session","2").with(teacher)).andExpect(jsonPath("$[0].status").value("LATE"));
+  mvc.perform(get(path).param("session","0").with(teacher)).andExpect(status().isBadRequest());
+ }
+
  @Test void attendanceBatchIsAtomicAndSafeToRepeatAfterConnectionLoss() throws Exception {
   jdbc.update("INSERT INTO matricula(alumno_id,curso_id) VALUES(?,1)",users.active("otro").alumnoId());
   long first=users.active("alumno").alumnoId(), second=users.active("otro").alumnoId();
