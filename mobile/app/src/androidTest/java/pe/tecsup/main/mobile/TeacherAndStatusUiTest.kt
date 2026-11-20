@@ -11,6 +11,15 @@ class TeacherAndStatusUiTest {
  @get:Rule val ui=createAndroidComposeRule<MainActivity>()
  private fun waitFor(text:String){try{ui.waitUntil(30000){ui.onAllNodesWithText(text,substring=true).fetchSemanticsNodes().isNotEmpty()}}catch(error:Throwable){Evidence.capture("fallo_notas_estados.png");throw AssertionError("Esperando: $text\n"+ui.onRoot().printToString(),error)}}
  private fun login(user:String,password:String){ui.onNodeWithText("Usuario").performTextReplacement(user);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")}
+ @Test fun studentCanOpenReportCardsAndAttendanceJustifications(){
+  login("alumno","MainDemo2026!")
+  ui.onNodeWithText("Boletines",substring=false).performScrollTo().performClick()
+  ui.onNodeWithText("Boletines",substring=false).assertIsDisplayed()
+  ui.onNodeWithContentDescription("Volver").performClick()
+  ui.onNodeWithText("Justificar faltas o tardanzas").performScrollTo().performClick()
+  ui.onNodeWithText("Justificaciones",substring=false).assertIsDisplayed()
+  ui.onNodeWithText("Actualizar",substring=false).assertIsDisplayed()
+ }
  @Test fun teacherSelectsAttendanceSessionAndKeepsDraftUntilSaving(){
   login("docente","MainDemo2026!")
   ui.onAllNodesWithText("Registrar y editar notas").onFirst().performScrollTo().performClick()
