@@ -27,6 +27,8 @@ La primera ejecución halló una expectativa antigua en `PendingUiTest`: buscaba
 
 ## Límites que permanecen abiertos
 
+El 19 de noviembre se instaló el APK release de `2905d07` encima del release anterior en el mismo Motorola. Android aceptó la actualización, conservó la fecha de instalación inicial y el directorio de datos, y abrió MAIN correctamente. La prueba de inicio de sesión contra el servidor público y la entrega de notificaciones quedan pendientes.
+
 - La identidad release existe y funciona en esta cuenta de Windows. Antes de distribuir el APK falta guardar una copia externa del `.p12` y una contraseña recuperable en un gestor privado; DPAPI por sí solo no permite recuperar la clave en otra computadora.
 - Firebase Android y la cuenta FCM del servidor no están configurados, por lo que no se puede acreditar push con la app abierta, en segundo plano o cerrada.
 - No se capturó ni almacenó foto, video o audio personal. La grabación y el envío real deben repetirse con material sintético autorizado cuando exista el entorno HTTPS final.
