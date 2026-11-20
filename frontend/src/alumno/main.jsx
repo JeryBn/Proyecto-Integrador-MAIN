@@ -1,3 +1,4 @@
+import {CallPanel} from './comunicacion/calls.jsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import './estilos/app.css';
@@ -129,6 +130,7 @@ function App() {
           </div>
           </div>
         </header>
+        {profile&&<CallPanel key={profile.usuario} username={profile.usuario}/>}
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
           {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile} campusName={campusName} campusColor={campus.data?.color||'#087f68'}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:courseRoute?<Academic key={courseRoute[1]||'courses'} profile={profile} attendanceCourseId={courseRoute[1]}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
         </main>

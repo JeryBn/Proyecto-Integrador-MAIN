@@ -15,8 +15,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!"})
 @AutoConfigureMockMvc @Transactional
 class CommunicationIntegrationTest{
+ @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Test void onlyDirectCallParticipantsCanExchangeSignalsAndHangUp()throws Exception{
+  users.approveContact(admin,"alumno","otro");
+  String conversation=chat.direct("alumno","otro"), root="/api/v1/calls";
+  UUID id=UUID.randomUUID();
+  String signal="v=0\r\ns=-\r\n";
+  String offer=json.writeValueAsString(new DirectCalls.Start(id,conversation,"VIDEO",signal));
+  var caller=user("alumno").roles("ALUMNO");
+  var callee=user("otro").roles("ALUMNO");
+  var outsider=user("vacio").roles("ALUMNO");
+  for(int i=0;i<2;i++)mvc.perform(post(root).with(caller).with(csrf()).contentType("application/json").content(offer))
+      .andExpect(status().isCreated()).andExpect(jsonPath("$.state").value("RINGING"));
+  mvc.perform(get(root+"/incoming").with(callee)).andExpect(jsonPath("$[0].id").value(id.toString()));
+  mvc.perform(get(root+"/incoming").with(outsider)).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(get(root+"/"+id).with(outsider)).andExpect(status().isNotFound());
+  String answer=json.writeValueAsString(new DirectCalls.Answer(signal));
+  mvc.perform(put(root+"/"+id+"/answer").with(caller).with(csrf()).contentType("application/json").content(answer))
+      .andExpect(status().isNotFound());
+  mvc.perform(put(root+"/"+id+"/answer").with(callee).with(csrf()).contentType("application/json").content(answer))
+      .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("ACTIVE"));
+  mvc.perform(delete(root+"/"+id).with(callee).with(csrf())).andExpect(status().isOk());
+  mvc.perform(get(root+"/"+id).with(caller)).andExpect(jsonPath("$.state").value("ENDED")).andExpect(jsonPath("$.offer").doesNotExist());
+ }
  @Test void aiDecidesDeliveryAndOnlyPublishesAPlaceholderForRemovedText()throws Exception{
   users.approveContact(admin,"alumno","otro");
   String id=chat.direct("alumno","otro");

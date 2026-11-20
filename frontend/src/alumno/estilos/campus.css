@@ -172,3 +172,9 @@
 .campus-thread ul{padding:0;list-style:none}
 .campus-thread li{padding:10px 0;border-bottom:1px solid var(--border)}
 .campus-thread .campus-composer{margin-top:12px}
+
+.main-call{position:fixed;z-index:40;inset:auto 1rem 1rem auto;width:min(420px,calc(100vw - 2rem));padding:16px;background:var(--surface);color:var(--ink);border:1px solid var(--campus-edge);border-radius:18px;box-shadow:0 12px 38px #00160b44}
+.main-call button{margin:4px}
+.call-video{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+.call-video video{width:100%;aspect-ratio:4/3;background:#172722;border-radius:12px;object-fit:contain}
+@media(max-width:640px){.main-call{bottom:calc(78px + env(safe-area-inset-bottom))}.conversation-header .chat-header-actions{flex-wrap:wrap}}
