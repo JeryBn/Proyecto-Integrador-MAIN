@@ -138,6 +138,13 @@ private fun HomeSection(model: MainViewModel) {
     val showJustifications = androidx.compose.runtime.saveable.rememberSaveable(model.profile?.usuario) {
         androidx.compose.runtime.mutableStateOf(false)
     }
+    val showReports = androidx.compose.runtime.saveable.rememberSaveable(model.profile?.usuario) {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
+    if(showReports.value){
+        ReportCardsScreen(model){showReports.value=false}
+        return
+    }
     if(showJustifications.value){
         JustificationScreen(model){showJustifications.value=false}
         return
@@ -205,6 +212,7 @@ private fun HomeSection(model: MainViewModel) {
         if(model.profile?.rol=="Familiar") FamilyWeekly(model)
         if(model.profile?.rol in listOf("Alumno","Familiar")){
             TextButton(onClick={showJustifications.value=true}){Text("Justificar faltas o tardanzas")}
+            TextButton(onClick={showReports.value=true}){Text("Boletines")}
         }
         AgendaContent(model)
         Text(

@@ -302,6 +302,25 @@ class MainApi(val endpoint: String) {
             checked(Response(status,body,null,uri.path,connection.getHeaderField("X-Request-ID")))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
+    fun schoolPeriods(course: Long): List<SchoolPeriod> =
+        rows(JSONArray(checked(request("/api/v1/teaching/courses/$course/periods")))) {
+            SchoolPeriod(it.getInt("number"),it.getString("name"),it.getString("endsOn"),it.getBoolean("closed"),it.getBoolean("canClose"))
+        }
+
+    fun closePeriod(course: Long,period: Int,maximum: java.math.BigDecimal,scores: Map<Long,java.math.BigDecimal>) {
+        val payload=JSONArray()
+        scores.forEach { (student,score) ->
+            payload.put(JSONObject().put("studentId",student).put("score",score))
+        }
+        mutate("/api/v1/teaching/courses/$course/periods/$period/close",JSONObject().put("maximum",maximum).put("scores",payload))
+    }
+
+    fun reportCards(offset: Int): List<ReportMark> =
+        rows(JSONArray(checked(request("/api/v1/report-cards?offset=$offset")))) {
+            ReportMark(it.getString("course"),it.getString("student"),it.getInt("year"),it.getString("periodName"),
+                it.getString("score"),it.getString("maximum"))
+        }
+
     fun justifications(courseId: Long?,offset: Int): List<AttendanceJustification> {
         val path="/api/v1/attendance/justifications?offset=$offset"+(courseId?.let{"&courseId=$it"}?:"")
         return rows(JSONArray(checked(request(path)))) { item ->

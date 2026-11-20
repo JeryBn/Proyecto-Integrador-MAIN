@@ -423,6 +423,23 @@ class MainViewModel : ViewModel() {
         val result=withContext(Dispatchers.IO){client.teachingGrades(course.id)}
         if(api===client && teachingCourse==course)teachingGrades=result
     }
+    fun loadSchoolPeriods(course: Long,onLoaded: (List<SchoolPeriod>)->Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.schoolPeriods(course)}
+        if(api===client&&teachingCourse?.id==course)onLoaded(result)
+    }
+
+    fun closeSchoolPeriod(course: Long,period: Int,maximum: java.math.BigDecimal,
+                          scores: Map<Long,java.math.BigDecimal>,onClosed:()->Unit) =
+        accountOperation("Período cerrado. El boletín está disponible.") { client ->
+            withContext(Dispatchers.IO){client.closePeriod(course,period,maximum,scores)}
+            if(api===client&&teachingCourse?.id==course)onClosed()
+        }
+
+    fun loadReportCards(offset: Int,onLoaded: (List<ReportMark>)->Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.reportCards(offset)}
+        if(api===client)onLoaded(result)
+    }
+
     fun loadJustifications(courseId: Long?,offset: Int,onLoaded:(List<AttendanceJustification>)->Unit) = accountOperation { client ->
         val result=withContext(Dispatchers.IO){client.justifications(courseId,offset)}
         if(api===client)onLoaded(result)

@@ -31,6 +31,35 @@ class IdentityIntegrationTest {
    .andExpect(status().isForbidden());
   assertTrue(academic.agenda("familia_test").courses().isEmpty());
  }
+ @Test void periodClosurePublishesAnImmutableReportOnlyToAuthorizedAccounts() throws Exception {
+  int year=java.time.LocalDate.now(clock).getYear()-1;
+  var first=java.sql.Date.valueOf(java.time.LocalDate.of(year,1,1));
+  var last=java.sql.Date.valueOf(java.time.LocalDate.of(year,12,31));
+  db.update("INSERT INTO academic_year VALUES(?,?,?)",year,first,last);
+  db.update("INSERT INTO academic_period VALUES(?,?,?,?,?)",year,1,"Período de prueba",first,last);
+  db.update("INSERT INTO school_section VALUES(?,?,?,?)","section-test",year,"4","A");
+  db.update("INSERT INTO course_section VALUES(?,?)",1,"section-test");
+  String read="/api/v1/report-cards";
+  String write="/api/v1/teaching/courses/1/periods/1/close";
+  var student=user("alumno").roles("ALUMNO");
+  var teacher=user("profe_test").roles("DOCENTE");
+  var family=user("familia_test").roles("FAMILIAR");
+  mvc.perform(get(read).with(student)).andExpect(jsonPath("$.length()").value(0));
+  String input="{\"maximum\":20,\"scores\":[{\"studentId\":1,\"score\":17.5}]}";
+  mvc.perform(put(write).with(student).with(csrf()).contentType("application/json").content(input))
+   .andExpect(status().isForbidden());
+  for(int i=0;i<2;i++)mvc.perform(put(write).with(teacher).with(csrf()).contentType("application/json").content(input))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.closed").value(true));
+  mvc.perform(put(write).with(teacher).with(csrf()).contentType("application/json").content(input.replace("17.5","19")))
+   .andExpect(status().isConflict());
+  mvc.perform(get(read).with(student)).andExpect(jsonPath("$[0].score").value(17.5));
+  mvc.perform(get(read).with(user("otro").roles("ALUMNO"))).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(get(read).with(family)).andExpect(jsonPath("$.length()").value(0));
+  users.verifyGuardian(admin,"familia_test",1);
+  mvc.perform(get(read).with(family)).andExpect(jsonPath("$[0].score").value(17.5));
+  users.revokeGuardian(admin,"familia_test",1);
+  mvc.perform(get(read).with(family)).andExpect(jsonPath("$.length()").value(0));
+ }
  @Test void attendanceJustificationsRequireTheRightFamilyAndTeacher() throws Exception {
   String path="/api/v1/attendance/justifications";
   var family=user("familia_test").roles("FAMILIAR");

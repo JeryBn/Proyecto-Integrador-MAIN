@@ -19,6 +19,8 @@ data class AppealTarget(val kind:String,val subjectId:String,val revision:Int,va
 data class AppealItem(val id:String,val kind:String,val revision:Int,val state:String,val reason:String,val createdAt:String,val decisionReason:String,val decidedAt:String)
 data class StatusAttachment(val bytes:ByteArray,val mime:String)
 
+data class SchoolPeriod(val number: Int,val name: String,val endsOn: String,val closed: Boolean,val canClose: Boolean)
+data class ReportMark(val course: String,val student: String,val year: Int,val periodName: String,val score: String,val maximum: String)
 data class AttendanceJustification(
     val courseId: Long,val studentId: Long,val course: String,val student: String,
     val date: String,val session: Int,val attendance: String,val id: String?,

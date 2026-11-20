@@ -16,6 +16,11 @@ import pe.tecsup.main.mobile.data.StudentGrades
 @Composable internal fun TeacherGradesScreen(model:MainViewModel) {
  var showingAttendance by androidx.compose.runtime.saveable.rememberSaveable(model.teachingCourse?.id){mutableStateOf(false)}
  val course=model.teachingCourse ?: return
+ var showingPeriods by androidx.compose.runtime.saveable.rememberSaveable(course.id){mutableStateOf(false)}
+ if(showingPeriods){
+  PeriodClosureScreen(model,course.id){showingPeriods=false}
+  return
+ }
  var showingJustifications by androidx.compose.runtime.saveable.rememberSaveable(course.id){mutableStateOf(false)}
  if(showingJustifications){
   JustificationScreen(model,course.id){showingJustifications=false}
@@ -36,6 +41,7 @@ import pe.tecsup.main.mobile.data.StudentGrades
   Text(model.teachingCourse?.name.orEmpty(),style=MaterialTheme.typography.titleLarge)
   Button(enabled=!model.accountBusy,onClick={showingAttendance=true}){Text("Pasar lista")}
   TextButton(enabled=!model.accountBusy,onClick={showingJustifications=true}){Text("Justificaciones")}
+  TextButton(enabled=!model.accountBusy,onClick={showingPeriods=true}){Text("Cerrar período")}
   AccountFeedback(model)
   TextButton(onClick=model::loadTeaching,enabled=!model.accountBusy){Text("Actualizar estudiantes")}
   if(!model.accountBusy && model.teachingGrades.isEmpty())Text("No hay estudiantes matriculados en este curso.")
