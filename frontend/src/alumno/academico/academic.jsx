@@ -1,6 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {localDate,userApi} from '../datos/user-api.mjs';
 import {Icon} from '../../ui-icons.jsx';
+import {Attendance} from './attendance.jsx';
 
 const days=['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 async function api(path,body,method=body?'PUT':'GET'){return userApi.call('/api/v1/'+path,{method,json:body});}
@@ -45,6 +46,7 @@ export function Academic({profile}){
     {selected?<>
      <section className="workspace-card course-overview"><div className="course-title"><span className="course-cover large"><Icon name="graduation" size={28}/></span><div><span className="section-kicker">CURSO ACTIVO</span><h2>{selected.name}</h2><p>Docente: {selected.teacher}</p></div></div><div className="course-tabs" role="tablist" aria-label="Secciones del curso"><button className="active" role="tab" aria-selected="true">Resumen</button>{!teacher&&<a href="#actividades" role="tab">Actividades</a>}<a href="#chats" role="tab">Comunidad</a></div></section>
      {teacher&&<section className="workspace-card teacher-activities-section"><header><div><span className="section-kicker">PLANIFICACIÓN</span><h2>Actividades del curso</h2><p>Publica consignas y revisa cuántos estudiantes ya entregaron.</p></div><button className="primary-action" disabled={busy} onClick={()=>setCreatingActivity(true)}><Icon name="plus" size={17}/>Nueva actividad</button></header>{courseActivities.length?<div className="teacher-activity-list">{courseActivities.map(item=><article key={item.id}><span className="activity-mark"><Icon name="clipboard" size={19}/></span><div className="grow"><strong>{item.title}</strong><p>{localDate(item.dueAt)}</p></div><div className="submission-summary"><strong>{item.submitted}/{item.enrolled}</strong><small>entregadas{item.drafts?` · ${item.drafts} borrador${item.drafts===1?'':'es'}`:''}</small></div></article>)}</div>:<div className="dashboard-empty"><span><Icon name="clipboard"/></span><div><strong>Este curso aún no tiene actividades</strong><p>Crea la primera consigna para organizar el trabajo de tus estudiantes.</p></div></div>}</section>}
+     {teacher&&<Attendance key={selected.id} courseId={selected.id}/>}
      <div className="course-content-grid">
       <section className="workspace-card grades-section"><header><div><span className="section-kicker">EVALUACIONES</span><h2>{teacher?'Estudiantes y notas':'Mi progreso'}</h2></div><span className="round-icon"><Icon name="chart"/></span></header>
        {!teacher&&<GradeList grades={selectedGrades}/>}

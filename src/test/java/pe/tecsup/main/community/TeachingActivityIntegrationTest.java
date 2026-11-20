@@ -16,6 +16,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc @Transactional
 class TeachingActivityIntegrationTest {
  @Autowired TeachingActivityService activities;@Autowired IdentityService users;@Autowired ActividadService studentActivities;@Autowired MockMvc mvc;
+ @Autowired java.time.Clock clock;
+ @Test void attendanceRequiresCourseOwnershipAndPersistsCorrections() throws Exception {
+  var date=java.time.LocalDate.now(clock);
+  String path="/api/v1/teaching/courses/1/attendance/"+date;
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  long student=users.active("alumno").alumnoId();
+  String body="{\"studentId\":"+student+",\"status\":\"PRESENT\"}";
+  mvc.perform(get(path).with(user("alumno").roles("ALUMNO"))).andExpect(status().isForbidden());
+  mvc.perform(get("/api/v1/teaching/courses/3/attendance/"+date).with(teacher)).andExpect(status().isNotFound());
+  mvc.perform(put(path).with(teacher).contentType("application/json").content(body)).andExpect(status().isForbidden());
+  mvc.perform(put(path).with(teacher).with(csrf()).contentType("application/json").content(body))
+      .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PRESENT"));
+  mvc.perform(put(path).with(teacher).with(csrf()).contentType("application/json").content(body.replace("PRESENT","LATE")))
+      .andExpect(status().isOk());
+  mvc.perform(get(path).with(teacher)).andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].status").value("LATE"));
+ }
  @BeforeEach void setup(){users.create("admin_teaching_activities",new IdentityService.NewAccount("teacher_activities","Docente de actividades","DOCENTE","SyntheticTeacher2026!",null,1L));}
  @Test void assignedTeacherCreatesActivityVisibleToEnrolledStudent(){
   var created=activities.create("teacher_activities",1,new TeachingActivityService.Input("Proyecto final","Publica la evidencia revisada.","2027-12-20T18:00:00"));
