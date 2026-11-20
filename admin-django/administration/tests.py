@@ -76,6 +76,24 @@ class AdministrationTests(TransactionTestCase):
     def login(self, username='admin_test', password=PASSWORD):
         return self.client.post('/api/admin/login', {'username':username, 'password':password}, HTTP_X_CSRFTOKEN=self.token())
 
+    def test_enrollment_import_previews_validates_and_repeats_without_duplicates(self):
+        from .moderation import execute, rows
+        execute("INSERT INTO alumno VALUES(1,'alumno','Estudiante de prueba')")
+        SharedUser.objects.filter(username='alumno').update(alumno_id=1)
+        self.login()
+        path='courses/1/students/import'
+        invalid={'csv':'usuario\nalumno\nalumno\nno-existe','apply':False}
+        preview=self.academic_call(path,invalid)
+        self.assertEqual([r['state'] for r in preview.json()['rows']],['READY','INVALID','INVALID'])
+        self.assertEqual(self.academic_call(path,dict(invalid,apply=True)).status_code,409)
+        self.assertFalse(rows('SELECT alumno_id FROM matricula'))
+        valid={'csv':'\ufeffusuario\r\nalumno\r\n','apply':False}
+        self.assertTrue(self.academic_call(path,valid).json()['valid'])
+        self.assertFalse(rows('SELECT alumno_id FROM matricula'))
+        self.assertEqual(self.academic_call(path,dict(valid,apply=True)).json()['added'],1)
+        self.assertEqual(self.academic_call(path,dict(valid,apply=True)).json()['added'],0)
+        self.assertEqual(len(rows('SELECT alumno_id FROM matricula')),1)
+
     def test_school_structure_admin_can_create_year_period_sections_and_assignment(self):
         path='/api/admin/v1/school-structure'
         self.assertEqual(self.client.get(path).status_code,401)

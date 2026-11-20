@@ -1,3 +1,4 @@
+import {EnrollmentImport} from './enrollment-import.jsx';
 import {SchoolStructure} from './school-structure.jsx';
 import { useEffect, useState } from 'react';
 
@@ -335,6 +336,8 @@ export function AcademicAdmin({ api, onExpire }) {
       {cursoSeleccionado && (
         <section className="card">
           <h3>Matrículas del curso {cursoSeleccionado}</h3>
+          <EnrollmentImport key={cursoSeleccionado} api={api} courseId={cursoSeleccionado} onExpire={onExpire}
+            onSaved={()=>setRevision(value=>value+1)}/>
           <p>
             Revocar una matrícula retira acceso a actividades y notas del curso; conserva el
             historial académico. No elimina contactos ni conversaciones independientes.

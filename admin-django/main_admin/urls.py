@@ -1,6 +1,6 @@
 from django.urls import path
 from administration import views
-from administration import academic, school
+from administration import academic, school, enrollment_import
 from administration import identity
 from administration import scheduling, grades
 from administration import moderation
@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/admin/v1/courses', academic.courses),
     path('api/admin/v1/courses/<int:item_id>', academic.courses),
     path('api/admin/v1/courses/<int:item_id>/students', academic.students),
+    path('api/admin/v1/courses/<int:item_id>/students/import', enrollment_import.import_students),
     path('api/admin/v1/audit', academic.audit),
     path('', views.page), path('admin.html', views.page), path('favicon.ico', views.favicon), path('favicon.svg', views.favicon), path('assets/<str:name>', views.asset),
     path('api/admin/csrf', views.csrf), path('api/admin/login', views.login),
