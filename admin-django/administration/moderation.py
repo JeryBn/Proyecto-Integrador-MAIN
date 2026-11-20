@@ -19,6 +19,37 @@ def now():
     return datetime.now(ZoneInfo(settings.TIME_ZONE)).replace(tzinfo=None)
 
 
+@require_GET
+@review_only
+def campus_queue(request):
+    page = pagination(request)
+    if page is None:
+        return error(400, 'INVALID_PAGINATION')
+    offset, limit = page
+    return JsonResponse(rows("""SELECT p.id,p.body,u.display_name FROM campus_post p
+        JOIN main_user u ON u.username=p.author WHERE p.state='PENDING'
+        ORDER BY p.created_at,p.id LIMIT %s OFFSET %s""", [limit,offset]), safe=False)
+
+
+@require_POST
+@review_only
+@mutation
+def campus_review(request, item_id):
+    try:
+        value = body(request, {'approved'})
+    except ValidationError:
+        return error(400, 'INVALID_REQUEST')
+    if not isinstance(value, dict) or type(value.get('approved')) is not bool:
+        return error(400, 'INVALID_REQUEST')
+    state = 'PUBLISHED' if value['approved'] else 'REJECTED'
+    with transaction.atomic():
+        if execute("""UPDATE campus_post SET state=%s,reviewed_at=%s
+                WHERE id=%s AND state='PENDING'""", [state,now(),item_id]) != 1:
+            return error(409, 'CONFLICT', 'La publicación ya fue revisada o retirada.')
+        record(request,'CAMPUS_POST_'+state,item_id)
+    return JsonResponse({'state':state})
+
+
 def rows(sql, args=()):
     with connection.cursor() as cursor:
         cursor.execute(sql,args)

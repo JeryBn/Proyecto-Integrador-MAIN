@@ -20,6 +20,27 @@ class TeachingActivityIntegrationTest {
  @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
 
+ @Test void campusFeedHidesPendingAndOnlyAuthorCanWithdraw() throws Exception {
+  String path="/api/v1/campus/feed";
+  var student=user("alumno").roles("ALUMNO");
+  var peer=user("otro").roles("ALUMNO");
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  String body="{\"text\":\"Una publicación académica de prueba\"}";
+  mvc.perform(post(path).with(teacher).with(csrf()).contentType("application/json").content(body))
+      .andExpect(status().isForbidden());
+  String result=mvc.perform(post(path).with(student).with(csrf()).contentType("application/json").content(body))
+      .andExpect(status().isCreated()).andExpect(jsonPath("$.state").value("PENDING"))
+      .andReturn().getResponse().getContentAsString();
+  String id=json.readTree(result).get("id").asText();
+  mvc.perform(get(path).with(peer).param("view","for-you")).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(get(path).with(student).param("view","mine")).andExpect(jsonPath("$[0].id").value(id));
+  mvc.perform(delete(path+"/"+id).with(peer).with(csrf())).andExpect(status().isNotFound());
+  jdbc.update("UPDATE campus_post SET state='PUBLISHED' WHERE id=?",id);
+  mvc.perform(get(path).with(peer).param("view","for-you")).andExpect(jsonPath("$[0].id").value(id));
+  mvc.perform(delete(path+"/"+id).with(student).with(csrf())).andExpect(status().isOk());
+  mvc.perform(get(path).with(peer)).andExpect(jsonPath("$.length()").value(0));
+ }
+
  @Test void contactCodeRequiresSharedEnrollmentAndRecipientApproval() throws Exception {
   var sender=user("alumno").roles("ALUMNO");
   var recipient=user("otro").roles("ALUMNO");

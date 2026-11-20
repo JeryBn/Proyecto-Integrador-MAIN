@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 
 internal enum class MainSection(val label: String, val icon: ImageVector, val navigationLabel: String = label) {
     HOME("Inicio", Icons.Outlined.Home),
+    CAMPUS("Campus", Icons.Outlined.Forum),
     ACTIVITIES("Actividades", Icons.AutoMirrored.Outlined.Assignment, "Tareas"),
     MESSAGES("Mensajes", Icons.Outlined.Forum, "Chats"),
     STATUSES("Estados", Icons.Outlined.RadioButtonChecked),
@@ -68,7 +69,7 @@ internal fun MainNavigationScreen(model: MainViewModel) {
     LaunchedEffect(model.selectedSection,lifecycleOwner) {
         if(model.selectedSection==MainSection.STATUSES)lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){while(true){delay(5000);if(!model.statusBusy && !model.statusComposer)model.loadStatuses()}}
     }
-    BackHandler(enabled = model.statusViewer!=null || model.statusComposer || model.teachingCourse!=null || model.selectedId != null || model.selectedConversation != null || model.showChatPicker || model.contactProfile!=null || model.settingsPage!="MAIN" || model.selectedSection==MainSection.ACTIVITIES) {
+    BackHandler(enabled = model.statusViewer!=null || model.statusComposer || model.teachingCourse!=null || model.selectedId != null || model.selectedConversation != null || model.showChatPicker || model.contactProfile!=null || model.settingsPage!="MAIN" || model.selectedSection in listOf(MainSection.ACTIVITIES,MainSection.CAMPUS)) {
         when {
             model.statusViewer!=null -> model.closeStatus()
             model.statusComposer -> model.statusComposer=false
@@ -78,6 +79,7 @@ internal fun MainNavigationScreen(model: MainViewModel) {
             model.settingsPage!="MAIN" -> model.settingsPage=if(model.settingsPage=="BLOCKED")"PRIVACY" else "MAIN"
             model.selectedId!=null -> model.backToList()
             model.selectedSection==MainSection.ACTIVITIES && model.selectedConversation==null -> model.selectSection(MainSection.HOME)
+            model.selectedSection==MainSection.CAMPUS -> model.selectSection(MainSection.HOME)
             else -> model.closeConversation()
         }
     }
@@ -92,7 +94,7 @@ internal fun MainNavigationScreen(model: MainViewModel) {
                         else Modifier,
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
-                    MainSection.entries.filter { it!=MainSection.ACTIVITIES }.forEach { section ->
+                    MainSection.entries.filter { it!=MainSection.ACTIVITIES && it!=MainSection.CAMPUS }.forEach { section ->
                         NavigationBarItem(
                             modifier = Modifier.semantics { contentDescription = section.label },
                             selected = model.selectedSection == section || section==MainSection.HOME && model.selectedSection==MainSection.ACTIVITIES,
@@ -120,6 +122,7 @@ internal fun MainNavigationScreen(model: MainViewModel) {
                 model.selectedId != null -> ActivityDetailScreen(model)
                 model.selectedConversation != null -> ConversationScreen(model)
                 model.selectedSection == MainSection.HOME -> HomeSection(model)
+                model.selectedSection == MainSection.CAMPUS -> CampusFeedScreen(model)
                 model.selectedSection == MainSection.ACTIVITIES -> if(model.profile?.rol=="Alumno") ActivityListScreen(model) else AcademicAgendaScreen(model)
                 model.selectedSection == MainSection.MESSAGES -> ConversationsScreen(model)
                 model.selectedSection == MainSection.STATUSES -> StatusListScreen(model)
@@ -141,6 +144,9 @@ private fun HomeSection(model: MainViewModel) {
                 color = MaterialTheme.colorScheme.primary)
             Text("Hola, ${model.profile?.nombre.orEmpty()}", style = MaterialTheme.typography.headlineMedium)
             Text("Tu espacio académico", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if(model.profile?.rol in listOf("Alumno","Docente")){
+                TextButton(onClick={model.selectSection(MainSection.CAMPUS)}) { Text("Abrir campus") }
+            }
         }
         if(model.profile?.rol=="Alumno") {
         Card(

@@ -78,6 +78,20 @@ class MainViewModel : ViewModel() {
         private set
     private var detailRequest = 0L
     private var api: MainApi? = null
+    fun loadCampus(view:String, offset:Int, onLoaded:(List<MainApi.CampusPost>)->Unit) = accountOperation { client ->
+        val result = withContext(Dispatchers.IO) { client.campusPosts(view,offset) }
+        if(api===client)onLoaded(result)
+    }
+
+    fun publishCampus(text:String, onSaved:()->Unit) = accountOperation("Publicación enviada a revisión.") { client ->
+        withContext(Dispatchers.IO) { client.publishCampusPost(text) }
+        if(api===client)onSaved()
+    }
+
+    fun withdrawCampus(id:String, onSaved:()->Unit) = accountOperation("Publicación retirada.") { client ->
+        withContext(Dispatchers.IO) { client.withdrawCampusPost(id) }
+        if(api===client)onSaved()
+    }
     var personalContactCode by mutableStateOf<Pair<String,List<String>>?>(null)
         private set
     var contactInvitations by mutableStateOf<List<Pair<String,String>>>(emptyList())

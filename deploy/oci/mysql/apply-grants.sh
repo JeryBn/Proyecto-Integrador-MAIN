@@ -23,6 +23,8 @@ GRANT SELECT ON main.contact_preference TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.actividad TO 'main_django'@'${host_pattern}';
 GRANT UPDATE(curso_id, titulo, descripcion, fecha_limite) ON main.actividad TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.administrative_audit TO 'main_django'@'${host_pattern}';
+GRANT SELECT ON main.campus_post TO 'main_django'@'${host_pattern}';
+GRANT UPDATE(state, reviewed_at) ON main.campus_post TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.notification TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, DELETE ON main.matricula TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, UPDATE ON main.course_grade TO 'main_django'@'${host_pattern}';

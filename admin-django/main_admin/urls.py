@@ -23,6 +23,8 @@ urlpatterns = [
     path('moderation.html', moderation.page),
     path('moderation.js', moderation.page, {'name':'moderation.js'}),
     path('moderation.css', moderation.page, {'name':'moderation.css'}),
+    path('api/admin/v1/moderation/campus', moderation.campus_queue),
+    path('api/admin/v1/moderation/campus/<str:item_id>/review', moderation.campus_review),
     path('api/admin/v1/moderation/<str:kind>', moderation.queue),
     path('api/admin/v1/moderation/messages/<str:item_id>/review', moderation.review, {'kind':'messages'}),
     path('api/admin/v1/moderation/statuses/<str:item_id>/review', moderation.review, {'kind':'statuses'}),

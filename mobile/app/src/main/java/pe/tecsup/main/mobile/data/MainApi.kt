@@ -96,6 +96,21 @@ class MainApi(val endpoint: String) {
 
     private fun json(path: String): JSONObject = JSONObject(checked(request(path)))
 
+    data class CampusPost(val id:String,val author:String,val text:String,val state:String)
+
+    fun campusPosts(view:String, offset:Int): List<CampusPost> =
+        rows(JSONArray(checked(request("/api/v1/campus/feed?view=$view&offset=$offset")))) {
+            CampusPost(it.getString("id"),it.getString("author"),it.getString("text"),it.getString("state"))
+        }
+
+    fun publishCampusPost(text:String) {
+        mutate("/api/v1/campus/feed",JSONObject().put("text",text),"POST")
+    }
+
+    fun withdrawCampusPost(id:String) {
+        mutate("/api/v1/campus/feed/"+URLEncoder.encode(id,"UTF-8"),JSONObject(),"DELETE")
+    }
+
     fun contactCode(): Pair<String,List<String>> {
         val value = mutate("/api/v1/contact-codes/mine", JSONObject(), "POST")
         val rows = value.getJSONArray("qr")

@@ -42,6 +42,7 @@ async function load(){
   await loadAppeals();
   await loadHolds();
   await loadStatuses();
+  await loadCampus();
   const messages=await request('/api/admin/v1/moderation/messages?offset='+offset+'&limit=20');
   queue.replaceChildren();
   for(const message of messages){
@@ -82,6 +83,32 @@ document.getElementById('refresh').addEventListener('click',load);
 document.getElementById('previous').addEventListener('click',()=>{offset=Math.max(0,offset-20);load();});
 document.getElementById('next').addEventListener('click',()=>{offset+=20;load();});
 load();
+
+async function loadCampus(){
+ const target=document.getElementById('campusQueue');
+ const posts=await request('/api/admin/v1/moderation/campus?limit=20');
+ target.replaceChildren();
+ if(!posts.length)target.append(element('p','No hay publicaciones pendientes.'));
+ for(const post of posts){
+  const card=element('article');
+  card.append(element('h3',post.display_name),element('pre',post.body));
+  const approve=element('button','Publicar'),reject=element('button','Rechazar');
+  async function decide(approved){
+   approve.disabled=reject.disabled=true;
+   try{
+    const csrf=await request('/api/admin/csrf');
+    await request('/api/admin/v1/moderation/campus/'+encodeURIComponent(post.id)+'/review',{
+     method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},
+     body:JSON.stringify({approved})
+    });
+    await loadCampus();
+   }catch(error){notice.textContent=error.message;approve.disabled=reject.disabled=false;}
+  }
+  approve.addEventListener('click',()=>decide(true));
+  reject.addEventListener('click',()=>decide(false));
+  card.append(approve,reject);target.append(card);
+ }
+}
 
 async function loadStatuses(){
  const target=document.getElementById('statusQueue');target.replaceChildren();

@@ -17,7 +17,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
-    moderation_tables=('moderation_appeal','moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
+    moderation_tables=('campus_post','moderation_appeal','moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
     def setUpClass(cls):
@@ -36,7 +36,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -850,6 +850,19 @@ class AdministrationTests(TransactionTestCase):
     def reviewer_fixture(self,initial=False):
         SharedUser.objects.create(username='limited_reviewer',display_name='Revisor sintético',role='REVIEWER',password_hash=HASH,enabled=True,password_change_required=initial)
         return self.login('limited_reviewer')
+
+    def test_campus_review_requires_reviewer_and_decides_only_once(self):
+        from .moderation import execute, now, rows
+        route = '/api/admin/v1/moderation/campus'
+        execute("INSERT INTO campus_post(id,author,body,state,created_at) VALUES(%s,%s,%s,'PENDING',%s)",
+                ['post-test','alumno','Publicación sintética',now()])
+        self.assertEqual(self.client.get(route).status_code, 401)
+        self.assertEqual(self.reviewer_fixture().status_code,200)
+        self.assertEqual(self.client.get(route).json()[0]['id'], 'post-test')
+        self.assertEqual(self.academic_call('moderation/campus/post-test/review',{'approved':True}).status_code,200)
+        self.assertEqual(self.academic_call('moderation/campus/post-test/review',{'approved':False}).status_code,409)
+        self.assertEqual(rows('SELECT state FROM campus_post')[0]['state'], 'PUBLISHED')
+        self.assertEqual(self.client.get(route).json(),[])
 
     def test_reviewer_can_access_review_but_never_academic_identity_or_audit_modules(self):
         self.assertEqual(self.reviewer_fixture().status_code,200)

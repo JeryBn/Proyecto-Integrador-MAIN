@@ -8,6 +8,7 @@ import {useResource} from './datos/user-hooks.jsx';
 import './estilos/workspace.css';
 import {Messages} from './comunicacion/messages.jsx';
 import {Statuses,emptyStatusDraft} from './comunicacion/statuses.jsx';
+import {CampusFeed} from './comunicacion/campus-feed.jsx';
 import {Assistant,emptyAssistant} from './asistente/assistant.jsx';
 import {AppErrorBoundary,ConnectionStatus} from '../resilience.jsx';
 import {Dashboard} from '../dashboard.jsx';
@@ -79,7 +80,7 @@ function App() {
   const match = hash.match(/^#actividad\/(\d+)$/);
   const chatRoute=/^#chats(?:\/[A-Za-z0-9-]+)?$/.test(hash);
   const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
-  const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':hash==='#cursos'?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
+  const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#campus'?'Campus':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':hash==='#cursos'?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
   useEffect(()=>{
     document.title=pageTitle+' · MAIN';
     const changed=previousRoute.current!==null&&previousRoute.current!==hash;
@@ -95,6 +96,7 @@ function App() {
     ...(profile?.rol==='Alumno'?[{route:'#actividades',label:'Actividades',icon:'clipboard'}]:[]),
     {route:'#chats',label:'Chats',icon:'message',group:'Comunidad'},
     {route:'#estados',label:'Novedades',icon:'status'},
+    ...(profile?.rol==='Alumno'||profile?.rol==='Docente'?[{route:'#campus',label:'Campus',icon:'graduation'}]:[]),
     {route:'#ia',label:'MAIN IA',icon:'spark',group:'Herramientas'},
     {route:'#perfil',label:'Mi cuenta',icon:'user'}
   ];
@@ -128,7 +130,7 @@ function App() {
           </div>
         </header>
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
         </main>
       </div>
     </div>
