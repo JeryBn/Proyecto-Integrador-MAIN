@@ -21,6 +21,7 @@ GRANT SELECT, INSERT ON main.contact_link TO 'main_django'@'${host_pattern}';
 GRANT SELECT ON main.contact_report TO 'main_django'@'${host_pattern}';
 GRANT SELECT ON main.contact_preference TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.actividad TO 'main_django'@'${host_pattern}';
+GRANT UPDATE(curso_id, titulo, descripcion, fecha_limite) ON main.actividad TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.administrative_audit TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.notification TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, DELETE ON main.matricula TO 'main_django'@'${host_pattern}';
