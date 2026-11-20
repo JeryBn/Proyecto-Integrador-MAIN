@@ -46,7 +46,36 @@ function TeacherCourseRow({group}){
  return <a className="dashboard-task" href="#cursos"><span className={'task-state '+(withoutGrades?'late':'')}><Icon name={withoutGrades?'alert':'graduation'} size={18}/></span><span className="grow"><small>CURSO DOCENTE</small><strong>{group.course.name}</strong><span>{group.students.length} estudiantes · {evaluations} evaluaciones</span></span><span className={'badge '+(withoutGrades?'late':'')}>{withoutGrades?`${withoutGrades} sin nota`:'Al día'}</span><Icon name="arrowRight" size={17}/></a>;
 }
 
-export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
+function FamilyDashboard({profile}){
+ const summary=useResource('/api/v1/family/weekly');
+ return <section className="institutional-dashboard" aria-label="Inicio familiar">
+  <header className="dashboard-hero"><Greeting profile={profile}/><div className="hero-actions">
+   <a className="primary-action" href="#cursos"><Icon name="book"/>Ver horarios</a>
+   <a className="secondary-action" href="#avisos"><Icon name="bell"/>Avisos</a>
+  </div></header>
+  {summary.loading&&<p role="status">Preparando el resumen familiar…</p>}
+  {summary.error&&<div className="inline-error" role="alert"><p>{summary.error}</p><button onClick={summary.reload}>Reintentar</button></div>}
+  {summary.data?.students.length===0&&<section className="dashboard-card"><h2>Estudiantes vinculados</h2><p>Solicita a tu colegio que verifique el vínculo familiar.</p></section>}
+  {summary.data?.students.map(student=><article className="dashboard-card" key={student.id}>
+   <header><div><h2>{student.name}</h2><p>Asistencia de los últimos 7 días</p></div></header>
+   <div className="metrics-grid">
+    <StatCard icon="checkCircle" label="Presentes" value={student.attendance.present}/>
+    <StatCard icon="alert" label="Ausencias" value={student.attendance.absent}/>
+    <StatCard icon="clock" label="Tardanzas" value={student.attendance.late}/>
+   </div>
+   <h3>Próximas entregas y pendientes</h3>
+   {student.tasks.length?<ul>{student.tasks.map((task,index)=><li key={task.course+':'+task.title+':'+index}>
+    <strong>{task.title}</strong> · {task.course} · {localDate(task.dueAt)}{task.overdue?' · Vencida':''}
+   </li>)}</ul>:<p>Sin entregas pendientes para los próximos días.</p>}
+  </article>)}
+ </section>;
+}
+
+export function Dashboard(props){
+ return props.profile?.rol==='Familiar'?<FamilyDashboard profile={props.profile}/>:<AcademicDashboard {...props}/>;
+}
+
+function AcademicDashboard({profile,items,loading,error,onReload,notices=[]}){
  const agenda=useResource('/api/v1/agenda',{enabled:!!profile,interval:0});
  const grades=useResource('/api/v1/grades',{enabled:profile?.rol==='Alumno',interval:0});
  const pending=items.filter(item=>!item.completada);

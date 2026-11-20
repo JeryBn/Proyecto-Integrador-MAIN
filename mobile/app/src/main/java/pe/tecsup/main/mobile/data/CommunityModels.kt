@@ -18,3 +18,6 @@ data class StatusUpdate(val id:String,val owner:String,val name:String,val text:
 data class AppealTarget(val kind:String,val subjectId:String,val revision:Int,val contentHash:String)
 data class AppealItem(val id:String,val kind:String,val revision:Int,val state:String,val reason:String,val createdAt:String,val decisionReason:String,val decidedAt:String)
 data class StatusAttachment(val bytes:ByteArray,val mime:String)
+
+data class FamilyTask(val title: String,val course: String,val dueAt: String,val overdue: Boolean)
+data class FamilyStudent(val name: String,val present: Int,val absent: Int,val late: Int,val tasks: List<FamilyTask>)

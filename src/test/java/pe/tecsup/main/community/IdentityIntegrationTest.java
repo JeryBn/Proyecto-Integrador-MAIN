@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.*;
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:identity_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_identity","main.admin.password=SyntheticIdentity2026!"})
 @AutoConfigureMockMvc @Transactional
 class IdentityIntegrationTest {
- @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired IdentityService users;@Autowired AcademicService academic;
+ @Autowired MockMvc mvc;@Autowired org.springframework.jdbc.core.JdbcTemplate db;@Autowired java.time.Clock clock;@Autowired ObjectMapper json;@Autowired IdentityService users;@Autowired AcademicService academic;
  final String admin="admin_identity";
  @BeforeEach void accounts(){
   users.create(admin,new IdentityService.NewAccount("familia_test","Familiar de prueba","FAMILIAR","SyntheticFamily2026!",null,null));
@@ -30,6 +30,25 @@ class IdentityIntegrationTest {
   mvc.perform(post("/api/admin/v1/users").with(user("familia_test").roles("FAMILIAR")).with(csrf()).contentType("application/json").content("{}"))
    .andExpect(status().isForbidden());
   assertTrue(academic.agenda("familia_test").courses().isEmpty());
+ }
+ @Test void familySummaryRestrictsAttendanceAndTasksToVerifiedStudents() throws Exception {
+  var path="/api/v1/family/weekly";
+  var family=user("familia_test").roles("FAMILIAR");
+  var date=java.sql.Date.valueOf(java.time.LocalDate.now(clock));
+  var now=java.sql.Timestamp.valueOf(java.time.LocalDateTime.now(clock));
+  db.update("INSERT INTO course_attendance(course_id,student_id,class_date,status,recorded_by,recorded_at) VALUES(?,?,?,?,?,?)",
+   1,1,date,"LATE","profe_test",now);
+  db.update("INSERT INTO course_attendance(course_id,student_id,class_date,status,recorded_by,recorded_at) VALUES(?,?,?,?,?,?)",
+   3,2,date,"ABSENT","profe_test",now);
+  mvc.perform(get(path).with(family)).andExpect(status().isOk()).andExpect(jsonPath("$.students",hasSize(0)));
+  users.verifyGuardian(admin,"familia_test",1);
+  mvc.perform(get(path).with(family)).andExpect(status().isOk()).andExpect(jsonPath("$.students",hasSize(1)))
+   .andExpect(jsonPath("$.students[0].attendance.late").value(1))
+   .andExpect(jsonPath("$.students[0].attendance.absent").value(0))
+   .andExpect(jsonPath("$.students[0].tasks[*].course",not(hasItem("Curso privado de otro alumno"))));
+  mvc.perform(get(path).with(user("alumno").roles("ALUMNO"))).andExpect(status().isForbidden());
+  users.revokeGuardian(admin,"familia_test",1);
+  mvc.perform(get(path).with(family)).andExpect(jsonPath("$.students",hasSize(0)));
  }
  @Test void verifiedFamilyLinkScopesAndRevokesAcademicData() throws Exception{
   users.verifyGuardian(admin,"familia_test",1);

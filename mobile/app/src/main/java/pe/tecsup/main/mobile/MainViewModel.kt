@@ -413,6 +413,11 @@ class MainViewModel : ViewModel() {
         val result=withContext(Dispatchers.IO){client.teachingGrades(course.id)}
         if(api===client && teachingCourse==course)teachingGrades=result
     }
+    fun loadFamilyWeekly(onLoaded: (List<FamilyStudent>) -> Unit) = accountOperation { client ->
+        val result=withContext(Dispatchers.IO){client.familyWeekly()}
+        if(api===client&&profile?.rol=="Familiar")onLoaded(result)
+    }
+
     fun loadAttendance(course: Long,date: String,session: Int,onLoaded: (List<AttendanceMark>) -> Unit) = accountOperation { client ->
         val result=withContext(Dispatchers.IO){client.attendance(course,date,session)}
         if(api===client&&teachingCourse?.id==course)onLoaded(result)

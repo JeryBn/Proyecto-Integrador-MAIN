@@ -195,6 +195,7 @@ private fun HomeSection(model: MainViewModel) {
         }
         }
         if(model.profile?.rol=="Alumno") CourseGradesContent(model)
+        if(model.profile?.rol=="Familiar") FamilyWeekly(model)
         AgendaContent(model)
         Text(
             "Consulta tus cursos y horarios en el asistente académico.",

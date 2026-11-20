@@ -290,6 +290,14 @@ class MainApi(val endpoint: String) {
             checked(Response(status,body,null,uri.path,connection.getHeaderField("X-Request-ID")))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
+    fun familyWeekly(): List<FamilyStudent> = rows(json("/api/v1/family/weekly").getJSONArray("students")) { student ->
+        val marks=student.getJSONObject("attendance")
+        FamilyStudent(student.getString("name"),marks.getInt("present"),marks.getInt("absent"),marks.getInt("late"),
+            rows(student.getJSONArray("tasks")) {
+                FamilyTask(it.getString("title"),it.getString("course"),it.getString("dueAt"),it.getBoolean("overdue"))
+            })
+    }
+
     private fun attendanceRows(data: JSONArray): List<AttendanceMark> = rows(data) {
         AttendanceMark(it.getLong("studentId"),it.getString("name"),
             if(it.isNull("status"))null else it.getString("status"))
