@@ -80,7 +80,7 @@ export function Dashboard({profile,items,loading,error,onReload,notices=[]}){
    <aside className="dashboard-side-stack">
     <section className="dashboard-card next-class-card">
      <header><div><span className="section-kicker">HORARIO</span><h2>Tu próxima clase</h2></div><span className="round-icon"><Icon name="clock"/></span></header>
-     {agenda.loading?<p role="status">Consultando horario…</p>:next?<><strong className="class-time">{String(next.startsAt).slice(0,5)}</strong><h3>{next.course}</h3><p>{days[next.dayOfWeek]} · {next.classroom||'Aula por confirmar'}</p><a href="#cursos">Abrir curso <Icon name="arrowRight" size={16}/></a></>:<div className="compact-empty"><p>No hay clases próximas registradas.</p></div>}
+     {agenda.loading?<p role="status">Consultando horario…</p>:next?<><strong className="class-time">{String(next.startsAt).slice(0,5)}</strong><h3>{next.course}</h3><p>{days[next.dayOfWeek]} · {next.classroom||'Aula por confirmar'}</p><a href={teacher&&next.courseId?'#cursos/'+next.courseId+'/asistencia':'#cursos'}>{teacher&&next.courseId?'Pasar lista':'Abrir horario'} <Icon name="arrowRight" size={16}/></a></>:<div className="compact-empty"><p>No hay clases próximas registradas.</p></div>}
     </section>
     <section className="dashboard-card quick-card">
      <span className="section-kicker">ACCESOS RÁPIDOS</span><h2>¿Qué necesitas hacer?</h2>

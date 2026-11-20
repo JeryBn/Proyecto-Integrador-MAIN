@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
    Card(Modifier.fillMaxWidth()) {
     Column(Modifier.padding(16.dp)) {
      Text(course.name,style=MaterialTheme.typography.titleMedium)
+     course.placement?.let { Text("${it.grade} · Sección ${it.section} · ${it.year}") }
      Text(course.teacher)
      if(model.profile?.rol=="Docente") TextButton(onClick={model.openTeaching(course)},enabled=!model.accountBusy){Text("Registrar y editar notas")}
     }

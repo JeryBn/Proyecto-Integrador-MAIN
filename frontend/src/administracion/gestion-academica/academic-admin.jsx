@@ -1,3 +1,4 @@
+import {SchoolStructure} from './school-structure.jsx';
 import { useEffect, useState } from 'react';
 
 const TAMANO_PAGINA = 20;
@@ -220,6 +221,7 @@ export function AcademicAdmin({ api, onExpire }) {
   return (
     <section aria-label="Administración académica">
       {confirmation}
+      <SchoolStructure api={api} onExpire={onExpire} courses={cursos}/>
       <h2>Cursos y matrículas</h2>
       {error && (
         <p role="alert" className="err">

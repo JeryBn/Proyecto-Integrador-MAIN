@@ -334,7 +334,12 @@ class MainApi(val endpoint: String) {
     }
     fun agenda(): AcademicAgenda = json("/api/v1/agenda").let { value ->
         AcademicAgenda(
-            rows(value.getJSONArray("courses")) { Course(it.getLong("id"),it.getString("name"),it.getString("teacher")) },
+            rows(value.getJSONArray("courses")) { course ->
+                val placement=course.optJSONObject("placement")?.let {
+                    SchoolPlacement(it.getInt("year"),it.getString("grade"),it.getString("section"))
+                }
+                Course(course.getLong("id"),course.getString("name"),course.getString("teacher"),placement)
+            },
             rows(value.getJSONArray("timetable")) { TimeSlot(it.getString("id"),it.getString("course"),it.getString("teacher"),
                 it.getInt("dayOfWeek"),it.getString("startsAt"),it.getString("endsAt"),it.getString("classroom")) },
             rows(value.getJSONArray("students")) { it.getString("name") }

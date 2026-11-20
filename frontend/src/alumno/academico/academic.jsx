@@ -13,7 +13,7 @@ function GradeList({grades=[]}){
 }
 
 function CourseNavigation({courses,selected,onSelect}){
- return <div className="course-navigation">{courses.map((item,index)=><button key={item.id} className={String(item.id)===String(selected)?'selected':''} onClick={()=>onSelect(String(item.id))}><span className="course-cover" data-index={index%4}><Icon name="book"/></span><span><strong>{item.name}</strong><small>{item.teacher}</small></span><Icon name="arrowRight" size={17}/></button>)}</div>;
+ return <div className="course-navigation">{courses.map((item,index)=><button key={item.id} className={String(item.id)===String(selected)?'selected':''} onClick={()=>onSelect(String(item.id))}><span className="course-cover" data-index={index%4}><Icon name="book"/></span><span><strong>{item.name}</strong><small>{item.placement?`${item.placement.grade} · ${item.placement.section}`:item.teacher}</small></span><Icon name="arrowRight" size={17}/></button>)}</div>;
 }
 
 function Schedule({entries=[]}){
@@ -21,18 +21,24 @@ function Schedule({entries=[]}){
  return <div className="schedule-list">{entries.map(entry=><article key={entry.id}><span className="schedule-day">{days[entry.dayOfWeek]?.slice(0,3)}</span><div><strong>{entry.startsAt} – {entry.endsAt}</strong><p>{entry.course}</p><small><Icon name="layers" size={14}/>{entry.classroom||'Aula por confirmar'}</small></div></article>)}</div>;
 }
 
-export function Academic({profile}){
+export function Academic({profile,attendanceCourseId}){
  const [agenda,setAgenda]=useState(null),[grades,setGrades]=useState([]),[error,setError]=useState('');
- const [course,setCourse]=useState(''),[roster,setRoster]=useState([]),[courseActivities,setCourseActivities]=useState([]),[revision,setRevision]=useState(0);
+ const [course,setCourse]=useState(attendanceCourseId||''),[roster,setRoster]=useState([]),[courseActivities,setCourseActivities]=useState([]),[revision,setRevision]=useState(0);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [form,setForm]=useState({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});
  const [creatingActivity,setCreatingActivity]=useState(false),[activityForm,setActivityForm]=useState({title:'',description:'',dueAt:defaultDueDate()});
  const teacher=profile?.rol==='Docente';
- useEffect(()=>{if(!profile)return;let active=true;setError('');setAgenda(null);Promise.all([api('agenda'),profile.rol==='Alumno'?api('grades'):Promise.resolve([])]).then(([nextAgenda,nextGrades])=>{if(active){setAgenda(nextAgenda);setGrades(nextGrades);setCourse(current=>current||String(nextAgenda.courses?.[0]?.id||''));}}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[profile,revision]);
- useEffect(()=>{let active=true;setRoster([]);setCourseActivities([]);setForm({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});setCreatingActivity(false);if(teacher&&course)Promise.all([api(`teaching/courses/${course}/grades`),api(`teaching/courses/${course}/activities`)]).then(([nextRoster,nextActivities])=>{if(active){setRoster(nextRoster);setCourseActivities(nextActivities);}}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[course,teacher,revision]);
+ const authorizedCourse=!!agenda?.courses?.some(item=>String(item.id)===String(course));
+ useEffect(()=>{if(!profile)return;let active=true;setError('');setAgenda(null);Promise.all([api('agenda'),profile.rol==='Alumno'?api('grades'):Promise.resolve([])]).then(([nextAgenda,nextGrades])=>{if(active){setAgenda(nextAgenda);setGrades(nextGrades);setCourse(current=>nextAgenda.courses.some(item=>String(item.id)===current)?current:String(nextAgenda.courses?.[0]?.id||''));}}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[profile,revision]);
+ useEffect(()=>{let active=true;setRoster([]);setCourseActivities([]);setForm({studentId:'',assessment:'',score:'',maximum:'20',expectedRecordedAt:'NEW'});setCreatingActivity(false);if(teacher&&authorizedCourse)Promise.all([api(`teaching/courses/${course}/grades`),api(`teaching/courses/${course}/activities`)]).then(([nextRoster,nextActivities])=>{if(active){setRoster(nextRoster);setCourseActivities(nextActivities);}}).catch(reason=>{if(active)setError(reason.message);});return()=>{active=false};},[course,teacher,authorizedCourse,revision]);
  const selected=agenda?.courses?.find(item=>String(item.id)===String(course))||agenda?.courses?.[0];
+ useEffect(()=>{
+  if(teacher&&attendanceCourseId===String(selected?.id)){
+   document.getElementById('course-attendance')?.focus();
+  }
+ },[selected?.id,teacher,attendanceCourseId]);
  const selectedGrades=grades.find(item=>String(item.courseId)===String(selected?.id))?.grades||[];
- const timetable=useMemo(()=>agenda?.timetable?.filter(item=>!selected||item.course===selected.name)||[],[agenda,selected]);
+ const timetable=useMemo(()=>agenda?.timetable?.filter(item=>!selected||String(item.courseId)===String(selected.id))||[],[agenda,selected]);
  async function submitGrade(event){event.preventDefault();setBusy(true);setError('');setNotice('');try{await api(`teaching/courses/${course}/grades`,{...form,studentId:Number(form.studentId),score:Number(form.score),maximum:Number(form.maximum)});setNotice('La nota se guardó y ya está disponible para el estudiante.');setRevision(value=>value+1);}catch(reason){setError(reason.message);}finally{setBusy(false);}}
  async function createActivity(event){event.preventDefault();setBusy(true);setError('');setNotice('');try{const dueAt=activityForm.dueAt.length===16?activityForm.dueAt+':00':activityForm.dueAt;await api(`teaching/courses/${course}/activities`,{...activityForm,dueAt},'POST');setNotice('La actividad se publicó para los estudiantes matriculados.');setActivityForm({title:'',description:'',dueAt:defaultDueDate()});setCreatingActivity(false);setRevision(value=>value+1);}catch(reason){setError(reason.message);}finally{setBusy(false);}}
  return <section className="academic-hub" aria-label="Cursos y notas">
@@ -44,9 +50,9 @@ export function Academic({profile}){
    <aside className="workspace-card course-sidebar"><header><span className="section-kicker">MIS CURSOS</span><button aria-label="Actualizar cursos" disabled={busy} onClick={()=>setRevision(value=>value+1)}><Icon name="refresh" size={17}/></button></header>{!agenda.courses.length?<div className="compact-empty"><p>No tienes cursos autorizados.</p></div>:<CourseNavigation courses={agenda.courses} selected={selected?.id} onSelect={setCourse}/>} {profile?.rol==='Familiar'&&<div className="linked-students"><span className="section-kicker">ESTUDIANTES VINCULADOS</span>{agenda.students.length?agenda.students.map(item=><span key={item.id}><span className="avatar small">{item.name.slice(0,1)}</span>{item.name}</span>):<p>No tienes parentescos verificados.</p>}</div>}</aside>
    <main className="course-main">
     {selected?<>
-     <section className="workspace-card course-overview"><div className="course-title"><span className="course-cover large"><Icon name="graduation" size={28}/></span><div><span className="section-kicker">CURSO ACTIVO</span><h2>{selected.name}</h2><p>Docente: {selected.teacher}</p></div></div><div className="course-tabs" role="tablist" aria-label="Secciones del curso"><button className="active" role="tab" aria-selected="true">Resumen</button>{!teacher&&<a href="#actividades" role="tab">Actividades</a>}<a href="#chats" role="tab">Comunidad</a></div></section>
+     <section className="workspace-card course-overview"><div className="course-title"><span className="course-cover large"><Icon name="graduation" size={28}/></span><div><span className="section-kicker">CURSO ACTIVO</span><h2>{selected.name}</h2><p>{selected.placement&&`${selected.placement.grade} · Sección ${selected.placement.section} · ${selected.placement.year} · `}{selected.teacher}</p></div></div><div className="course-tabs" role="tablist" aria-label="Secciones del curso"><button className="active" role="tab" aria-selected="true">Resumen</button>{!teacher&&<a href="#actividades" role="tab">Actividades</a>}<a href="#chats" role="tab">Comunidad</a></div></section>
      {teacher&&<section className="workspace-card teacher-activities-section"><header><div><span className="section-kicker">PLANIFICACIÓN</span><h2>Actividades del curso</h2><p>Publica consignas y revisa cuántos estudiantes ya entregaron.</p></div><button className="primary-action" disabled={busy} onClick={()=>setCreatingActivity(true)}><Icon name="plus" size={17}/>Nueva actividad</button></header>{courseActivities.length?<div className="teacher-activity-list">{courseActivities.map(item=><article key={item.id}><span className="activity-mark"><Icon name="clipboard" size={19}/></span><div className="grow"><strong>{item.title}</strong><p>{localDate(item.dueAt)}</p></div><div className="submission-summary"><strong>{item.submitted}/{item.enrolled}</strong><small>entregadas{item.drafts?` · ${item.drafts} borrador${item.drafts===1?'':'es'}`:''}</small></div></article>)}</div>:<div className="dashboard-empty"><span><Icon name="clipboard"/></span><div><strong>Este curso aún no tiene actividades</strong><p>Crea la primera consigna para organizar el trabajo de tus estudiantes.</p></div></div>}</section>}
-     {teacher&&<Attendance key={selected.id} courseId={selected.id}/>}
+     {teacher&&<div id="course-attendance" tabIndex={-1}><Attendance key={selected.id} courseId={selected.id}/></div>}
      <div className="course-content-grid">
       <section className="workspace-card grades-section"><header><div><span className="section-kicker">EVALUACIONES</span><h2>{teacher?'Estudiantes y notas':'Mi progreso'}</h2></div><span className="round-icon"><Icon name="chart"/></span></header>
        {!teacher&&<GradeList grades={selectedGrades}/>}

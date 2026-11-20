@@ -17,6 +17,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
+    school_tables=('course_section','school_section','academic_period','academic_year')
     moderation_tables=('campus_post','moderation_appeal','moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
     @classmethod
@@ -36,7 +37,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__','V26__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip():
@@ -45,7 +46,7 @@ class AdministrationTests(TransactionTestCase):
     @classmethod
     def tearDownClass(cls):
         with connection.cursor() as cursor:
-            for table in cls.moderation_tables:
+            for table in cls.school_tables + cls.moderation_tables:
                 cursor.execute('DROP TABLE '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DROP TABLE ' + table)
@@ -57,7 +58,7 @@ class AdministrationTests(TransactionTestCase):
     def setUp(self):
         cache.clear()
         with connection.cursor() as cursor:
-            for table in self.moderation_tables:
+            for table in self.school_tables + self.moderation_tables:
                 cursor.execute('DELETE FROM '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DELETE FROM ' + table)
@@ -74,6 +75,26 @@ class AdministrationTests(TransactionTestCase):
 
     def login(self, username='admin_test', password=PASSWORD):
         return self.client.post('/api/admin/login', {'username':username, 'password':password}, HTTP_X_CSRFTOKEN=self.token())
+
+    def test_school_structure_admin_can_create_year_period_sections_and_assignment(self):
+        path='/api/admin/v1/school-structure'
+        self.assertEqual(self.client.get(path).status_code,401)
+        self.login()
+        year={'kind':'year','year':2026,'start':'2026-03-01','end':'2026-12-22'}
+        self.assertEqual(self.academic_call('school-structure',year).status_code,201)
+        first={'kind':'period','year':2026,'number':1,'name':'Primer bimestre','start':'2026-03-01','end':'2026-05-08'}
+        self.assertEqual(self.academic_call('school-structure',first).status_code,201)
+        self.assertEqual(self.academic_call('school-structure',dict(first,number=2,start='2026-05-08')).status_code,409)
+        for label in ('A','B'):
+            self.assertEqual(self.academic_call('school-structure',{'kind':'section','year':2026,'grade':'4.º','label':label}).status_code,201)
+        before=self.client.get(path+'?year=2026').json()
+        self.assertEqual(len(before['sections']),2)
+        assignment={'kind':'assignment','year':2026,'courseId':1,'sectionId':before['sections'][0]['id']}
+        self.assertEqual(self.academic_call('school-structure',assignment).status_code,201)
+        self.assertEqual(self.academic_call('school-structure',assignment).status_code,409)
+        catalog=self.client.get(path+'?year=2026').json()
+        self.assertEqual(catalog['periods'][0]['startsOn'],'2026-03-01')
+        self.assertEqual(catalog['assignments'][0]['courseId'],1)
 
     def payload(self):
         return dict(id=100, cursoId=1, titulo='Actividad sintética', descripcion='Instrucciones', fechaLimite='2026-11-20T15:30:00')

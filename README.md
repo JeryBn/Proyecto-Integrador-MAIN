@@ -5,9 +5,9 @@ MAIN reúne el portal académico web, la aplicación Android y la administració
 ## Funciones
 
 - **Estudiante:** consulta cursos, horarios, notas y actividades. Puede guardar borradores y enviar entregas desde la web.
-- **Docente:** gestiona actividades y notas en sus cursos autorizados y consulta las entregas.
+- **Docente:** gestiona actividades y notas en sus cursos autorizados, consulta entregas y guarda la asistencia en web y Android por fecha y sesión.
 - **Comunidad:** chats privados y grupos, estados multimedia, avisos, privacidad y revisión previa del contenido.
-- **Administración:** gestión de actividades, matrículas, cuentas y moderación con auditoría.
+- **Administración:** gestiona cuentas, matrículas, actividades y estructura escolar. Puede crear años, períodos, grados y secciones y vincular cursos, con auditoría.
 - **Asistente académico:** Gemma 3 (4B) a través de Ollama local. Web y Android comparten la API del asistente.
 
 ## Ejecutar desde el código de `main`
@@ -25,7 +25,7 @@ Abre [el portal de demostración local](http://127.0.0.1:8088/login.html). Este 
 
 Para probar el **sistema integrado**, prepara MySQL y Django según la [guía administrativa](admin-django/README.md) y la [arquitectura compartida](docs/ARQUITECTURA.md). Con los servicios configurados, el panel está en [Administración local](http://127.0.0.1:8090/admin.html). Usa la configuración privada del equipo o crea tus propias credenciales de prueba.
 
-Para activar **Gemma**, ejecuta `ollama pull gemma3:4b` y mantén Ollama escuchando en `127.0.0.1:11434`. En PowerShell, establece `$env:MAIN_OLLAMA_MODEL = 'gemma3:4b'` antes de arrancar Spring. El modelo puede tardar más en la primera consulta. Para activar la moderación privada de chats, establece también `$env:MAIN_CHAT_MODERATION_MODEL = 'gemma3:4b'` antes de arrancar Spring. MAIN analiza el chat con Ollama en el mismo equipo y mantiene los envíos pendientes si el modelo no responde. La moderación administrativa de estados y publicaciones del campus funciona por separado.
+Para activar **Gemma**, ejecuta `ollama pull gemma3:4b` y mantén Ollama escuchando en `127.0.0.1:11434`. En PowerShell, establece `$env:MAIN_OLLAMA_MODEL = 'gemma3:4b'` antes de arrancar Spring. El modelo puede tardar más en la primera consulta. Para activar la moderación privada de chats, establece también `$env:MAIN_CHAT_MODERATION_MODEL = 'gemma3:4b'` antes de arrancar Spring. MAIN analiza chats y estados de texto o imagen con Ollama en el mismo equipo. Si el modelo no responde, conserva el contenido privado y programa un reintento. El audio y video de estados y las publicaciones del campus tienen revisión administrativa.
 
 Para **Android**, consulta la [guía de compilación](mobile/README.md). La variante de entrega incorpora el origen HTTPS indicado mediante `MAIN_PUBLIC_ORIGIN`: el estudiante solo introduce usuario y contraseña. Si se usa un túnel temporal y cambia su URL, recompila el APK. Para firmarlo, sigue la [guía de firma privada](docs/FIRMA_PRIVADA_ANDROID.md).
 

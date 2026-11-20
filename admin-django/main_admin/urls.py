@@ -1,6 +1,6 @@
 from django.urls import path
 from administration import views
-from administration import academic
+from administration import academic, school
 from administration import identity
 from administration import scheduling, grades
 from administration import moderation
@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/admin/v1/guardians/<str:guardian>/<int:student_id>', identity.guardians),
     path('api/admin/v1/contacts', identity.contacts),
     path('api/admin/v1/reports', identity.reports),
+    path('api/admin/v1/school-structure', school.structure),
     path('api/admin/v1/courses', academic.courses),
     path('api/admin/v1/courses/<int:item_id>', academic.courses),
     path('api/admin/v1/courses/<int:item_id>/students', academic.students),

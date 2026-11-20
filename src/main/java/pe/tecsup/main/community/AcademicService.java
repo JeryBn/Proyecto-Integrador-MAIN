@@ -10,7 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AcademicService {
  private final JdbcTemplate db;private final IdentityService identities;private final AdministrativeAudit audit;
  public AcademicService(JdbcTemplate db,IdentityService identities,AdministrativeAudit audit){this.db=db;this.identities=identities;this.audit=audit;}
- public record Course(long id,String name,String teacher){}
+ public record Course(long id,String name,String teacher,SchoolPlacement placement){}
+ public record SchoolPlacement(int year,String grade,String section){}
  public record LinkedStudent(long id,String name){}
  public record Slot(String id,long courseId,String course,String teacher,int dayOfWeek,String startsAt,String endsAt,String classroom){}
  public record NewSlot(long courseId,Integer dayOfWeek,String startsAt,String endsAt,String classroom){}
@@ -23,8 +24,16 @@ public class AcademicService {
    case "FAMILIAR"->{scope="EXISTS(SELECT 1 FROM guardian_link g JOIN matricula m ON m.alumno_id=g.alumno_id WHERE m.curso_id=c.id AND g.guardian=?)";parameter=username;}
    default->throw DomainException.denied();
   }
-  var courses=db.query("SELECT c.id,c.nombre,d.nombre docente FROM curso c JOIN docente d ON d.id=c.docente_id WHERE "+scope+" ORDER BY c.nombre,c.id",
-   (r,n)->new Course(r.getLong(1),r.getString(2),r.getString(3)),parameter);
+  var courses=db.query("""
+   SELECT c.id,c.nombre,d.nombre docente,s.year_number,s.grade,s.label
+   FROM curso c JOIN docente d ON d.id=c.docente_id
+   LEFT JOIN course_section a ON a.course_id=c.id LEFT JOIN school_section s ON s.id=a.section_id
+   WHERE """+" "+scope+" ORDER BY c.nombre,c.id",
+   (r,n)->{
+    Integer year=r.getObject(4,Integer.class);
+    return new Course(r.getLong(1),r.getString(2),r.getString(3),
+      year==null?null:new SchoolPlacement(year,r.getString(5),r.getString(6)));
+   },parameter);
   var students=user.role().equals("FAMILIAR")?db.query("SELECT a.id,a.nombre FROM alumno a JOIN guardian_link g ON g.alumno_id=a.id WHERE g.guardian=? ORDER BY a.nombre,a.id",
    (r,n)->new LinkedStudent(r.getLong(1),r.getString(2)),username):List.<LinkedStudent>of();
   if(courses.isEmpty())return new Agenda(courses,List.of(),students);

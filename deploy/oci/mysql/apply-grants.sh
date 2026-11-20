@@ -11,6 +11,11 @@ mysql=(mysql --host=mysql --user=main_operator --ssl-mode=VERIFY_IDENTITY --ssl-
 
 "${mysql[@]}" <<SQL
 GRANT SELECT, INSERT, UPDATE ON main.main_user TO 'main_django'@'${host_pattern}';
+GRANT SELECT, INSERT ON main.academic_year TO 'main_django'@'${host_pattern}';
+GRANT UPDATE(year_number) ON main.academic_year TO 'main_django'@'${host_pattern}';
+GRANT SELECT, INSERT ON main.academic_period TO 'main_django'@'${host_pattern}';
+GRANT SELECT, INSERT ON main.school_section TO 'main_django'@'${host_pattern}';
+GRANT SELECT, INSERT ON main.course_section TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, UPDATE ON main.curso TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.alumno TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT ON main.docente TO 'main_django'@'${host_pattern}';

@@ -79,9 +79,10 @@ function App() {
   }, []);
 
   const match = hash.match(/^#actividad\/(\d+)$/);
+  const courseRoute=/^#cursos(?:\/(\d+)\/asistencia)?$/.exec(hash);
   const chatRoute=/^#chats(?:\/[A-Za-z0-9-]+)?$/.test(hash);
   const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
-  const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#campus'?'Campus':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':hash==='#cursos'?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
+  const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#campus'?'Campus':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':courseRoute?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
   useEffect(()=>{
     document.title=pageTitle+' · MAIN';
     const changed=previousRoute.current!==null&&previousRoute.current!==hash;
@@ -109,14 +110,14 @@ function App() {
         <a className="brand" href="#inicio" style={campusStyle}><span className="logo campus-mark">{campusMark}</span><span><strong>{campusName}</strong><small>Campus digital</small></span></a>
         <div className="sidebar-navigation">
         {navigation.map((item,index)=>{
-          const active=hash===item.route||(item.route==='#inicio'&&(!hash||hash==='#inicio'))||(item.route==='#actividades'&&!!match)||(item.route==='#chats'&&chatRoute);
+          const active=hash===item.route||(item.route==='#inicio'&&(!hash||hash==='#inicio'))||(item.route==='#actividades'&&!!match)||(item.route==='#chats'&&chatRoute)||(item.route==='#cursos'&&!!courseRoute);
           return <React.Fragment key={item.route}>{item.group&&<span className="nav-group-label">{item.group}</span>}<a className={'nav-item '+(active?'active':'')} aria-current={active?'page':undefined} href={item.route}><Icon name={item.icon}/><span>{item.label}</span>{item.route==='#avisos'&&notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}</b>}</a></React.Fragment>;
         })}
         </div>
       </nav>
       <div className="main-area">
         <header className="topbar institutional-topbar">
-          <div className="topbar-context"><span className="mobile-brand" style={campusStyle}><span className="logo campus-mark">{campusMark}</span>{campusName}</span><span className="breadcrumb"><Icon name={hash==='#cursos'?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
+          <div className="topbar-context"><span className="mobile-brand" style={campusStyle}><span className="logo campus-mark">{campusMark}</span>{campusName}</span><span className="breadcrumb"><Icon name={courseRoute?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
           <div className="topbar-actions">
             <a className="notice-button icon-notice" href="#avisos" aria-label="Ver avisos"><Icon name="bell" size={19}/>{notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}{notices.data.length===30?'+':''}</b>}</a>
             <a className="user-identity" href="#perfil"><span className="avatar small">{profile?.nombre?.slice(0,1)||'M'}</span><span><strong>{profile?.nombre||'Mi cuenta'}</strong><small>{profile?.rol||'MAIN'}</small></span></a>
@@ -129,7 +130,7 @@ function App() {
           </div>
         </header>
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile} campusName={campusName} campusColor={campus.data?.color||'#087f68'}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile} campusName={campusName} campusColor={campus.data?.color||'#087f68'}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:courseRoute?<Academic key={courseRoute[1]||'courses'} profile={profile} attendanceCourseId={courseRoute[1]}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
         </main>
       </div>
     </div>

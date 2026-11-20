@@ -2,7 +2,8 @@ package pe.tecsup.main.mobile.data
 
 data class UserPreferences(val darkTheme: Boolean = false, val notifications: Boolean = true, val statusAudience: String = "CONTACTS")
 data class ContactUser(val username: String, val name: String, val role: String, val muted: Boolean, val blocked: Boolean)
-data class Course(val id: Long, val name: String, val teacher: String)
+data class SchoolPlacement(val year: Int,val grade: String,val section: String)
+data class Course(val id: Long,val name: String,val teacher: String,val placement: SchoolPlacement? = null)
 data class Grade(val assessment:String,val score:String,val maximum:String,val recordedAt:String="")
 data class CourseGrades(val courseId:Long,val course:String,val teacher:String,val grades:List<Grade>)
 data class TimeSlot(val id: String, val course: String, val teacher: String, val dayOfWeek: Int,
