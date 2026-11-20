@@ -100,7 +100,9 @@ export function CallPanel({username}){
     try{
       session.stream=await navigator.mediaDevices.getUserMedia({audio:true,video:kind==='VIDEO'});
       if(current.current!==session){session.stream.getTracks().forEach(track=>track.stop());return;}
-      session.peer=new RTCPeerConnection();
+      const configuration=await userApi.call(path+'/ice',{signal:session.controller.signal});
+      if(current.current!==session)return;
+      session.peer=new RTCPeerConnection(configuration);
       const peer=session.peer;
       const remoteStream=new MediaStream();
       setStreams({local:session.stream,remote:remoteStream});

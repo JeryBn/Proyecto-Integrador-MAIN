@@ -47,3 +47,8 @@ Para una instalación dedicada, configura `MAIN_CAMPUS_NAME` y `MAIN_CAMPUS_COLO
 Trabajo integrado en `main` con los aportes de Jery Becerra Ninaquispe, Pamela Regina Meneses Mayhua y Michael Julian Fernandez Camarena. Consulta las [pautas de colaboración](CONTRIBUTING.md) y la [documentación histórica](docs/REVISION_2026_10_20.md).
 
 El [ZIP del primer incremento](entregables/MAIN_LOCAL_PAMELA.zip) corresponde a la entrega histórica HU06/HU07. Para obtener el sistema actual, descarga o clona la rama `main`.
+
+
+### Llamadas web entre redes
+
+Para habilitar el relevo WebRTC, inicia Spring con `MAIN_TURN_URLS` (URLs `turn:` o `turns:` separadas por comas) y `MAIN_TURN_SECRET` (el mismo secreto que `static-auth-secret` en coturn con `use-auth-secret`). Guarda el secreto en el entorno del servidor. Los clientes autenticados reciben credenciales temporales. Sin estas variables, MAIN intenta establecer una conexión directa. El navegador requiere HTTPS para usar la cámara y el micrófono, salvo en localhost.

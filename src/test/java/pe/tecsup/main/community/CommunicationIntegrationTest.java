@@ -12,12 +12,24 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!"})
+@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!","MAIN_TURN_URLS=turn:relay.example.invalid","MAIN_TURN_SECRET=synthetic-turn-test-value"})
 @AutoConfigureMockMvc @Transactional
 class CommunicationIntegrationTest{
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Test void signedIceConfigurationRequiresLoginAndDisablesCaching()throws Exception{
+  mvc.perform(get("/api/v1/calls/ice")).andExpect(status().isUnauthorized());
+  var result=mvc.perform(get("/api/v1/calls/ice").with(user("alumno").roles("ALUMNO")))
+   .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
+   .andExpect(jsonPath("$.iceServers[0].urls[0]").value("turn:relay.example.invalid")).andReturn();
+  var relay=json.readTree(result.getResponse().getContentAsString()).get("iceServers").get(0);
+  var mac=javax.crypto.Mac.getInstance("HmacSHA1");
+  var utf8=java.nio.charset.StandardCharsets.UTF_8;
+  mac.init(new javax.crypto.spec.SecretKeySpec("synthetic-turn-test-value".getBytes(utf8),"HmacSHA1"));
+  assertEquals(Base64.getEncoder().encodeToString(mac.doFinal(relay.get("username").asText().getBytes(utf8))),
+      relay.get("credential").asText());
+ }
  @Test void onlyDirectCallParticipantsCanExchangeSignalsAndHangUp()throws Exception{
   users.approveContact(admin,"alumno","otro");
   String conversation=chat.direct("alumno","otro"), root="/api/v1/calls";

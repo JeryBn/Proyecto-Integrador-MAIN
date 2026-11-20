@@ -1,6 +1,15 @@
 package pe.tecsup.main.community;
 
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
+import java.time.Duration;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -22,8 +31,39 @@ class DirectCalls {
     private final IdentityService users;
     private final Clock clock;
 
-    DirectCalls(JdbcTemplate db,CommunicationService chats,IdentityService users,Clock clock){
+    private final List<String> turnUrls;
+    private final String turnSecret;
+
+    DirectCalls(JdbcTemplate db,CommunicationService chats,IdentityService users,Clock clock,
+                @Value("${MAIN_TURN_URLS:}") String urls,@Value("${MAIN_TURN_SECRET:}") String secret){
         this.db=db;this.chats=chats;this.users=users;this.clock=clock;
+        turnUrls=java.util.Arrays.stream(urls.split(",")).map(String::strip).filter(url->!url.isEmpty()).toList();
+        turnSecret=secret;
+        if(!turnUrls.isEmpty()&&(secret.isBlank()||turnUrls.stream().anyMatch(url->
+                !url.startsWith("turn:")&&!url.startsWith("turns:"))))
+            throw new IllegalArgumentException("Configura URLs TURN y su secreto compartido.");
+    }
+
+    record IceServer(List<String> urls,String username,String credential) {}
+    record IceConfiguration(List<IceServer> iceServers) {}
+
+    @GetMapping("/ice")
+    public ResponseEntity<IceConfiguration> ice(Principal principal){
+        users.active(principal.getName());
+        List<IceServer> servers=List.of();
+        if(!turnUrls.isEmpty()){
+            long expires=clock.instant().plus(Duration.ofHours(3)).getEpochSecond();
+            String username=expires+":"+UUID.randomUUID();
+            try{
+                Mac mac=Mac.getInstance("HmacSHA1");
+                mac.init(new SecretKeySpec(turnSecret.getBytes(StandardCharsets.UTF_8),"HmacSHA1"));
+                String credential=Base64.getEncoder().encodeToString(mac.doFinal(username.getBytes(StandardCharsets.UTF_8)));
+                servers=List.of(new IceServer(turnUrls,username,credential));
+            }catch(GeneralSecurityException failure){
+                throw new IllegalStateException("No se pudieron generar las credenciales TURN.",failure);
+            }
+        }
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new IceConfiguration(servers));
     }
 
     record Start(UUID id,String conversationId,String kind,String sdp) {}
