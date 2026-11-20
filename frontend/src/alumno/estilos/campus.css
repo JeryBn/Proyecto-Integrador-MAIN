@@ -1,0 +1,30 @@
+.campus-feed{max-width:860px;margin-inline:auto;display:grid;gap:18px;color:var(--ink)}
+.campus-banner{position:relative;isolation:isolate;overflow:hidden;padding:26px clamp(20px,5vw,40px);border:1px solid var(--border);border-radius:24px;background:#f7f2e7;color:#16221a}
+.campus-banner::after,.campus-editorial .course-hero::after,.campus-editorial .profile-hero::after{content:"";position:absolute;z-index:-1;inset:-10% -2% -10% 47%;background:linear-gradient(125deg,var(--campus-color,#087f68) 0 56%,#d9f264 56% 74%,#b1d692 74%);clip-path:polygon(55% 0,100% 0,100% 100%,0 100%);opacity:.88;pointer-events:none}
+.campus-banner h1{margin:6px 0 0;font:700 clamp(2.7rem,7vw,4.7rem)/1 Georgia,serif;position:relative;width:fit-content}
+.campus-banner small{font-weight:700;display:inline-block;max-width:70%;overflow-wrap:anywhere}
+.campus-switch,.campus-pages{display:flex;gap:8px;flex-wrap:wrap}
+.campus-switch{border-bottom:1px solid var(--border)}
+.campus-switch button{border:0;background:none;color:var(--ink);padding:10px 12px;border-radius:0;border-bottom:3px solid transparent;min-height:44px}
+.campus-switch button[aria-pressed=true]{font-weight:750;border-bottom-color:var(--campus-color,#087f68)}
+.campus-composer{display:flex;gap:12px;align-items:center}
+.campus-composer label{flex:1;min-width:0;margin:0}
+.campus-composer textarea{display:block;width:100%;resize:vertical}
+.campus-composer button{background:#d9f264;color:#16221a;border:1px solid #b8d64b;font-weight:750;min-height:44px}
+.campus-posts{list-style:none;display:grid;gap:14px;margin:0;padding:0}
+.campus-posts article,.campus-empty{padding:clamp(15px,3vw,24px);border:1px solid var(--border);border-radius:18px;background:var(--surface)}
+.campus-posts header{display:flex;align-items:center;gap:12px}
+.campus-posts header small{display:block;color:var(--muted);margin-top:2px}
+.campus-avatar{display:grid;place-items:center;width:42px;height:42px;flex:none;background:#d9f264;color:#16221a;clip-path:polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%);font:bold 1.35rem Georgia,serif}
+.campus-posts .message-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:14px 0 0;font-size:1.05rem;line-height:1.6}
+.campus-editorial .course-hero,.campus-editorial .profile-hero{position:relative;isolation:isolate;overflow:hidden}
+.campus-editorial .course-hero::after,.campus-editorial .profile-hero::after{opacity:.14}
+.campus-editorial .dashboard-hero h1,.campus-editorial .course-hero h1,.campus-editorial .profile-hero h1{font-family:Georgia,serif}
+@media(min-width:961px){
+ .campus-editorial .sidebar{background:color-mix(in srgb,var(--campus-color) 34%,#09221b);color:#fff}
+ .campus-editorial .sidebar :is(.brand,.nav-item,.workspace-label,.brand small,.campus-card p,.campus-card strong){color:#fff}
+ .campus-editorial .sidebar .nav-item.active{background:#d9f264;color:#16221a}
+ .campus-editorial .sidebar .campus-card{background:#ffffff12;border-color:#ffffff2b}
+}
+@media(max-width:570px){.campus-composer{flex-direction:column;align-items:stretch}.campus-switch button{padding-inline:8px}}
+@media(forced-colors:active){.campus-avatar{clip-path:none;border:1px solid CanvasText}.campus-switch button[aria-pressed=true]{border-bottom-color:Highlight}}

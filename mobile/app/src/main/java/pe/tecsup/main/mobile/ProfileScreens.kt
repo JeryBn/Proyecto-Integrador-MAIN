@@ -41,7 +41,7 @@ import pe.tecsup.main.mobile.data.ContactUser
     }
    }
    else -> {
-    Text("Ajustes",Modifier.padding(20.dp),style=MaterialTheme.typography.headlineMedium)
+    Box(Modifier.padding(20.dp)){CampusBanner("Ajustes")}
     Row(Modifier.fillMaxWidth().padding(20.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(18.dp)){
      PersonAvatar(model.profile?.nombre.orEmpty(),true)
      Column{Text(model.profile?.nombre.orEmpty(),style=MaterialTheme.typography.titleLarge);Text(model.profile?.rol.orEmpty(),color=MaterialTheme.colorScheme.onSurfaceVariant)}

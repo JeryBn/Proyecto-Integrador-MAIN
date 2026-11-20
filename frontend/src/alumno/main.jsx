@@ -102,7 +102,7 @@ function App() {
   ];
 
   return (
-    <div className="app-shell">
+    <div className={'app-shell'+(['','#inicio','#campus','#cursos','#perfil'].includes(hash)?' campus-editorial':'')} style={{'--campus-color':campus.data?.color||'#087f68'}}>
       <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
       <nav className="sidebar institutional-sidebar" aria-label="Navegación principal">
         <a className="brand" href="#inicio" style={campusStyle}><span className="logo campus-mark">{campusMark}</span><span><strong>{campusName}</strong><small>Campus digital</small></span></a>
@@ -130,7 +130,7 @@ function App() {
           </div>
         </header>
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#campus'&&(profile.rol==='Alumno'||profile.rol==='Docente')?<CampusFeed profile={profile} campusName={campusName} campusColor={campus.data?.color||'#087f68'}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:hash==='#cursos'?<Academic profile={profile}/>:match?<ActivityDetail id={match[1]}/>:hash==='#actividades'&&profile.rol==='Alumno'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<Dashboard profile={profile} items={items} loading={loading} error={error} onReload={load} notices={notices.data||[]}/>}
         </main>
       </div>
     </div>

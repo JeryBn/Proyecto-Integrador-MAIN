@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable internal fun AcademicAgendaScreen(model: MainViewModel) {
  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-  Text("Cursos y horario",style=MaterialTheme.typography.headlineMedium);AgendaContent(model)
+  CampusBanner("Cursos y horario");AgendaContent(model)
  }
 }
 @Composable internal fun AgendaContent(model: MainViewModel) {

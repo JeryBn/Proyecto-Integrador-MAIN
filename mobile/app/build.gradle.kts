@@ -15,6 +15,7 @@ val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
 val deliveryReady = listOf(deliveryStore, deliveryStorePassword, deliveryAlias, deliveryKeyPassword).all { !it.isNullOrBlank() }
 val deliveryOrigin = System.getenv("MAIN_PUBLIC_ORIGIN").orEmpty().trim().trimEnd('/')
 val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "MAIN"
+val campusColor = System.getenv("MAIN_CAMPUS_COLOR")?.takeIf { it.matches(Regex("#[0-9a-fA-F]{6}")) } ?: "#087f68"
 val deliveryUri = runCatching { URI(deliveryOrigin) }.getOrNull()
 val deliveryOriginReady = deliveryUri != null && deliveryUri.scheme == "https" &&
     deliveryUri.host != null && deliveryUri.rawUserInfo == null && deliveryUri.rawQuery == null &&
@@ -33,6 +34,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "PUBLIC_ORIGIN", if (deliveryOriginReady) "\"$deliveryOrigin\"" else "\"\"")
         buildConfigField("String", "CAMPUS_NAME", JsonOutput.toJson(campusName))
+        buildConfigField("String", "CAMPUS_COLOR", JsonOutput.toJson(campusColor))
     }
     buildFeatures { compose = true; buildConfig = true }
     signingConfigs {
