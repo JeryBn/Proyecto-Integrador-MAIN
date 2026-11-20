@@ -375,7 +375,16 @@ class MainViewModel : ViewModel() {
         val client=api?:return;if(statusBusy)return;statusBusy=true;statusError=""
         viewModelScope.launch{try{operation(client)}catch(error:Exception){if(api===client){if(error is SessionExpired)expireSession() else statusError=friendly(error)}}finally{if(api===client)statusBusy=false}}
     }
-    fun loadStatuses()=statusOperation { client -> val rows=withContext(Dispatchers.IO){client.statuses()};if(api===client){statuses=rows;if(statusViewer!=null && rows.none{it.id==statusViewer?.id})closeStatus()} }
+    fun loadStatuses()=statusOperation { client ->
+        val rows=withContext(Dispatchers.IO){client.statuses()}
+        if(api===client){
+            statuses=rows
+            statusViewer?.let { open ->
+                val refreshed=rows.find{it.id==open.id}
+                if(refreshed==null)closeStatus() else statusViewer=refreshed
+            }
+        }
+    }
     fun createStatus(key:String,text:String,color:String,audience:String,attachment:StatusAttachment?)=statusOperation { client ->
         val rows=withContext(Dispatchers.IO){client.createStatus(key,text,color,audience,attachment);client.statuses()}
         if(api===client){statuses=rows;statusComposer=false}

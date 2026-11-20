@@ -37,6 +37,7 @@ class PrivateChatModeration {
     private final CommunicationService messages;
     private final MessageAttachments attachments;
     private final StatusService statuses;
+    private final ModerationRetry retries;
     private final ObjectMapper json;
     private final String model;
     private final AtomicBoolean running = new AtomicBoolean();
@@ -46,10 +47,11 @@ class PrivateChatModeration {
             .build();
 
     PrivateChatModeration(CommunicationService messages, MessageAttachments attachments,
-                          StatusService statuses, ObjectMapper json, @Value("${MAIN_CHAT_MODERATION_MODEL:}") String model) {
+                          StatusService statuses, ModerationRetry retries, ObjectMapper json, @Value("${MAIN_CHAT_MODERATION_MODEL:}") String model) {
         this.messages = messages;
         this.attachments = attachments;
         this.statuses = statuses;
+        this.retries = retries;
         this.json = json;
         this.model = model;
     }
@@ -64,10 +66,14 @@ class PrivateChatModeration {
                         var candidate = statuses.pendingAutomaticReview(id);
                         if (candidate.isEmpty()) continue;
                         var status = candidate.get();
-                        statuses.applyAutomaticReview(status,
-                                classifyContent(status.text(), "", status.image()) == ChatDecision.ALLOW);
-                    } catch (IOException unavailable) {
-                        break;
+                        try {
+                            statuses.applyAutomaticReview(status,
+                                    classifyContent(status.text(), "", status.image()) == ChatDecision.ALLOW);
+                        } catch (IOException unavailable) {
+                            retries.fail("STATUS", status.id(), status.hash());
+                            break;
+                        }
+                        retries.clear("STATUS", status.id(), status.hash());
                     } catch (InterruptedException interrupted) {
                         Thread.currentThread().interrupt();
                         return;
@@ -78,7 +84,9 @@ class PrivateChatModeration {
                 for (var message : messages.pendingReviews()) {
                     try {
                         messages.applyAutomaticReview(message, classify(message));
+                        retries.clear("CHAT", message.id(), message.hash());
                     } catch (IOException unavailable) {
+                        retries.fail("CHAT", message.id(), message.hash());
                         return;
                     } catch (InterruptedException interrupted) {
                         Thread.currentThread().interrupt();

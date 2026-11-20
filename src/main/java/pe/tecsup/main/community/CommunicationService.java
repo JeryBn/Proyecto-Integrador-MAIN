@@ -174,8 +174,8 @@ public class CommunicationService {
  private Message dto(Map<String,Object> h,int revision,boolean own,boolean review){
   String id=(String)h.get("id"),sender=(String)h.get("sender");
   var file=attachments.info(id);
-  return db.queryForObject("SELECT * FROM message_revision WHERE message_id=? AND revision=?",(r,n)->new Message(id,(String)h.get("conversation_id"),sender,
-   users.account(sender).name(),revision,r.getString("body"),r.getString("state"),own||review?Objects.toString(r.getString("reason"),""):"",
+  return db.queryForObject("SELECT r.*,mr.attempts AS retry_attempts FROM message_revision r LEFT JOIN moderation_retry mr ON mr.subject_kind='CHAT' AND mr.subject_id=r.message_id AND mr.content_hash=r.content_hash WHERE r.message_id=? AND r.revision=?",(r,n)->new Message(id,(String)h.get("conversation_id"),sender,
+   users.account(sender).name(),revision,r.getString("body"),r.getString("state"),own||review?Objects.toString(r.getString("reason"),"PENDING".equals(r.getString("state"))&&r.getInt("retry_attempts")>0?ModerationRetry.DELAY_MESSAGE:""):"",
    Boolean.TRUE.equals(h.get("corrected_before")),Boolean.TRUE.equals(h.get("edited_after")),h.get("created_at").toString(),own||review?r.getString("content_hash"):"",
    file==null||"REMOVED".equals(r.getString("state"))?"NONE":file.kind(),file==null||"REMOVED".equals(r.getString("state"))?"":file.mime(),file==null||"REMOVED".equals(r.getString("state"))?"":file.name(),file==null||"REMOVED".equals(r.getString("state"))?0:file.size()),id,revision);
  }
@@ -197,8 +197,9 @@ public class CommunicationService {
   return db.query("""
    SELECT m.id,r.revision,r.content_hash,r.body FROM message m JOIN message_revision r ON r.message_id=m.id
    WHERE r.state='PENDING' AND r.revision=(SELECT MAX(revision) FROM message_revision WHERE message_id=m.id)
+   AND NOT EXISTS(SELECT 1 FROM moderation_retry mr WHERE mr.subject_kind='CHAT' AND mr.subject_id=m.id AND mr.content_hash=r.content_hash AND mr.retry_at>?)
    ORDER BY r.submitted_at,m.id LIMIT 10
-   """,(r,n)->new PendingReview(r.getString(1),r.getInt(2),r.getString(3),r.getString(4)));
+   """,(r,n)->new PendingReview(r.getString(1),r.getInt(2),r.getString(3),r.getString(4)),Timestamp.valueOf(now()));
  }
  enum ChatDecision { ALLOW, EDIT, REMOVE, UNSUPPORTED }
  @Transactional(isolation=Isolation.READ_COMMITTED)

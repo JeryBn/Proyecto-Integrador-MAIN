@@ -15,10 +15,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:statuses_test;DB_CLOSE_DELAY=-1","main.admin.username=status_admin","main.admin.password=SyntheticStatus2026!"})
 @AutoConfigureMockMvc @Transactional class StatusIntegrationTest {
- @Autowired StatusService statuses;@Autowired StatusMedia media;@Autowired IdentityService users;@Autowired JdbcTemplate db;@Autowired MockMvc mvc;@Autowired Clock clock;
+ @Autowired StatusService statuses;@Autowired ModerationRetry retries;@Autowired StatusMedia media;@Autowired IdentityService users;@Autowired JdbcTemplate db;@Autowired MockMvc mvc;@Autowired Clock clock;
  @BeforeEach void setup(){users.approveContact("status_admin","alumno","otro");users.create("status_admin",new IdentityService.NewAccount("family_status","Familia","FAMILIAR","SyntheticFamily2026!",null,null));}
  StatusService.Update create(String audience){return statuses.create("alumno",UUID.randomUUID().toString(),"Estado sintético","#087F68",audience,null);}
  void approve(StatusService.Update s){statuses.review("status_admin",s.id(),new StatusService.Review(s.contentHash(),true,""));}
+ @Test void providerFailureDefersReviewAndOnlyTheAuthorSeesTheDelay(){
+  var status=create("CONTACTS");
+  assertTrue(statuses.pendingAutomaticIds().contains(status.id()));
+  retries.fail("STATUS",status.id(),status.contentHash());
+  assertFalse(statuses.pendingAutomaticIds().contains(status.id()));
+  assertEquals(ModerationRetry.DELAY_MESSAGE,statuses.get("alumno",status.id()).reason());
+  assertTrue(statuses.feed("otro").isEmpty());
+  retries.clear("STATUS",status.id(),status.contentHash());
+  assertTrue(statuses.pendingAutomaticIds().contains(status.id()));
+ }
  @Test void automaticReviewPublishesOnlyTheCurrentPendingStatus(){
   var valid=create("CONTACTS");
   var flagged=create("CONTACTS");

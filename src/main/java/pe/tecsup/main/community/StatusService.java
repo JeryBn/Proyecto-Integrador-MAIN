@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  public record Update(String id,String owner,String name,String text,String background,String audience,String kind,String state,String contentHash,String createdAt,String expiresAt,String reason,boolean seen,int views){}
  public record Review(String contentHash,boolean approved,String reason){}
  private LocalDateTime now(){return LocalDateTime.now(clock);}
- private Update row(String id){return db.query("SELECT s.*,u.display_name FROM status_update s JOIN main_user u ON s.owner=u.username WHERE s.id=?",(r,n)->new Update(r.getString("id"),r.getString("owner"),r.getString("display_name"),r.getString("body"),r.getString("background"),r.getString("audience"),r.getString("kind"),r.getString("state"),r.getString("content_hash"),r.getTimestamp("created_at").toLocalDateTime().atZone(clock.getZone()).toInstant().toString(),r.getTimestamp("expires_at").toLocalDateTime().atZone(clock.getZone()).toInstant().toString(),Objects.toString(r.getString("reason"),""),false,0),id).stream().findFirst().orElseThrow(DomainException::missing);}
+ private Update row(String id){return db.query("SELECT s.*,u.display_name,mr.attempts AS retry_attempts FROM status_update s JOIN main_user u ON s.owner=u.username LEFT JOIN moderation_retry mr ON mr.subject_kind='STATUS' AND mr.subject_id=s.id AND mr.content_hash=s.content_hash WHERE s.id=?",(r,n)->new Update(r.getString("id"),r.getString("owner"),r.getString("display_name"),r.getString("body"),r.getString("background"),r.getString("audience"),r.getString("kind"),r.getString("state"),r.getString("content_hash"),r.getTimestamp("created_at").toLocalDateTime().atZone(clock.getZone()).toInstant().toString(),r.getTimestamp("expires_at").toLocalDateTime().atZone(clock.getZone()).toInstant().toString(),Objects.toString(r.getString("reason"),"PENDING".equals(r.getString("state"))&&r.getInt("retry_attempts")>0?ModerationRetry.DELAY_MESSAGE:""),false,0),id).stream().findFirst().orElseThrow(DomainException::missing);}
  private boolean visible(String actor,Update s){
   if(s.state().equals("DELETED")||!Instant.parse(s.expiresAt()).isAfter(clock.instant()))return false;
   if(s.owner().equals(actor))return true;
@@ -48,8 +48,9 @@ import org.springframework.transaction.annotation.Transactional;
   return db.queryForList("""
    SELECT s.id FROM status_update s JOIN main_user u ON u.username=s.owner AND u.enabled=TRUE
    WHERE s.state='PENDING' AND s.kind IN ('TEXT','IMAGE') AND s.expires_at>?
+   AND NOT EXISTS(SELECT 1 FROM moderation_retry mr WHERE mr.subject_kind='STATUS' AND mr.subject_id=s.id AND mr.content_hash=s.content_hash AND mr.retry_at>?)
    ORDER BY s.created_at,s.id LIMIT 3
-   """,String.class,Timestamp.valueOf(now()));
+   """,String.class,Timestamp.valueOf(now()),Timestamp.valueOf(now()));
  }
  Optional<PendingReview> pendingAutomaticReview(String id){
   var status=row(id);
