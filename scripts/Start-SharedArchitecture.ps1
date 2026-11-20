@@ -6,6 +6,7 @@ param(
   [Parameter(Mandatory=$true)][string]$MySqlDataDirectory,
   [string]$JarPath,
   [string]$FfmpegDirectory,
+  [ValidateRange(1024,65535)][int]$SpringPort=8088,
   [switch]$DemoData
 )
 $ErrorActionPreference='Stop'
@@ -66,22 +67,22 @@ $env:SPRING_FLYWAY_PASSWORD=$configuration.migration_password
 $env:SPRING_PROFILES_ACTIVE='mysql'
 $env:MAIN_ADMIN_LEGACY_ENABLED='false'
 $env:MAIN_DEMO_ENABLED=if($DemoData){'true'}else{'false'}
-$env:SERVER_PORT='8088'
+$env:SERVER_PORT=[string]$SpringPort
 if($FfmpegDirectory){
   if(!(Test-Path -LiteralPath (Join-Path $FfmpegDirectory 'ffmpeg.exe') -PathType Leaf)){throw 'No existe FFmpeg en la ruta indicada'}
   $env:MAIN_MEDIA_FFMPEG_DIRECTORY=$FfmpegDirectory
 }
-$springProcess=Get-ListenerProcess 8088
-if(!$springProcess -and (Test-LocalPort 8088)){
+$springProcess=Get-ListenerProcess $SpringPort
+if(!$springProcess -and (Test-LocalPort $SpringPort)){
   $springProcess=Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'java.exe' -and $_.CommandLine -like "*$JarPath*" } | Select-Object -First 1
-  if(!$springProcess){throw '8088 está activo, pero no pertenece al servidor MAIN esperado'}
+  if(!$springProcess){throw '$SpringPort está activo, pero no pertenece al servidor MAIN esperado'}
 }
 if($springProcess){
-  if($springProcess.CommandLine -notlike "*$JarPath*"){throw '8088 está ocupado por otro servidor; no se detiene'}
+  if($springProcess.CommandLine -notlike "*$JarPath*"){throw '$SpringPort está ocupado por otro servidor; no se detiene'}
 } else {
   Start-Process -FilePath $JavaExecutable -ArgumentList @('-jar',"`"$JarPath`"") -WorkingDirectory $repository -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'spring.stdout.log') -RedirectStandardError (Join-Path $logs 'spring.stderr.log') | Out-Null
 }
-Wait-LocalPort 8088
+Wait-LocalPort $SpringPort
 $env:MAIN_DB_NAME=$configuration.database
 $env:MAIN_DB_HOST='127.0.0.1'
 $env:MAIN_DB_PORT=[string]$configuration.port
@@ -99,5 +100,5 @@ if($djangoProcess){
   Start-Process -FilePath $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8090','--threads=4','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repository 'admin-django') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'django.stdout.log') -RedirectStandardError (Join-Path $logs 'django.stderr.log') | Out-Null
 }
 Wait-LocalPort 8090
-Write-Host 'MAIN: usuarios http://127.0.0.1:8088/ y administración http://127.0.0.1:8090/admin.html'
+Write-Host "MAIN: usuarios http://127.0.0.1:${SpringPort}/ y administración http://127.0.0.1:8090/admin.html"
 Write-Host 'Los procesos continúan en segundo plano. Verificar su arranque en var/shared-architecture-logs.'

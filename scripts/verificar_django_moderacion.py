@@ -33,7 +33,7 @@ seed=int(time.time()*1000);names=['modsender_'+str(seed),'modrecipient_'+str(see
 users=[]
 for i,name in enumerate(names):
     check('synthetic_account_'+str(i),admin.call('/api/admin/v1/users','POST',dict(username=name,name='Moderación sintética '+str(i),role='ALUMNO',password='SyntheticModeration2026!',alumnoId=seed+i),token)[0],201)
-    session=Session('http://127.0.0.1:8088');_,csrf=session.call('/login-token')
+    session=Session(os.environ.get('MAIN_MODERATION_USER_BASE','http://127.0.0.1:8088'));_,csrf=session.call('/login-token')
     check('spring_login_'+str(i),session.call('/login','POST',dict(username=name,password='SyntheticModeration2026!',**{csrf['parameterName']:csrf['token']}),form=True)[0],200)
     _,csrf=session.call('/login-token');csrf['headerName']='X-CSRF-TOKEN';users.append((session,csrf))
 check('contact_authorized',admin.call('/api/admin/v1/contacts','POST',dict(first=names[0],second=names[1]),token)[0],200)
