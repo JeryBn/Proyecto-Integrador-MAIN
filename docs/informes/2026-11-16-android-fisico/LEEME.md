@@ -27,6 +27,8 @@ La primera ejecución halló una expectativa antigua en `PendingUiTest`: buscaba
 
 ## Límites que permanecen abiertos
 
+El 19 de noviembre se verificó el inicio de sesión desde el APK firmado en el Motorola con un enlace HTTPS temporal de Cloudflare y la cuenta sintética de alumno. La pantalla Inicio cargó tres actividades pendientes del servidor. También se verificó por HTTPS el acceso web de alumno y docente. El ensayo cubre el portal de usuarios con la base de demostración en memoria. Quedan pendientes el entorno administrativo compartido y las notificaciones push.
+
 El 19 de noviembre se instaló el APK release de `2905d07` encima del release anterior en el mismo Motorola. Android aceptó la actualización, conservó la fecha de instalación inicial y el directorio de datos, y abrió MAIN correctamente. La prueba de inicio de sesión contra el servidor público y la entrega de notificaciones quedan pendientes.
 
 - La identidad release existe y funciona en esta cuenta de Windows. Antes de distribuir el APK falta guardar una copia externa del `.p12` y una contraseña recuperable en un gestor privado; DPAPI por sí solo no permite recuperar la clave en otra computadora.
