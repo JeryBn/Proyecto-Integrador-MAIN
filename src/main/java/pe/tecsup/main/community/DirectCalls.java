@@ -33,15 +33,22 @@ class DirectCalls {
 
     private final List<String> turnUrls;
     private final String turnSecret;
+    private final String turnUsername;
+    private final String turnPassword;
 
     DirectCalls(JdbcTemplate db,CommunicationService chats,IdentityService users,Clock clock,
-                @Value("${MAIN_TURN_URLS:}") String urls,@Value("${MAIN_TURN_SECRET:}") String secret){
+                @Value("${MAIN_TURN_URLS:}") String urls,@Value("${MAIN_TURN_SECRET:}") String secret,
+                @Value("${MAIN_TURN_USERNAME:}") String username,@Value("${MAIN_TURN_PASSWORD:}") String password){
         this.db=db;this.chats=chats;this.users=users;this.clock=clock;
         turnUrls=java.util.Arrays.stream(urls.split(",")).map(String::strip).filter(url->!url.isEmpty()).toList();
         turnSecret=secret;
-        if(!turnUrls.isEmpty()&&(secret.isBlank()||turnUrls.stream().anyMatch(url->
-                !url.startsWith("turn:")&&!url.startsWith("turns:"))))
-            throw new IllegalArgumentException("Configura URLs TURN y su secreto compartido.");
+        turnUsername=username;
+        turnPassword=password;
+        boolean managed=!username.isBlank()&&!password.isBlank();
+        boolean signed=!secret.isBlank();
+        if(!turnUrls.isEmpty()&&(managed==signed||username.isBlank()!=password.isBlank()||
+                turnUrls.stream().anyMatch(url->!url.startsWith("turn:")&&!url.startsWith("turns:"))))
+            throw new IllegalArgumentException("Configura las URLs TURN y un único método de autenticación.");
     }
 
     record IceServer(List<String> urls,String username,String credential) {}
@@ -51,7 +58,9 @@ class DirectCalls {
     public ResponseEntity<IceConfiguration> ice(Principal principal){
         users.active(principal.getName());
         List<IceServer> servers=List.of();
-        if(!turnUrls.isEmpty()){
+        if(!turnUrls.isEmpty()&&!turnUsername.isBlank()){
+            servers=List.of(new IceServer(turnUrls,turnUsername,turnPassword));
+        }else if(!turnUrls.isEmpty()){
             long expires=clock.instant().plus(Duration.ofHours(3)).getEpochSecond();
             String username=expires+":"+UUID.randomUUID();
             try{

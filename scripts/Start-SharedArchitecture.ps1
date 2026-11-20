@@ -70,6 +70,12 @@ $env:MAIN_ADMIN_LEGACY_ENABLED='false'
 $env:MAIN_DEMO_ENABLED=if($DemoData){'true'}else{'false'}
 $env:SERVER_PORT=[string]$SpringPort
 $env:MAIN_CHAT_MODERATION_MODEL=$ChatModerationModel
+# Keep optional TURN credentials in the same private configuration as the database settings.
+foreach($setting in @{turn_urls='MAIN_TURN_URLS';turn_secret='MAIN_TURN_SECRET';turn_username='MAIN_TURN_USERNAME';turn_password='MAIN_TURN_PASSWORD'}.GetEnumerator()){
+  if($configuration.PSObject.Properties[$setting.Key]){
+    [Environment]::SetEnvironmentVariable($setting.Value,[string]$configuration.($setting.Key),'Process')
+  }
+}
 if($FfmpegDirectory){
   if(!(Test-Path -LiteralPath (Join-Path $FfmpegDirectory 'ffmpeg.exe') -PathType Leaf)){throw 'No existe FFmpeg en la ruta indicada'}
   $env:MAIN_MEDIA_FFMPEG_DIRECTORY=$FfmpegDirectory

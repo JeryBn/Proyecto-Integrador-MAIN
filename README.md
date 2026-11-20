@@ -52,3 +52,5 @@ El [ZIP del primer incremento](entregables/MAIN_LOCAL_PAMELA.zip) corresponde a 
 ### Llamadas web entre redes
 
 Para habilitar el relevo WebRTC, inicia Spring con `MAIN_TURN_URLS` (URLs `turn:` o `turns:` separadas por comas) y `MAIN_TURN_SECRET` (el mismo secreto que `static-auth-secret` en coturn con `use-auth-secret`). Guarda el secreto en el entorno del servidor. Los clientes autenticados reciben credenciales temporales. Sin estas variables, MAIN intenta establecer una conexión directa. El navegador requiere HTTPS para usar la cámara y el micrófono, salvo en localhost.
+
+Para usar [Open Relay de Metered](https://www.metered.ca/tools/openrelay/), crea una credencial TURN en el plan gratuito y configura las URLs de esa credencial en `MAIN_TURN_URLS`, su usuario en `MAIN_TURN_USERNAME` y su contraseña en `MAIN_TURN_PASSWORD`. Usa los datos de la credencial TURN, separados de la clave de administración del proveedor. Con el lanzador de arquitectura compartida, puedes guardar estos valores en su JSON privado bajo `turn_urls`, `turn_username` y `turn_password`. Para coturn con autenticación por secreto, usa `turn_urls` y `turn_secret` en ese mismo archivo.

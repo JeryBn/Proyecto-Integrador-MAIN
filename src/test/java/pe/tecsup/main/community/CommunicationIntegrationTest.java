@@ -18,6 +18,16 @@ class CommunicationIntegrationTest{
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Test void managedTurnReturnsTheScopedRelayCredentials(){
+  var controller=new DirectCalls(db,chat,users,java.time.Clock.systemUTC(),
+      "turns:relay.example.invalid:443?transport=tcp","","test-user","test-relay-password");
+  var response=controller.ice(()->"alumno");
+  assertEquals("no-store",response.getHeaders().getCacheControl());
+  var server=response.getBody().iceServers().getFirst();
+  assertEquals(List.of("turns:relay.example.invalid:443?transport=tcp"),server.urls());
+  assertEquals("test-user",server.username());
+  assertEquals("test-relay-password",server.credential());
+ }
  @Test void signedIceConfigurationRequiresLoginAndDisablesCaching()throws Exception{
   mvc.perform(get("/api/v1/calls/ice")).andExpect(status().isUnauthorized());
   var result=mvc.perform(get("/api/v1/calls/ice").with(user("alumno").roles("ALUMNO")))
