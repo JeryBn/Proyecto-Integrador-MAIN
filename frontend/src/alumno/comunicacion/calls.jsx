@@ -76,6 +76,13 @@ export function CallPanel({username}){
       if(current.current!==session)return;
       if(call.state==='ENDED'){dispose(session,false);return;}
       if(session.outgoing&&call.answer&&!session.peer.remoteDescription){
+        setState({kind:call.kind,label:'Conectando…'});
+        clearTimeout(session.connectTimeout);
+        session.connectTimeout=setTimeout(()=>{
+          if(current.current!==session)return;
+          setError('No se pudo establecer la conexión entre los dispositivos.');
+          dispose(session);
+        },20000);
         try{await session.peer.setRemoteDescription({type:'answer',sdp:call.answer});}
         catch(reason){if(current.current===session){setError(failure(reason));dispose(session);}return;}
       }
@@ -123,7 +130,17 @@ export function CallPanel({username}){
       if(invitation)await userApi.call(path+'/'+session.id+'/answer',{method:'PUT',json:{sdp},signal:session.controller.signal});
       else await userApi.call(path,{method:'POST',json:{id:session.id,conversationId,kind,sdp},signal:session.controller.signal});
       if(current.current!==session)return;
-      if(peer.connectionState!=='connected')setState({kind,label:invitation?'Conectando…':'Llamando…'});
+      if(peer.connectionState!=='connected'){
+        setState({kind,label:invitation?'Conectando…':'Llamando…'});
+        clearTimeout(session.connectTimeout);
+        session.connectTimeout=setTimeout(()=>{
+          if(current.current!==session)return;
+          setError(invitation||peer.remoteDescription
+            ?'No se pudo establecer la conexión entre los dispositivos.'
+            :'La otra persona no contestó.');
+          dispose(session);
+        },invitation?20000:59000);
+      }
       poll(session);
     }catch(reason){
       if(current.current===session){setError(failure(reason));dispose(session);}
