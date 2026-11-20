@@ -49,7 +49,6 @@ internal fun activityDate(value: String): String = try {
         LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 Text("Mis actividades", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("Organiza tus próximas entregas", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {

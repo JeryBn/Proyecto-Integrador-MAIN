@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
                             Text(activity.descripcion, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
-                    Text("Consulta las indicaciones antes de preparar tu entrega.", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
