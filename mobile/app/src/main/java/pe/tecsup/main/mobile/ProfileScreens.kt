@@ -17,6 +17,7 @@ import pe.tecsup.main.mobile.data.ContactUser
 @Composable internal fun AccountProfileScreen(model:MainViewModel) {
  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
   when(model.settingsPage) {
+   "CONTACT_CODES" -> ContactCodesScreen(model)
    "APPEALS" -> AppealHistoryScreen(model)
    "BLOCKED" -> {
     PageHeading("Contactos bloqueados"){model.settingsPage="PRIVACY"}
@@ -46,6 +47,7 @@ import pe.tecsup.main.mobile.data.ContactUser
      Column{Text(model.profile?.nombre.orEmpty(),style=MaterialTheme.typography.titleLarge);Text(model.profile?.rol.orEmpty(),color=MaterialTheme.colorScheme.onSurfaceVariant)}
     }
     HorizontalDivider()
+    SettingsRow(Icons.Outlined.PersonAdd,"Agregar compañeros","Código y QR",onClick={model.settingsPage="CONTACT_CODES"})
     SettingsRow(Icons.Outlined.Lock,"Privacidad","Contactos bloqueados y audiencia",onClick={model.settingsPage="PRIVACY"})
     SettingsRow(Icons.Outlined.RateReview,"Mis apelaciones","Solicitudes y resoluciones",onClick={model.settingsPage="APPEALS";model.loadAppeals()})
     Column(Modifier.padding(horizontal=20.dp,vertical=10.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){

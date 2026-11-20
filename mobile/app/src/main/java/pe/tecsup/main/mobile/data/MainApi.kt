@@ -95,6 +95,26 @@ class MainApi(val endpoint: String) {
     }
 
     private fun json(path: String): JSONObject = JSONObject(checked(request(path)))
+
+    fun contactCode(): Pair<String,List<String>> {
+        val value = mutate("/api/v1/contact-codes/mine", JSONObject(), "POST")
+        val rows = value.getJSONArray("qr")
+        return value.getString("code") to List(rows.length()) { rows.getString(it) }
+    }
+
+    fun contactInvitations(): List<Pair<String,String>> =
+        rows(JSONArray(checked(request("/api/v1/contact-codes/requests")))) {
+            it.getString("sender") to it.getString("name")
+        }
+
+    fun requestContact(code: String) {
+        mutate("/api/v1/contact-codes/requests", JSONObject().put("code",code), "POST")
+    }
+
+    fun answerContact(sender: String, accept: Boolean) {
+        mutate("/api/v1/contact-codes/requests/"+URLEncoder.encode(sender,"UTF-8"),
+            JSONObject().put("accept",accept), "POST")
+    }
     private fun checked(response: Response): String = when (response.status) {
         in 200..299 -> response.body
         401 -> { clearSession(); throw SessionExpired() }

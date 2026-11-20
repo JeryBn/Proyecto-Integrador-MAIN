@@ -78,6 +78,29 @@ class MainViewModel : ViewModel() {
         private set
     private var detailRequest = 0L
     private var api: MainApi? = null
+    var personalContactCode by mutableStateOf<Pair<String,List<String>>?>(null)
+        private set
+    var contactInvitations by mutableStateOf<List<Pair<String,String>>>(emptyList())
+        private set
+
+    fun loadContactCodes() = accountOperation { client ->
+        val (own, incoming) = withContext(Dispatchers.IO) {
+            client.contactCode() to client.contactInvitations()
+        }
+        if (api === client) { personalContactCode = own; contactInvitations = incoming }
+    }
+
+    fun requestContact(code: String) = accountOperation("Si el código corresponde a un compañero elegible, recibirá tu solicitud.") { client ->
+        withContext(Dispatchers.IO) { client.requestContact(code) }
+    }
+
+    fun answerContact(sender: String, accept: Boolean) = accountOperation(if (accept) "Contacto agregado." else "Solicitud rechazada.") { client ->
+        val (incoming, updatedContacts) = withContext(Dispatchers.IO) {
+            client.answerContact(sender, accept)
+            client.contactInvitations() to client.contacts()
+        }
+        if (api === client) { contactInvitations = incoming; contacts = updatedContacts }
+    }
     private var pushDevice=java.util.UUID.randomUUID().toString()
     fun registerPush(token:String,onResult:(String?,String?)->Unit){
         val client=api?:return
@@ -229,6 +252,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun clearAccount() {
+        personalContactCode = null
+        contactInvitations = emptyList()
         appealTarget=null;appealItems=emptyList();appealPage=0
         pushDevice=java.util.UUID.randomUUID().toString()
         uploadJob?.cancel();uploadJob=null

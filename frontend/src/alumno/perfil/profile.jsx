@@ -5,6 +5,7 @@ import {ReminderSettings} from '../academico/reminder-settings.jsx';
 import {AppealHistory} from '../apelaciones/appeals.jsx';
 import {noticeLabel,noticeTarget} from '../comunicacion/notice-model.mjs';
 import {Icon} from '../../ui-icons.jsx';
+import {ContactCodes} from './contact-codes.jsx';
 
 export function Profile({profile,preferences,onPreferences,active,onChat}){
   const {confirm,confirmation}=useConfirmation();
@@ -15,6 +16,7 @@ export function Profile({profile,preferences,onPreferences,active,onChat}){
     <header className="profile-hero workspace-card"><div className="profile-identity"><span className="avatar profile-avatar">{profile.nombre?.slice(0,1)}</span><div><span className="section-kicker">MI CUENTA</span><h1>{profile.nombre}</h1><p>{profile.rol} · @{profile.usuario}</p></div></div><span className="verified-badge"><Icon name="shield" size={17}/>Identidad institucional</span></header>
     {error&&<div className="inline-error" role="alert"><p>{error}</p></div>}{notice&&<div className="success-notice" role="status"><Icon name="checkCircle"/><span>{notice}</span></div>}
     <div className="profile-layout"><main className="profile-main">
+    <ContactCodes key={profile.usuario} active={active} canAdd={profile.rol==='Alumno'} onAccepted={contacts.reload}/>
     <section className="workspace-card preference-card"><header><div><span className="section-kicker">EXPERIENCIA</span><h2>Preferencias de tu cuenta</h2><p>Personaliza cómo se presenta y protege tu espacio.</p></div><span className="round-icon"><Icon name="user"/></span></header>{preferences?<fieldset disabled={busy} className="settings-list modern-settings"><legend className="sr-only">Preferencias de tu cuenta</legend>
       <label className="setting-row"><span className="setting-icon"><Icon name="layers"/></span><span><strong>Tema oscuro</strong><small>Reduce el brillo y adapta los colores de MAIN.</small></span><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/></label>
       <label className="setting-row"><span className="setting-icon"><Icon name="bell"/></span><span><strong>Avisos dentro de MAIN</strong><small>Recibe novedades académicas y de tu comunidad.</small></span><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/></label>

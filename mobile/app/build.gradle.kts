@@ -63,6 +63,7 @@ tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle
 }
 
 dependencies {
+    implementation("com.google.zxing:core:3.5.4")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.core:core-ktx:1.15.0")

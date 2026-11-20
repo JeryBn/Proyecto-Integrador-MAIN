@@ -17,6 +17,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TeachingActivityIntegrationTest {
  @Autowired TeachingActivityService activities;@Autowired IdentityService users;@Autowired ActividadService studentActivities;@Autowired MockMvc mvc;
  @Autowired java.time.Clock clock;
+ @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
+ @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
+
+ @Test void contactCodeRequiresSharedEnrollmentAndRecipientApproval() throws Exception {
+  var sender=user("alumno").roles("ALUMNO");
+  var recipient=user("otro").roles("ALUMNO");
+  String root="/api/v1/contact-codes";
+  mvc.perform(post(root+"/mine").with(sender)).andExpect(status().isForbidden());
+  String result=mvc.perform(post(root+"/mine").with(recipient).with(csrf()))
+      .andExpect(status().isOk()).andExpect(jsonPath("$.qr[0]").exists()).andReturn().getResponse().getContentAsString();
+  String code=json.readTree(result).get("code").asText();
+  assertTrue(code.matches("[0-9]{6}"));
+  mvc.perform(post(root+"/mine").with(recipient).with(csrf())).andExpect(jsonPath("$.code").value(code));
+  String request="{\"code\":\""+code+"\"}";
+  mvc.perform(post(root+"/requests").with(sender).with(csrf()).contentType("application/json").content(request))
+      .andExpect(status().isOk());
+  mvc.perform(get(root+"/requests").with(recipient)).andExpect(jsonPath("$.length()").value(0));
+  jdbc.update("INSERT INTO matricula(alumno_id,curso_id) VALUES(?,1)",users.active("otro").alumnoId());
+  mvc.perform(post(root+"/requests").with(sender).with(csrf()).contentType("application/json").content(request))
+      .andExpect(status().isOk());
+  assertFalse(users.contacts("alumno","otro"));
+  mvc.perform(get(root+"/requests").with(recipient)).andExpect(jsonPath("$[0].sender").value("alumno"));
+  mvc.perform(post(root+"/requests/alumno").with(recipient).with(csrf()).contentType("application/json")
+      .content("{\"accept\":true}")).andExpect(status().isOk());
+  assertTrue(users.contacts("alumno","otro"));
+ }
  @Test void attendanceRequiresCourseOwnershipAndPersistsCorrections() throws Exception {
   var date=java.time.LocalDate.now(clock);
   String path="/api/v1/teaching/courses/1/attendance/"+date;
