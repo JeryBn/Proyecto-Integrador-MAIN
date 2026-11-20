@@ -98,15 +98,15 @@ class MainApi(val endpoint: String) {
 
     private fun json(path: String): JSONObject = JSONObject(checked(request(path)))
 
-    data class CampusPost(val id:String,val author:String,val text:String,val state:String)
+    data class CampusPost(val id:String,val author:String,val text:String,val state:String,val course:String,val pinned:Boolean)
 
-    fun campusPosts(view:String, offset:Int): List<CampusPost> =
-        rows(JSONArray(checked(request("/api/v1/campus/feed?view=$view&offset=$offset")))) {
-            CampusPost(it.getString("id"),it.getString("author"),it.getString("text"),it.getString("state"))
+    fun campusPosts(view:String, offset:Int,courseId:Long?=null): List<CampusPost> =
+        rows(JSONArray(checked(request("/api/v1/campus/feed?view=$view&offset=$offset"+(courseId?.let { "&courseId=$it" } ?: ""))))) {
+            CampusPost(it.getString("id"),it.getString("author"),it.getString("text"),it.getString("state"),if(it.isNull("course"))"" else it.getString("course"),it.optBoolean("pinned"))
         }
 
-    fun publishCampusPost(text:String) {
-        mutate("/api/v1/campus/feed",JSONObject().put("text",text),"POST")
+    fun publishCampusPost(text:String,courseId:Long?=null,pinned:Boolean=false) {
+        mutate("/api/v1/campus/feed",JSONObject().put("text",text).put("courseId",courseId ?: JSONObject.NULL).put("pinned",pinned),"POST")
     }
 
     fun withdrawCampusPost(id:String) {

@@ -78,13 +78,13 @@ class MainViewModel : ViewModel() {
         private set
     private var detailRequest = 0L
     private var api: MainApi? = null
-    fun loadCampus(view:String, offset:Int, onLoaded:(List<MainApi.CampusPost>)->Unit) = accountOperation { client ->
-        val result = withContext(Dispatchers.IO) { client.campusPosts(view,offset) }
+    fun loadCampus(view:String, offset:Int, courseId:Long?, onLoaded:(List<MainApi.CampusPost>)->Unit) = accountOperation { client ->
+        val result = withContext(Dispatchers.IO) { client.campusPosts(view,offset,courseId) }
         if(api===client)onLoaded(result)
     }
 
-    fun publishCampus(text:String, onSaved:()->Unit) = accountOperation("Publicación enviada a revisión.") { client ->
-        withContext(Dispatchers.IO) { client.publishCampusPost(text) }
+    fun publishCampus(text:String, courseId:Long?, pinned:Boolean, onSaved:()->Unit) = accountOperation("Publicación enviada a revisión.") { client ->
+        withContext(Dispatchers.IO) { client.publishCampusPost(text,courseId,pinned) }
         if(api===client)onSaved()
     }
 

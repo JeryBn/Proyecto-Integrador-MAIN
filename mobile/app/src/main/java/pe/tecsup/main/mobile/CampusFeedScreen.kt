@@ -17,24 +17,39 @@ import pe.tecsup.main.mobile.data.MainApi
 
 @Composable
 internal fun CampusFeedScreen(model:MainViewModel) {
-    val student = model.profile?.rol=="Alumno"
+    var course by rememberSaveable { mutableStateOf<Long?>(null) }
+    var pinned by rememberSaveable { mutableStateOf(false) }
+    var choosing by remember { mutableStateOf(false) }
+    val canPublish = model.profile?.rol=="Alumno" || course!=null
     var view by rememberSaveable { mutableStateOf("for-you") }
     var offset by rememberSaveable { mutableIntStateOf(0) }
     var revision by remember { mutableIntStateOf(0) }
     var draft by rememberSaveable { mutableStateOf("") }
     var removing by remember { mutableStateOf<String?>(null) }
     var posts by remember { mutableStateOf<List<MainApi.CampusPost>?>(null) }
-    LaunchedEffect(view,offset,revision) {
+    LaunchedEffect(view,offset,revision,course) {
         snapshotFlow { model.accountBusy }.first { !it }
         posts=null
-        model.loadCampus(view,offset) { posts=it }
+        model.loadCampus(view,offset,course) { posts=it }
     }
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement=Arrangement.spacedBy(12.dp)) {
         TextButton(onClick={model.selectSection(MainSection.HOME)}) { Text("‹ Inicio") }
         CampusBanner("Campus")
+        Box {
+            OutlinedButton(onClick={choosing=true},enabled=!model.accountBusy) {
+                Text(model.agenda.courses.firstOrNull{it.id==course}?.name ?: "Todo el colegio")
+            }
+            DropdownMenu(expanded=choosing,onDismissRequest={choosing=false}) {
+                DropdownMenuItem(text={Text("Todo el colegio")},onClick={course=null;pinned=false;view="for-you";offset=0;choosing=false})
+                model.agenda.courses.forEach { entry ->
+                    DropdownMenuItem(text={Text(entry.name+(entry.placement?.let { " · "+it.section } ?: ""))},
+                        onClick={course=entry.id;pinned=false;view="for-you";offset=0;choosing=false})
+                }
+            }
+        }
         val choices = listOf("for-you" to "Para ti","recent" to "Recientes") +
-            if(student)listOf("mine" to "Mis publicaciones") else emptyList()
+            if(canPublish)listOf("mine" to "Mis publicaciones") else emptyList()
         Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             choices.forEach { (key,label) ->
                 FilterChip(selected=view==key,enabled=!model.accountBusy,onClick={view=key;offset=0},
@@ -42,12 +57,16 @@ internal fun CampusFeedScreen(model:MainViewModel) {
                         selectedContainerColor=campusLime,selectedLabelColor=campusInk))
             }
         }
-        if(student){
+        if(canPublish){
             OutlinedTextField(draft,{if(it.length<=1000)draft=it},label={Text("Publicación")},
                 modifier=Modifier.fillMaxWidth(),enabled=!model.accountBusy,minLines=2)
+            if(model.profile?.rol=="Docente")Row(verticalAlignment=Alignment.CenterVertically){
+                Checkbox(checked=pinned,onCheckedChange={pinned=it},enabled=!model.accountBusy)
+                Text("Fijar anuncio")
+            }
             Button(modifier=Modifier.fillMaxWidth(),enabled=draft.isNotBlank()&&!model.accountBusy,
                 colors=ButtonDefaults.buttonColors(containerColor=campusLime,contentColor=campusInk),onClick={
-                model.publishCampus(draft) { draft="";view="mine";offset=0;revision++ }
+                model.publishCampus(draft,course,pinned) { draft="";pinned=false;view="mine";offset=0;revision++ }
             }) { Text("Enviar a revisión") }
         }
         if(model.accountBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -67,6 +86,8 @@ internal fun CampusFeedScreen(model:MainViewModel) {
                         }
                         Text(post.author,style=MaterialTheme.typography.titleMedium,modifier=Modifier.weight(1f))
                     }
+                    if(post.course.isNotBlank())Text(post.course,style=MaterialTheme.typography.labelMedium)
+                    if(post.pinned)Text("Anuncio fijado",style=MaterialTheme.typography.labelMedium)
                     Text(post.text,style=MaterialTheme.typography.bodyLarge)
                     if(view=="mine") {
                         Text(when(post.state){"PENDING"->"En revisión";"PUBLISHED"->"Publicada";else->"Rechazada"})

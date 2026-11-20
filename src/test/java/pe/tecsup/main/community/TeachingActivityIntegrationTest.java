@@ -41,6 +41,24 @@ class TeachingActivityIntegrationTest {
   mvc.perform(get(path).with(peer)).andExpect(jsonPath("$.length()").value(0));
  }
 
+ @Test void campusCoursePostsRequireEnrollmentAndNeverAppearInTheSchoolFeed() throws Exception {
+  String path="/api/v1/campus/feed";
+  var teacher=user("teacher_activities").roles("DOCENTE");
+  var enrolled=user("alumno").roles("ALUMNO");
+  var outsider=user("otro").roles("ALUMNO");
+  var draft=json.writeValueAsString(new CampusFeedController.Draft("Anuncio de prueba",1L,true));
+  String result=mvc.perform(post(path).with(teacher).with(csrf()).contentType("application/json").content(draft))
+   .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+  String id=json.readTree(result).get("id").asText();
+  mvc.perform(post(path).with(enrolled).with(csrf()).contentType("application/json").content(draft)).andExpect(status().isForbidden());
+  mvc.perform(get(path).param("courseId","1").with(enrolled)).andExpect(jsonPath("$.length()").value(0));
+  jdbc.update("UPDATE campus_post SET state='PUBLISHED' WHERE id=?",id);
+  mvc.perform(get(path).param("courseId","1").with(enrolled)).andExpect(jsonPath("$[0].id").value(id)).andExpect(jsonPath("$[0].pinned").value(true));
+  mvc.perform(get(path).param("courseId","1").with(outsider)).andExpect(status().isNotFound());
+  mvc.perform(post(path).with(outsider).with(csrf()).contentType("application/json").content(draft)).andExpect(status().isNotFound());
+  mvc.perform(get(path).with(enrolled)).andExpect(jsonPath("$.length()").value(0));
+ }
+
  @Test void contactCodeWorksAcrossCoursesAndRequiresRecipientApproval() throws Exception {
   var sender=user("alumno").roles("ALUMNO");
   var recipient=user("otro").roles("ALUMNO");
