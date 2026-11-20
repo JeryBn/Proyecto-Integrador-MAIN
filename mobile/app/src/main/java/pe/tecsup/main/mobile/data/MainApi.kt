@@ -53,7 +53,7 @@ internal fun readApiResponse(input: InputStream?, maxBytes: Int = MAX_API_RESPON
 class MainApi(val endpoint: String) {
     private val cookies = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
     private val attachmentUpload=java.util.concurrent.atomic.AtomicReference<HttpURLConnection?>(null)
-    private data class Response(val status: Int, val body: String, val location: String?, val path: String)
+    private data class Response(val status: Int, val body: String, val location: String?, val path: String, val requestId: String? = null)
 
     private fun request(path: String, form: Map<String, String>? = null, payload: JSONObject? = null,
                         method: String = "GET", headers: Map<String,String> = emptyMap()): Response {
@@ -90,7 +90,7 @@ class MainApi(val endpoint: String) {
             cookies.put(uri, connection.headerFields.filterKeys { it != null })
             val stream = if (status >= 400) connection.errorStream else connection.inputStream
             val body = readApiResponse(stream)
-            return Response(status, body, connection.getHeaderField("Location"), path)
+            return Response(status, body, connection.getHeaderField("Location"), path, connection.getHeaderField("X-Request-ID"))
         } finally {
             connection.disconnect()
         }
@@ -136,8 +136,12 @@ class MainApi(val endpoint: String) {
         401 -> { clearSession(); throw SessionExpired() }
         404 -> if(response.path.startsWith("/api/v1/")) throw ResourceUnavailable() else throw ActivityUnavailable()
         403 -> throw ApiFailure("No tienes permiso para realizar esta operación.")
-        else -> throw ApiFailure(runCatching { JSONObject(response.body).getJSONObject("error").getString("message") }
-            .getOrDefault("El servidor no respondió correctamente. Intenta nuevamente."))
+        else -> {
+            val message = runCatching { JSONObject(response.body).getJSONObject("error").getString("message") }
+                .getOrDefault("El servidor no respondió correctamente. Intenta nuevamente.")
+            val id = response.requestId?.takeIf { it.matches(Regex("[0-9a-fA-F-]{36}")) }
+            throw ApiFailure(if (response.status>=500&&id!=null) "$message Referencia: $id" else message)
+        }
     }
 
     fun login(username: String, password: String): Profile {
@@ -283,7 +287,7 @@ class MainApi(val endpoint: String) {
                 line("--$boundary--\r\n")
             }
             val status=connection.responseCode;val body=readApiResponse(if(status>=400)connection.errorStream else connection.inputStream)
-            checked(Response(status,body,null,uri.path))
+            checked(Response(status,body,null,uri.path,connection.getHeaderField("X-Request-ID")))
         }finally{attachmentUpload.compareAndSet(connection,null);connection.disconnect()}
     }
     private fun attendanceRows(data: JSONArray): List<AttendanceMark> = rows(data) {

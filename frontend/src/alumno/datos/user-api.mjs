@@ -1,3 +1,4 @@
+import {withRequestReference} from '../../request-reference.mjs';
 import {boundedRead} from './bounded-read.mjs';
 export class ApiError extends Error {
   constructor(message,status=0,code='NETWORK_ERROR'){super(message);this.status=status;this.code=code;}
@@ -47,7 +48,7 @@ export function createUserApi({fetcher=(...args)=>fetch(...args),expired=()=>{lo
     let value=null;
     if(response.status!==204){try{value=await responseValue(response);}catch(error){if(error instanceof ApiError)throw error;if(response.ok)throw new ApiError('El servidor respondió con un formato inesperado.',response.status,'INVALID_RESPONSE');}}
     if(response.status===409&&value?.error?.code==='ACCOUNT_CHANGED')changed();
-    if(!response.ok)throw new ApiError(value?.error?.message||(response.status===403?'No tienes acceso o la sesión cambió. Actualiza antes de reintentar.':response.status===404?'El contenido ya no está disponible.':'No se pudo completar la operación.'),response.status,value?.error?.code||'REQUEST_FAILED');
+    if(!response.ok)throw new ApiError(withRequestReference(response,value?.error?.message||(response.status===403?'No tienes acceso o la sesión cambió. Actualiza antes de reintentar.':response.status===404?'El contenido ya no está disponible.':'No se pudo completar la operación.')),response.status,value?.error?.code||'REQUEST_FAILED');
     return value;
   }
   async function call(path,{method='GET',json,form,signal}={}){

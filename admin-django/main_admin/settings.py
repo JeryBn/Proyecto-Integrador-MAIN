@@ -6,7 +6,8 @@ SECRET_KEY = os.environ['MAIN_DJANGO_SECRET_KEY']
 DEBUG = False
 ALLOWED_HOSTS = os.getenv('MAIN_DJANGO_HOSTS', '127.0.0.1,localhost').split(',')
 INSTALLED_APPS = ['django.contrib.sessions', 'administration']
-MIDDLEWARE = ['django.middleware.security.SecurityMiddleware',
+MIDDLEWARE = ['administration.middleware.ApiRequestTrace',
+              'django.middleware.security.SecurityMiddleware',
               'django.contrib.sessions.middleware.SessionMiddleware',
               'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware',
               'django.middleware.clickjacking.XFrameOptionsMiddleware']

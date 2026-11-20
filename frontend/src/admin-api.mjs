@@ -1,3 +1,4 @@
+import {withRequestReference} from './request-reference.mjs';
 import {boundedRead} from './alumno/datos/bounded-read.mjs';
 
 export class ApiError extends Error {
@@ -135,7 +136,7 @@ export function createAdminApi({
     }, write);
     if (!response.ok) {
       const value = data?.error || {};
-      throw new ApiError(response.status, value.code || 'ERROR', value.message || 'No se pudo completar la operación.', value.fields || data?.fields);
+      throw new ApiError(response.status, value.code || 'ERROR', withRequestReference(response, value.message || 'No se pudo completar la operación.'), value.fields || data?.fields);
     }
     return data;
   }
