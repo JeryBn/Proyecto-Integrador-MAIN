@@ -122,9 +122,8 @@ class MainApi(val endpoint: String) {
             it.getString("sender") to it.getString("name")
         }
 
-    fun requestContact(code: String) {
-        mutate("/api/v1/contact-codes/requests", JSONObject().put("code",code), "POST")
-    }
+    fun requestContact(code: String): String =
+        mutate("/api/v1/contact-codes/requests", JSONObject().put("code",code), "POST").getString("status")
 
     fun answerContact(sender: String, accept: Boolean) {
         mutate("/api/v1/contact-codes/requests/"+URLEncoder.encode(sender,"UTF-8"),

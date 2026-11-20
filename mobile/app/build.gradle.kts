@@ -32,7 +32,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "PUBLIC_ORIGIN", if (deliveryOriginReady) "\"$deliveryOrigin\"" else "\"\"")
+        buildConfigField("String", "SERVER_ORIGIN", if (deliveryOriginReady) "\"$deliveryOrigin\"" else "\"\"")
         buildConfigField("String", "CAMPUS_NAME", JsonOutput.toJson(campusName))
         buildConfigField("String", "CAMPUS_COLOR", JsonOutput.toJson(campusColor))
     }
@@ -46,6 +46,9 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "SERVER_ORIGIN", JsonOutput.toJson("http://127.0.0.1:8088"))
+        }
         getByName("release") { if(deliveryReady) signingConfig = signingConfigs.getByName("delivery") }
     }
     compileOptions {

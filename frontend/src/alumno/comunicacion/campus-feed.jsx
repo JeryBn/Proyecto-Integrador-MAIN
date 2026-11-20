@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import {localDate,userApi} from '../datos/user-api.mjs';
 import {Feedback,useConfirmation,useResource} from '../datos/user-hooks.jsx';
-import '../estilos/campus.css';
 
 const endpoint='/api/v1/campus/feed';
 export function CampusFeed({profile,campusName,campusColor}){

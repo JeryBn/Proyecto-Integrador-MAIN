@@ -30,8 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
   if(!Set.of("CONTACTS","PRIVATE").contains(Objects.toString(audience,"")))throw DomainException.invalid("Audiencia inválida.");
   if(!Objects.toString(background,"").matches("#[0-9a-fA-F]{6}"))throw DomainException.invalid("Color inválido.");
   String body=Objects.toString(text,"").strip();if(body.length()>700||(body.isBlank()&&media==null))throw DomainException.invalid("Escribe un estado de hasta 700 caracteres o añade multimedia.");
-  byte[] bytes=media==null?new byte[0]:media.bytes();String kind=media==null?"TEXT":media.kind();String hash;
-  try{var digest=MessageDigest.getInstance("SHA-256");digest.update((kind+"\n"+body+"\n"+background+"\n"+audience+"\n").getBytes(StandardCharsets.UTF_8));hash=HexFormat.of().formatHex(digest.digest(bytes));}catch(Exception e){throw new IllegalStateException(e);}
+  byte[] bytes=media==null?new byte[0]:media.bytes();String kind=media==null?"TEXT":media.kind();String hash=contentHash(kind,body,background,audience,bytes);
   var old=db.queryForList("SELECT id FROM status_update WHERE owner=? AND client_key=?",String.class,actor,key);
   if(!old.isEmpty()){var existing=row(old.getFirst());if(existing.state().equals("DELETED")||!Instant.parse(existing.expiresAt()).isAfter(clock.instant()))throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"CONFLICT","El estado caducó o fue eliminado. Crea una actualización nueva.");if(!existing.contentHash().equals(hash))throw new DomainException(org.springframework.http.HttpStatus.CONFLICT,"CONFLICT","El envío ya existe con otro contenido.");return decorate(actor,existing);}
   if(db.queryForObject("SELECT COUNT(*) FROM status_update WHERE owner=? AND created_at>?",Long.class,actor,Timestamp.valueOf(now().minusHours(24)))>=30)throw DomainException.invalid("Máximo 30 estados por 24 horas.");
@@ -41,9 +40,40 @@ import org.springframework.transaction.annotation.Transactional;
   if(audience.equals("CONTACTS"))for(var contact:users.contacts(actor))if(!users.blocked(actor,contact.username()))db.update("INSERT INTO status_recipient VALUES(?,?)",id,contact.username());
   return row(id);
  }
+ private static String contentHash(String kind,String body,String background,String audience,byte[] bytes){
+  try{var digest=MessageDigest.getInstance("SHA-256");digest.update((kind+"\n"+body+"\n"+background+"\n"+audience+"\n").getBytes(StandardCharsets.UTF_8));return HexFormat.of().formatHex(digest.digest(bytes));}catch(Exception e){throw new IllegalStateException(e);}
+ }
+ record PendingReview(String id,String hash,String text,byte[] image) {}
+ List<String> pendingAutomaticIds(){
+  return db.queryForList("""
+   SELECT s.id FROM status_update s JOIN main_user u ON u.username=s.owner AND u.enabled=TRUE
+   WHERE s.state='PENDING' AND s.kind IN ('TEXT','IMAGE') AND s.expires_at>?
+   ORDER BY s.created_at,s.id LIMIT 3
+   """,String.class,Timestamp.valueOf(now()));
+ }
+ Optional<PendingReview> pendingAutomaticReview(String id){
+  var status=row(id);
+  if(!status.state().equals("PENDING")||!Instant.parse(status.expiresAt()).isAfter(clock.instant()))return Optional.empty();
+  byte[] bytes=status.kind().equals("IMAGE")?mediaBytes(id):new byte[0];
+  if(status.kind().equals("IMAGE")&&bytes.length==0)return Optional.empty();
+  if(!status.contentHash().equals(contentHash(status.kind(),status.text(),status.background(),status.audience(),bytes)))return Optional.empty();
+  return Optional.of(new PendingReview(status.id(),status.contentHash(),status.text(),bytes));
+ }
+ @Transactional
+ void applyAutomaticReview(PendingReview pending,boolean approved){
+  String reason=approved?"":"La IA detectó contenido inapropiado. Puedes eliminar este estado y publicar una versión corregida.";
+  var instant=Timestamp.valueOf(now());
+  int changed=db.update("""
+   UPDATE status_update SET state=?,reason=?,reviewed_by=NULL,reviewed_at=?
+   WHERE id=? AND state='PENDING' AND kind IN ('TEXT','IMAGE') AND content_hash=? AND expires_at>?
+   AND EXISTS(SELECT 1 FROM main_user u WHERE u.username=status_update.owner AND u.enabled=TRUE)
+   """,approved?"APPROVED":"REJECTED",reason,instant,pending.id(),pending.hash(),instant);
+  if(changed==1)audit.record("MAIN_AUTOMATION",approved?"STATUS_APPROVED":"STATUS_REJECTED",pending.id());
+ }
  public String reviewKind(String actor,String id){users.admin(actor);var s=row(id);if(!s.state().equals("PENDING")||!Instant.parse(s.expiresAt()).isAfter(clock.instant()))throw DomainException.missing();return s.kind();}
  public void canPublish(String actor){if(!Set.of("ALUMNO","DOCENTE").contains(users.active(actor).role()))throw DomainException.denied();}
- public byte[] media(String actor,String id,boolean admin){if(admin){users.admin(actor);var s=row(id);if(!s.state().equals("PENDING")||!Instant.parse(s.expiresAt()).isAfter(clock.instant()))throw DomainException.missing();}else get(actor,id);var output=new ByteArrayOutputStream();db.query("SELECT payload FROM status_media_chunk WHERE status_id=? ORDER BY sequence_no",(org.springframework.jdbc.core.RowCallbackHandler)r->output.writeBytes(r.getBytes(1)),id);return output.toByteArray();}
+ public byte[] media(String actor,String id,boolean admin){if(admin){users.admin(actor);var s=row(id);if(!s.state().equals("PENDING")||!Instant.parse(s.expiresAt()).isAfter(clock.instant()))throw DomainException.missing();}else get(actor,id);return mediaBytes(id);}
+ private byte[] mediaBytes(String id){var output=new ByteArrayOutputStream();db.query("SELECT payload FROM status_media_chunk WHERE status_id=? ORDER BY sequence_no",(org.springframework.jdbc.core.RowCallbackHandler)r->output.writeBytes(r.getBytes(1)),id);return output.toByteArray();}
  @Transactional public void seen(String actor,String id){db.queryForList("SELECT id FROM status_update WHERE id=? FOR UPDATE",String.class,id);var s=get(actor,id);if(s.owner().equals(actor))return;if(db.queryForObject("SELECT COUNT(*) FROM status_view WHERE status_id=? AND username=?",Long.class,id,actor)==0)db.update("INSERT INTO status_view VALUES(?,?,?)",id,actor,Timestamp.valueOf(now()));}
  @Transactional public void delete(String actor,String id){users.active(actor);var s=row(id);if(!s.owner().equals(actor))throw DomainException.missing();db.update("UPDATE status_update SET state='DELETED',body='',reason=NULL WHERE id=?",id);db.update("DELETE FROM status_media_chunk WHERE status_id=?",id);}
  public List<Update> queue(String actor,int offset,int limit){users.admin(actor);IdentityService.page(offset,limit);return db.queryForList("SELECT id FROM status_update WHERE state='PENDING' AND expires_at>? ORDER BY created_at,id LIMIT ? OFFSET ?",String.class,Timestamp.valueOf(now()),limit,offset).stream().map(this::row).toList();}

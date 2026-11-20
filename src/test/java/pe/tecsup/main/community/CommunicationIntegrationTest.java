@@ -17,6 +17,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommunicationIntegrationTest{
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Test void aiDecidesDeliveryAndOnlyPublishesAPlaceholderForRemovedText()throws Exception{
+  users.approveContact(admin,"alumno","otro");
+  String id=chat.direct("alumno","otro");
+  var draft=chat.send("alumno",id,new CommunicationService.Send(UUID.randomUUID().toString(),"Texto sintético de prueba"));
+  var pending=new CommunicationService.PendingReview(draft.id(),draft.revision(),draft.contentHash(),draft.text());
+  assertTrue(chat.messages("otro",id,0,20).isEmpty());
+  mvc.perform(get("/api/admin/v1/moderation/messages").with(user(admin).roles("ADMIN")))
+   .andExpect(status().isNotFound());
+  chat.applyAutomaticReview(pending,CommunicationService.ChatDecision.EDIT);
+  assertTrue(chat.messages("otro",id,0,20).isEmpty());
+  assertEquals("REJECTED",chat.message("alumno",draft.id()).state());
+  var edited=chat.edit("alumno",draft.id(),new CommunicationService.Edit(1,"Texto sintético corregido"));
+  var next=new CommunicationService.PendingReview(edited.id(),edited.revision(),edited.contentHash(),edited.text());
+  chat.applyAutomaticReview(pending,CommunicationService.ChatDecision.ALLOW);
+  assertTrue(chat.messages("otro",id,0,20).isEmpty());
+  chat.applyAutomaticReview(next,CommunicationService.ChatDecision.REMOVE);
+  var receiver=chat.message("otro",draft.id());
+  assertEquals("REMOVED",receiver.state());
+  assertEquals("Mensaje eliminado por lenguaje inapropiado.",receiver.text());
+  assertEquals("",receiver.contentHash());
+  assertThrows(DomainException.class,()->chat.edit("alumno",draft.id(),new CommunicationService.Edit(2,"Otro intento")));
+ }
  @Test void conversationLinkResolvesOnlyForCurrentMember() throws Exception {
   String id=chat.direct("alumno","otro");
   mvc.perform(get("/api/v1/conversations/"+id).with(user("alumno").roles("ALUMNO"))).andExpect(status().isOk()).andExpect(jsonPath("$.kind").value("DIRECT"));

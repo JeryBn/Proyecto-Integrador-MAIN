@@ -41,7 +41,7 @@ class TeachingActivityIntegrationTest {
   mvc.perform(get(path).with(peer)).andExpect(jsonPath("$.length()").value(0));
  }
 
- @Test void contactCodeRequiresSharedEnrollmentAndRecipientApproval() throws Exception {
+ @Test void contactCodeWorksAcrossCoursesAndRequiresRecipientApproval() throws Exception {
   var sender=user("alumno").roles("ALUMNO");
   var recipient=user("otro").roles("ALUMNO");
   String root="/api/v1/contact-codes";
@@ -53,11 +53,10 @@ class TeachingActivityIntegrationTest {
   mvc.perform(post(root+"/mine").with(recipient).with(csrf())).andExpect(jsonPath("$.code").value(code));
   String request="{\"code\":\""+code+"\"}";
   mvc.perform(post(root+"/requests").with(sender).with(csrf()).contentType("application/json").content(request))
-      .andExpect(status().isOk());
-  mvc.perform(get(root+"/requests").with(recipient)).andExpect(jsonPath("$.length()").value(0));
-  jdbc.update("INSERT INTO matricula(alumno_id,curso_id) VALUES(?,1)",users.active("otro").alumnoId());
+      .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("SENT"));
+  mvc.perform(get(root+"/requests").with(recipient)).andExpect(jsonPath("$.length()").value(1));
   mvc.perform(post(root+"/requests").with(sender).with(csrf()).contentType("application/json").content(request))
-      .andExpect(status().isOk());
+      .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PENDING"));
   assertFalse(users.contacts("alumno","otro"));
   mvc.perform(get(root+"/requests").with(recipient)).andExpect(jsonPath("$[0].sender").value("alumno"));
   mvc.perform(post(root+"/requests/alumno").with(recipient).with(csrf()).contentType("application/json")

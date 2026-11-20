@@ -54,7 +54,6 @@ class MessageAttachmentUiTest {
    admin.review(message.id,true,attachmentReviewed=true)
    assertArrayEquals(sanitized,recipient.messageAttachment(message.id,message.revision))
   }
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
   ui.onNodeWithText("Usuario").performTextReplacement("otro")
   ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
   ui.onNodeWithText("Ingresar").performClick();waitText("Tu espacio académico")

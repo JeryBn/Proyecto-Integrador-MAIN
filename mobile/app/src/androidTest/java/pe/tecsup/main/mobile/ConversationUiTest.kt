@@ -17,7 +17,6 @@ class ConversationUiTest{
   val receiver=MainApi("http://127.0.0.1:8088");receiver.login("otro","MainDemo2026!")
   observer.saveContact(observer.contacts().first{it.username=="otro"}.copy(blocked=false))
   receiver.saveContact(receiver.contacts().first{it.username=="alumno"}.copy(blocked=false))
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
   ui.onNodeWithText("Usuario").performTextReplacement("alumno")
   ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
   ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")

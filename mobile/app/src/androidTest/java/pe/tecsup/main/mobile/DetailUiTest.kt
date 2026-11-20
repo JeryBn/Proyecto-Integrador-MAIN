@@ -10,10 +10,17 @@ import org.junit.Test
 class DetailUiTest {
     @get:Rule val ui = createAndroidComposeRule<MainActivity>()
     private fun login(user: String = "alumno", endpoint: String = "http://127.0.0.1:8088") {
-        ui.onNodeWithText("Servidor").performTextReplacement(endpoint)
-        ui.onNodeWithText("Usuario").performTextReplacement(user)
-        ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
-        ui.onNodeWithText("Ingresar").performClick()
+        if (endpoint == BuildConfig.SERVER_ORIGIN) {
+            ui.onNodeWithText("Servidor").assertDoesNotExist()
+            ui.onNodeWithText("Usuario").performTextReplacement(user)
+            ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
+            ui.onNodeWithText("Ingresar").performClick()
+        } else {
+            ui.runOnIdle {
+                androidx.lifecycle.ViewModelProvider(ui.activity)[MainViewModel::class.java]
+                    .login(endpoint, user, "MainDemo2026!")
+            }
+        }
         waitFor("Tu espacio académico")
         ui.onNodeWithContentDescription("Actividades").performClick()
     }

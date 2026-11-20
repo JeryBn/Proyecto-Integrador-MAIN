@@ -6,7 +6,6 @@ import org.junit.Test
 class AssistantUiTest {
  @get:Rule val ui=createAndroidComposeRule<MainActivity>()
  @Test fun liveAssistantShowsAnswerOrExplicitProviderFailure() {
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
   ui.onNodeWithText("Usuario").performTextReplacement("alumno")
   ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
   ui.onNodeWithText("Ingresar").performClick()

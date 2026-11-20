@@ -81,24 +81,17 @@ def pending(limit,policy,apply):
     final="('HUMAN_REQUIRED','APPROVED')" if apply else "('HUMAN_REQUIRED','APPROVED','CLEAR_SHADOW')"
     def excluded(kind,item,content):
         return f"NOT EXISTS(SELECT 1 FROM automatic_assessment a WHERE a.subject_kind='{kind}' AND a.subject_id={item} AND a.content_hash={content} AND a.policy_version=%s AND (a.outcome IN {final} OR (a.outcome IN ('RUNNING','PROVIDER_UNAVAILABLE') AND (a.attempts>=3 OR a.lease_until>%s))))"
-    messages=human.rows("SELECT m.id FROM message m JOIN message_revision r ON r.message_id=m.id WHERE r.state='PENDING' AND r.revision=(SELECT MAX(revision) FROM message_revision WHERE message_id=m.id) AND "+excluded('messages','m.id','r.content_hash')+" ORDER BY m.created_at LIMIT %s",[policy,human.now(),limit])
     statuses=human.rows("SELECT s.id FROM status_update s WHERE s.state='PENDING' AND s.expires_at>%s AND "+excluded('statuses','s.id','s.content_hash')+" ORDER BY s.created_at LIMIT %s",[human.now(),policy,human.now(),limit])
-    return ([('messages',r['id']) for r in messages]+[('statuses',r['id']) for r in statuses])[:limit]
+    return [('statuses',r['id']) for r in statuses]
 
 def snapshot(kind,item):
-    if kind=='messages':
-        value=human.message(item)
-        if not value or value['state']!='PENDING':return None
-        media=human.attachment(item);content=human.message_bytes(item,media) if media else None
-        digest=hashlib.sha256((value['body'] if not media else 'MAIN-ATTACHMENT\n'+value['body']+'\x00'+media['content_hash']).encode()).hexdigest()
-        if digest!=value['content_hash']:raise ValueError('CONTENT_INTEGRITY')
-        return dict(kind=media['kind'] if media else 'TEXT',text=value['body'],media=content,revision=value['revision'],hash=digest)
     values=human.rows("SELECT * FROM status_update WHERE id=%s AND state='PENDING' AND expires_at>%s",[item,human.now()])
     if not values:return None
     value=values[0];content=human.status_bytes(value)
     return dict(kind=value['kind'],text=value['body'],media=content,revision=None,hash=value['content_hash'])
 
 def process(kind,item,provider,apply=False,policy='test-only'):
+    if kind != 'statuses':return 'PRIVATE_CHAT'
     content=snapshot(kind,item)
     if not content:return 'STALE'
     key=hashlib.sha256((kind+'\n'+item+'\n'+content['hash']+'\n'+policy).encode()).hexdigest()
@@ -150,7 +143,7 @@ def process(kind,item,provider,apply=False,policy='test-only'):
     with transaction.atomic():
         value=dict(contentHash=content['hash'],approved=True,attachmentReviewed=bool(content['media']))
         if content['revision'] is not None:value['revision']=content['revision']
-        response=human.review_value(SimpleNamespace(admin_actor='MAIN_AUTOMATION'),kind,item,value)
+        response=human.review_value(SimpleNamespace(admin_actor='MAIN_AUTOMATION'),kind,item,value,automated=True)
         if response.status_code!=200:return 'STALE_OR_FORBIDDEN'
         human.execute("UPDATE automatic_assessment SET outcome='APPROVED',updated_at=%s WHERE id=%s",[human.now(),key])
     return 'APPROVED'

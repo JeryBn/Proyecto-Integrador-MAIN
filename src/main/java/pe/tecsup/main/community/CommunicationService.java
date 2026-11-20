@@ -6,6 +6,7 @@ import java.time.*;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 
@@ -148,7 +149,7 @@ public class CommunicationService {
  @Transactional public Message edit(String actor,String id,Edit input){
   var header=header(id);String conversation=(String)header.get("conversation_id");lock(conversation);canSend(actor,conversation);
   if(!actor.equals(header.get("sender")))throw DomainException.missing();
-  int current=latest(id);if(input.expectedRevision()!=current)throw stale();
+  int current=latest(id);if(input.expectedRevision()!=current||dto(header,current,true,false).state().equals("REMOVED"))throw stale();
   revision(id,current+1,body(input.text(),attachments.info(id)!=null));return message(actor,id);
  }
  private DomainException stale(){return new DomainException(HttpStatus.CONFLICT,"REVISION_CONFLICT","La versión cambió. Actualiza y revisa el contenido actual.");}
@@ -176,7 +177,7 @@ public class CommunicationService {
   return db.queryForObject("SELECT * FROM message_revision WHERE message_id=? AND revision=?",(r,n)->new Message(id,(String)h.get("conversation_id"),sender,
    users.account(sender).name(),revision,r.getString("body"),r.getString("state"),own||review?Objects.toString(r.getString("reason"),""):"",
    Boolean.TRUE.equals(h.get("corrected_before")),Boolean.TRUE.equals(h.get("edited_after")),h.get("created_at").toString(),own||review?r.getString("content_hash"):"",
-   file==null?"NONE":file.kind(),file==null?"":file.mime(),file==null?"":file.name(),file==null?0:file.size()),id,revision);
+   file==null||"REMOVED".equals(r.getString("state"))?"NONE":file.kind(),file==null||"REMOVED".equals(r.getString("state"))?"":file.mime(),file==null||"REMOVED".equals(r.getString("state"))?"":file.name(),file==null||"REMOVED".equals(r.getString("state"))?0:file.size()),id,revision);
  }
  public List<Message> messages(String actor,String id,int offset,int limit){
   member(actor,id);IdentityService.page(offset,limit);
@@ -191,34 +192,72 @@ public class CommunicationService {
    """,String.class,actor,id,actor,actor,actor,limit,offset);
   Collections.reverse(ids);return ids.stream().map(key->message(actor,key)).toList();
  }
- public List<Message> queue(String actor,int offset,int limit){
-  users.admin(actor);IdentityService.page(offset,limit);
-  return db.queryForList("""
-   SELECT m.id FROM message m JOIN message_revision r ON r.message_id=m.id
-   WHERE r.state='PENDING' AND r.revision=(SELECT MAX(r2.revision) FROM message_revision r2 WHERE r2.message_id=m.id)
-   ORDER BY m.created_at,m.id LIMIT ? OFFSET ?
-   """,String.class,limit,offset).stream().map(id->dto(header(id),latest(id),false,true)).toList();
+ record PendingReview(String id,int revision,String hash,String text) {}
+ List<PendingReview> pendingReviews(){
+  return db.query("""
+   SELECT m.id,r.revision,r.content_hash,r.body FROM message m JOIN message_revision r ON r.message_id=m.id
+   WHERE r.state='PENDING' AND r.revision=(SELECT MAX(revision) FROM message_revision WHERE message_id=m.id)
+   ORDER BY r.submitted_at,m.id LIMIT 10
+   """,(r,n)->new PendingReview(r.getString(1),r.getInt(2),r.getString(3),r.getString(4)));
  }
- @Transactional public void review(String actor,String id,Review input){
+ enum ChatDecision { ALLOW, EDIT, REMOVE, UNSUPPORTED }
+ @Transactional(isolation=Isolation.READ_COMMITTED)
+ void applyAutomaticReview(PendingReview pending,ChatDecision decision){
+  var header=header(pending.id());
+  String conversation=(String)header.get("conversation_id");
+  lock(conversation);
+  int current=latest(pending.id());
+  var draft=dto(header(pending.id()),current,true,false);
+  if(current!=pending.revision()||!pending.hash().equals(draft.contentHash())||!draft.state().equals("PENDING"))return;
+  if(!pending.hash().equals(attachments.revisionHash(pending.id(),draft.text())))return;
+  if(decision==ChatDecision.ALLOW||decision==ChatDecision.REMOVE){
+   try{canSend((String)header.get("sender"),conversation);}
+   catch(DomainException denied){
+    db.update("UPDATE message_revision SET state='CANCELLED' WHERE message_id=? AND revision=?",pending.id(),current);
+    return;
+   }
+  }
+  String reason=switch(decision){
+   case ALLOW -> "";
+   case EDIT -> "La IA detectó lenguaje inapropiado. Edita el mensaje para volver a enviarlo.";
+   case REMOVE -> "Eliminado por lenguaje inapropiado.";
+   case UNSUPPORTED -> "La IA no puede revisar este adjunto. Cancela el envío y usa texto o un TXT breve.";
+  };
+  if(decision==ChatDecision.REMOVE){
+   String placeholder="Mensaje eliminado por lenguaje inapropiado.";
+   db.update("UPDATE message_revision SET body=?,state='REMOVED',reason=?,reviewed_by=?,reviewed_at=? WHERE message_id=? AND revision=?",
+    placeholder,reason,"MAIN_AUTOMATION",Timestamp.valueOf(now()),pending.id(),current);
+   if(header.get("published_revision")==null){
+    db.update("DELETE FROM message_attachment_chunk WHERE message_id=?",pending.id());
+    db.update("DELETE FROM message_attachment WHERE message_id=?",pending.id());
+    publish(header,conversation,pending.id(),current);
+   }
+   return;
+  }
+  saveReview("MAIN_AUTOMATION",header,conversation,pending.id(),current,decision==ChatDecision.ALLOW,reason);
+ }
+ @Transactional void review(String actor,String id,Review input){
   users.admin(actor);var h=header(id);String conversation=(String)h.get("conversation_id");lock(conversation);
   if(actor.equals(h.get("sender")))throw DomainException.denied();
   int current=latest(id);var draft=dto(header(id),current,true,true);
   if(input.revision()!=current||!Objects.equals(input.contentHash(),draft.contentHash())||!draft.state().equals("PENDING"))throw stale();
   if(input.approved()&&attachments.info(id)!=null&&!input.attachmentReviewed())throw DomainException.invalid("Revisa el adjunto completo y confirma su revisión antes de aprobar.");
-  // Approval is human and explicit; no absent/uncertain AI result can publish.
   if(input.approved())canSend((String)h.get("sender"),conversation);
   String reason=input.approved()?"":IdentityService.text(input.reason(),300,"categoría de rechazo");
+  saveReview(actor,h,conversation,id,current,input.approved(),reason);
+ }
+ private void saveReview(String actor,Map<String,Object> header,String conversation,String id,int revision,boolean approved,String reason){
   db.update("UPDATE message_revision SET state=?,reason=?,reviewed_by=?,reviewed_at=? WHERE message_id=? AND revision=?",
-   input.approved()?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,current);
-  audit.record(actor,input.approved()?"MESSAGE_APPROVED":"MESSAGE_REJECTED",id+":"+current);
-  if(input.approved()){
-   boolean published=h.get("published_revision")!=null;
-   boolean corrected=!published&&db.queryForObject("SELECT COUNT(*) FROM message_revision WHERE message_id=? AND state='REJECTED'",Long.class,id)>0;
-   db.update("UPDATE message SET published_revision=?,corrected_before=?,edited_after=? WHERE id=?",current,
-    published?Boolean.TRUE.equals(h.get("corrected_before")):corrected,published,id);
-   if(!published) for(String recipient:db.queryForList("SELECT username FROM conversation_member WHERE conversation_id=? AND state='ACTIVE' AND joined_at<=? AND joined_after_sequence<?",String.class,conversation,h.get("created_at"),h.get("conversation_sequence")))
-    notifications.enqueue(recipient,(String)h.get("sender"),conversation,id,"MESSAGE","message:"+id);
-  }
+   approved?"APPROVED":"REJECTED",reason,actor,Timestamp.valueOf(now()),id,revision);
+  if(approved)publish(header,conversation,id,revision);
+ }
+ private void publish(Map<String,Object> header,String conversation,String id,int revision){
+  boolean published=header.get("published_revision")!=null;
+  boolean corrected=!published&&db.queryForObject("SELECT COUNT(*) FROM message_revision WHERE message_id=? AND state='REJECTED'",Long.class,id)>0;
+  db.update("UPDATE message SET published_revision=?,corrected_before=?,edited_after=? WHERE id=?",revision,
+   published?Boolean.TRUE.equals(header.get("corrected_before")):corrected,published,id);
+  if(!published)for(String recipient:db.queryForList("SELECT username FROM conversation_member WHERE conversation_id=? AND state='ACTIVE' AND joined_at<=? AND joined_after_sequence<?",String.class,conversation,header.get("created_at"),header.get("conversation_sequence")))
+   notifications.enqueue(recipient,(String)header.get("sender"),conversation,id,"MESSAGE","message:"+id);
  }
  @Transactional public void cancel(String actor,String id,int expected){
   var h=header(id);String conversation=(String)h.get("conversation_id");lock(conversation);member(actor,conversation);
@@ -228,12 +267,9 @@ public class CommunicationService {
  }
  public record MediaDownload(byte[] bytes,String mime,String name,String kind){}
  public MediaDownload attachment(String actor,String id,int revision,boolean review){
-  Message visible;
-  if(review){
-   users.admin(actor);var h=header(id);visible=dto(h,latest(id),false,true);
-   if(!visible.state().equals("PENDING"))throw DomainException.missing();
-  }else visible=message(actor,id);
-  if(visible.revision()!=revision||visible.state().equals("CANCELLED"))throw DomainException.missing();
+  if(review)throw DomainException.missing();
+  Message visible=message(actor,id);
+  if(visible.revision()!=revision||Set.of("CANCELLED","REMOVED").contains(visible.state()))throw DomainException.missing();
   var media=attachments.info(id);if(media==null)throw DomainException.missing();
   return new MediaDownload(attachments.bytes(id),media.mime(),media.name(),media.kind());
  }

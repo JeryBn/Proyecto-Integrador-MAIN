@@ -28,3 +28,142 @@
 }
 @media(max-width:570px){.campus-composer{flex-direction:column;align-items:stretch}.campus-switch button{padding-inline:8px}}
 @media(forced-colors:active){.campus-avatar{clip-path:none;border:1px solid CanvasText}.campus-switch button[aria-pressed=true]{border-bottom-color:Highlight}}
+.campus-editorial {
+  --campus-display: Georgia, "Times New Roman", serif;
+  --campus-paper: #f7f2e7;
+  --campus-forest: color-mix(in srgb, var(--campus-color) 34%, #09221b);
+  --campus-lime: #d9f264;
+  --campus-edge: color-mix(in srgb, var(--campus-color) 20%, var(--border));
+  --campus-wash: color-mix(in srgb, var(--campus-color) 7%, var(--surface));
+}
+
+:root[data-theme=dark] .campus-editorial {
+  --campus-paper: color-mix(in srgb, var(--campus-color) 16%, var(--surface));
+}
+
+.campus-editorial :is(.section-hero,.activity-detail-hero,.assistant-hero,.course-hero,.profile-hero) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--campus-edge);
+  border-radius: 22px;
+  background: var(--campus-paper);
+  color: var(--ink);
+}
+
+.campus-editorial :is(.section-hero,.activity-detail-hero,.assistant-hero)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 0 42%;
+  clip-path: polygon(55% 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(125deg, var(--campus-color) 0 58%, var(--campus-lime) 58% 78%, #b1d692 78%);
+  opacity: .18;
+  pointer-events: none;
+}
+
+.campus-editorial :is(.section-hero,.activity-detail-hero,.assistant-hero,.course-hero,.profile-hero) h1 {
+  font-family: var(--campus-display);
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  line-height: 1.06;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+
+.campus-editorial :is(.chat-list-header,.status-sidebar-header) {
+  background: var(--campus-forest);
+  color: #fff;
+  border-bottom: 4px solid var(--campus-lime);
+  padding-block: 20px 16px;
+}
+
+.campus-editorial :is(.chat-list-header,.status-sidebar-header) :is(h1,.section-kicker) {
+  color: #fff;
+}
+
+.campus-editorial :is(.chat-list-header,.status-sidebar-header) h1 {
+  font-family: var(--campus-display);
+  font-weight: 700;
+}
+
+.campus-editorial :is(.chat-welcome,.status-welcome) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--campus-paper) !important;
+}
+
+.campus-editorial :is(.chat-welcome,.status-welcome)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 0 47%;
+  clip-path: polygon(78% 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(130deg, var(--campus-color) 0 52%, var(--campus-lime) 52% 70%, #b1d692 70%);
+  opacity: .16;
+  pointer-events: none;
+}
+
+.campus-editorial :is(.chat-welcome,.status-welcome) h2 {
+  font-family: var(--campus-display);
+  font-size: clamp(1.8rem, 3.5vw, 3.1rem);
+}
+
+.campus-editorial :is(.chat-welcome,.status-welcome) .welcome-orbit > span {
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%);
+  background: var(--campus-lime);
+  color: #16221a;
+}
+
+.campus-editorial .conversation-header {
+  background: var(--campus-wash);
+  border-bottom-color: var(--campus-edge);
+}
+
+.campus-editorial .conversation-header h2 {
+  font-family: var(--campus-display);
+}
+
+.campus-editorial .institutional-sidebar .nav-group-label {
+  color: color-mix(in srgb, #fff 74%, var(--campus-forest));
+}
+
+.campus-editorial .institutional-sidebar .nav-item:hover:not(.active) {
+  background: #ffffff19;
+}
+
+:root .campus-editorial .institutional-sidebar .nav-item.active {
+  color: #16221a;
+  background: var(--campus-lime);
+}
+
+.campus-editorial .institutional-sidebar {
+  background: var(--campus-forest);
+}
+
+.campus-editorial .institutional-sidebar :is(.brand,.nav-item,.brand small) {
+  color: #fff;
+}
+
+.campus-editorial .institutional-sidebar :focus-visible,
+.campus-editorial :is(.chat-list-header,.status-sidebar-header) :focus-visible {
+  outline: 2px solid var(--campus-lime);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .campus-editorial :is(.chat-list-header,.status-sidebar-header) {
+    padding-block: 14px 11px;
+  }
+
+  .campus-editorial :is(.section-hero,.activity-detail-hero,.assistant-hero,.course-hero,.profile-hero) h1 {
+    font-size: clamp(1.65rem, 7vw, 2.25rem);
+  }
+}
+
+@media (forced-colors: active) {
+  .campus-editorial :is(.chat-welcome,.status-welcome) .welcome-orbit > span {
+    clip-path: none;
+  }
+}

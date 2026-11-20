@@ -12,7 +12,6 @@ class ReminderUiTest {
  @Test fun studentCanEnableAndChooseLeadTimeFromProfile(){
   val stamp=System.currentTimeMillis();val name="reminder_ui_$stamp"
   AdminTestApi().post("/api/admin/v1/users",JSONObject().put("username",name).put("name","Recordatorios UI sintéticos").put("role","ALUMNO").put("password","SyntheticReminder2026!").put("alumnoId",stamp))
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
   ui.onNodeWithText("Usuario").performTextReplacement(name)
   ui.onNodeWithText("Contraseña").performTextReplacement("SyntheticReminder2026!")
   ui.onNodeWithText("Ingresar").performClick()

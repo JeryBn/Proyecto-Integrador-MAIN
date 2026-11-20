@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 internal fun AssistantScreen(model:MainViewModel) {
  Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
   verticalArrangement=Arrangement.spacedBy(14.dp)) {
-  Text("Asistente académico",style=MaterialTheme.typography.headlineMedium)
+  CampusBanner("Asistente académico")
   OutlinedTextField(value=model.assistantQuestion,onValueChange={if(it.length<=2000)model.assistantQuestion=it},
    modifier=Modifier.fillMaxWidth(),label={Text("Consulta académica")},enabled=!model.assistantBusy,minLines=3)
   if(model.assistantBusy) {

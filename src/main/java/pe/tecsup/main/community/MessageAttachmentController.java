@@ -16,8 +16,6 @@ public class MessageAttachmentController {
  }
  @GetMapping("/api/v1/messages/{id}/attachment")
  public ResponseEntity<byte[]> download(Principal actor,@PathVariable String id,@RequestParam int revision){return response(messages.attachment(actor.getName(),id,revision,false));}
- @GetMapping("/api/admin/v1/moderation/messages/{id}/attachment")
- public ResponseEntity<byte[]> review(Principal actor,@PathVariable String id,@RequestParam int revision){return response(messages.attachment(actor.getName(),id,revision,true));}
  private ResponseEntity<byte[]> response(CommunicationService.MediaDownload media){
   var disposition=media.kind().equals("FILE")?ContentDisposition.attachment():ContentDisposition.inline();
   return ResponseEntity.ok().contentType(MediaType.parseMediaType(media.mime())).cacheControl(CacheControl.noStore())

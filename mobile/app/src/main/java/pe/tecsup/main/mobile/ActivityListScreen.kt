@@ -48,7 +48,7 @@ internal fun activityDate(value: String): String = try {
         HorizontalDivider()
         LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                Text("Mis actividades", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                CampusBanner("Mis actividades")
             }
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {

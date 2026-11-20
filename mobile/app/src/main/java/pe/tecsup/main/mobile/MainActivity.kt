@@ -97,27 +97,20 @@ class MainActivity : ComponentActivity() {
 @Composable private fun LoginScreen(model: MainViewModel) {
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    var debugEndpoint by rememberSaveable { mutableStateOf("http://127.0.0.1:8088") }
-    val endpoint = if (BuildConfig.DEBUG) debugEndpoint else BuildConfig.PUBLIC_ORIGIN
     var username by rememberSaveable { mutableStateOf("") }
     // Password is deliberately neither saved across process recreation nor persisted.
     var password by remember { mutableStateOf("") }
     Column(Modifier.fillMaxSize().safeDrawingPadding().imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Spacer(Modifier.height(32.dp))
-        Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary)
-        if (BuildConfig.DEBUG) {
-            OutlinedTextField(value = debugEndpoint, onValueChange = { debugEndpoint = it }, label = { Text("Servidor") },
-                singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
-        }
+        CampusBanner("Iniciar sesión")
         OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Usuario") },
             singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(), singleLine = true,
             enabled = !model.busy, modifier = Modifier.fillMaxWidth())
         if (model.message.isNotBlank()) Text(model.message, color = MaterialTheme.colorScheme.error)
-        Button(onClick = { focus.clearFocus(); keyboard?.hide(); model.login(endpoint, username, password); password = "" },
+        Button(onClick = { focus.clearFocus(); keyboard?.hide(); model.login(BuildConfig.SERVER_ORIGIN, username, password); password = "" },
             enabled = !model.busy && username.isNotBlank() && password.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
             Text(if (model.busy) "Conectando…" else "Ingresar")
         }

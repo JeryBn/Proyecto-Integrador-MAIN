@@ -90,5 +90,5 @@ export function createUserApi({fetcher=(...args)=>fetch(...args),expired=()=>{lo
 }
 export const userApi=createUserApi();
 export const enc=encodeURIComponent;
-export const labels={PENDING:'Pendiente de revisión',REJECTED:'No entregado · revisar',CANCELLED:'Cancelado',APPROVED:'Entregado'};
+export const labels={PENDING:'Pendiente de revisión',REJECTED:'No entregado · revisar',REMOVED:'Eliminado',CANCELLED:'Cancelado',APPROVED:'Entregado'};
 export function localDate(value){if(!value)return '';const normalized=value.includes('T')?value:value.replace(' ','T');const zone=/Z$|[+-]\d{2}:\d{2}$/.test(normalized)?'':'-05:00';const date=new Date(normalized+zone);return Number.isNaN(date.valueOf())?value:new Intl.DateTimeFormat('es-PE',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Lima'}).format(date);}

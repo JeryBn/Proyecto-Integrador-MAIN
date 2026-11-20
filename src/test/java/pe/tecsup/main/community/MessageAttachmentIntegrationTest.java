@@ -31,7 +31,7 @@ class MessageAttachmentIntegrationTest {
   assertThrows(DomainException.class,()->chat.attachment("otro",m.id(),1,false));
   assertThrows(DomainException.class,()->chat.attachment("vacio",m.id(),1,false));
   assertThrows(DomainException.class,()->chat.attachment("alumno",m.id(),1,true));
-  assertArrayEquals("Tarea académica".getBytes(StandardCharsets.UTF_8),chat.attachment(admin,m.id(),1,true).bytes());
+  assertThrows(DomainException.class,()->chat.attachment(admin,m.id(),1,true));
   assertThrows(DomainException.class,()->chat.review(admin,m.id(),new CommunicationService.Review(1,m.contentHash(),true,"")));
   approve(m);
   mvc.perform(get("/api/v1/messages/"+m.id()+"/attachment?revision=1").with(user("otro").roles("ALUMNO")))

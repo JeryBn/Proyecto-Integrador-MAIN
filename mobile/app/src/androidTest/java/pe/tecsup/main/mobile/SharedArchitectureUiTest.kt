@@ -31,7 +31,6 @@ class SharedArchitectureUiTest {
             assertThrows(ActivityUnavailable::class.java) { other.detail(id) }
         } finally { other.logout() }
 
-        ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
         ui.onNodeWithText("Usuario").performTextReplacement("alumno")
         ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
         ui.onNodeWithText("Ingresar").performClick()

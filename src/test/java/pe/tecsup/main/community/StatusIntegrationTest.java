@@ -19,6 +19,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  @BeforeEach void setup(){users.approveContact("status_admin","alumno","otro");users.create("status_admin",new IdentityService.NewAccount("family_status","Familia","FAMILIAR","SyntheticFamily2026!",null,null));}
  StatusService.Update create(String audience){return statuses.create("alumno",UUID.randomUUID().toString(),"Estado sintético","#087F68",audience,null);}
  void approve(StatusService.Update s){statuses.review("status_admin",s.id(),new StatusService.Review(s.contentHash(),true,""));}
+ @Test void automaticReviewPublishesOnlyTheCurrentPendingStatus(){
+  var valid=create("CONTACTS");
+  var flagged=create("CONTACTS");
+  var removed=create("CONTACTS");
+  var pending=statuses.pendingAutomaticReview(valid.id()).orElseThrow();
+  var discarded=statuses.pendingAutomaticReview(removed.id()).orElseThrow();
+  statuses.delete("alumno",removed.id());
+  statuses.applyAutomaticReview(discarded,true);
+  statuses.applyAutomaticReview(statuses.pendingAutomaticReview(flagged.id()).orElseThrow(),false);
+  statuses.applyAutomaticReview(pending,true);
+  statuses.applyAutomaticReview(pending,false);
+  assertEquals(List.of(valid.id()),statuses.feed("otro").stream().map(StatusService.Update::id).toList());
+  assertEquals("REJECTED",statuses.get("alumno",flagged.id()).state());
+  assertEquals("DELETED",db.queryForObject("SELECT state FROM status_update WHERE id=?",String.class,removed.id()));
+ }
  @Test void pendingAndRejectedNeverReachContactsOrMedia(){
   var s=create("CONTACTS");assertEquals(1,statuses.feed("alumno").size());assertTrue(statuses.feed("otro").isEmpty());
   assertThrows(DomainException.class,()->statuses.get("otro",s.id()));assertThrows(DomainException.class,()->statuses.media("otro",s.id(),false));

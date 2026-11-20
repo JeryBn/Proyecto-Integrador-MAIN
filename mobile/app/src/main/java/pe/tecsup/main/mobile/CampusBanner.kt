@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -16,7 +17,11 @@ internal val campusLime = Color(0xFFD9F264)
 internal val campusInk = Color(0xFF16221A)
 
 @Composable
-internal fun CampusBanner(title:String, subtitle:String = BuildConfig.CAMPUS_NAME) {
+internal fun CampusBanner(
+    title: String,
+    subtitle: String = BuildConfig.CAMPUS_NAME,
+    actions: @Composable (RowScope.() -> Unit)? = null
+) {
     Surface(color=Color(0xFFF7F2E7),contentColor=campusInk,shape=MaterialTheme.shapes.large,
         modifier=Modifier.fillMaxWidth()) {
         Box {
@@ -30,9 +35,15 @@ internal fun CampusBanner(title:String, subtitle:String = BuildConfig.CAMPUS_NAM
                     lineTo(size.width,size.height); lineTo(size.width*.72f,size.height); close()
                 },campusLime.copy(alpha=.51f))
             }
-            Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(4.dp)){
-                Text(subtitle,style=MaterialTheme.typography.labelMedium,fontWeight=FontWeight.SemiBold)
-                Text(title,style=MaterialTheme.typography.headlineMedium,fontFamily=FontFamily.Serif)
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(subtitle, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Text(title, style = MaterialTheme.typography.headlineMedium, fontFamily = FontFamily.Serif)
+                }
+                if (actions != null) actions()
             }
         }
     }

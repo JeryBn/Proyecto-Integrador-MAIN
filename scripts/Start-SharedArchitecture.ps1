@@ -7,6 +7,7 @@ param(
   [string]$JarPath,
   [string]$FfmpegDirectory,
   [ValidateRange(1024,65535)][int]$SpringPort=8088,
+  [string]$ChatModerationModel='gemma3:4b',
   [switch]$DemoData
 )
 $ErrorActionPreference='Stop'
@@ -68,6 +69,7 @@ $env:SPRING_PROFILES_ACTIVE='mysql'
 $env:MAIN_ADMIN_LEGACY_ENABLED='false'
 $env:MAIN_DEMO_ENABLED=if($DemoData){'true'}else{'false'}
 $env:SERVER_PORT=[string]$SpringPort
+$env:MAIN_CHAT_MODERATION_MODEL=$ChatModerationModel
 if($FfmpegDirectory){
   if(!(Test-Path -LiteralPath (Join-Path $FfmpegDirectory 'ffmpeg.exe') -PathType Leaf)){throw 'No existe FFmpeg en la ruta indicada'}
   $env:MAIN_MEDIA_FFMPEG_DIRECTORY=$FfmpegDirectory

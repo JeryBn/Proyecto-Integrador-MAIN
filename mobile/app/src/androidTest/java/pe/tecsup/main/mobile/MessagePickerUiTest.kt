@@ -28,7 +28,6 @@ class MessagePickerUiTest {
    checkNotNull(resolver.openOutputStream(uri)).use{it.write(content.toByteArray())}
    values.clear();values.put(MediaStore.Downloads.IS_PENDING,0);resolver.update(uri,values,null,null)
    api.login("alumno","MainDemo2026!");val title="Selector M08 "+System.currentTimeMillis();val group=api.startGroup(title)
-   ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
    ui.onNodeWithText("Usuario").performTextReplacement("alumno")
    ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
    ui.onNodeWithText("Ingresar").performClick();waitText("Tu espacio académico")

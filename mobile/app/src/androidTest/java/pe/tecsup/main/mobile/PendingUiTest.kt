@@ -9,10 +9,17 @@ class PendingUiTest {
     @get:Rule val ui = createAndroidComposeRule<MainActivity>()
 
     private fun login(user: String, endpoint: String = "http://127.0.0.1:8088", expectSuccess: Boolean = true) {
-        ui.onNodeWithText("Servidor").performTextReplacement(endpoint)
-        ui.onNodeWithText("Usuario").performTextInput(user)
-        ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
-        ui.onNodeWithText("Ingresar").performClick()
+        if (endpoint == BuildConfig.SERVER_ORIGIN) {
+            ui.onNodeWithText("Servidor").assertDoesNotExist()
+            ui.onNodeWithText("Usuario").performTextInput(user)
+            ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
+            ui.onNodeWithText("Ingresar").performClick()
+        } else {
+            ui.runOnIdle {
+                androidx.lifecycle.ViewModelProvider(ui.activity)[MainViewModel::class.java]
+                    .login(endpoint, user, "MainDemo2026!")
+            }
+        }
         if (expectSuccess) {
             waitFor("Tu espacio académico")
             ui.onNodeWithContentDescription("Actividades").performClick()
@@ -50,11 +57,7 @@ class PendingUiTest {
         login("alumno", "http://127.0.0.1:65530", expectSuccess = false)
         waitFor("No encontramos el servidor. Revisa tu conexión y la dirección configurada.")
         capture("05_error_conexion.png")
-        ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
-        ui.onNodeWithText("Contraseña").performTextInput("MainDemo2026!")
-        ui.onNodeWithText("Ingresar").performClick()
-        waitFor("Tu espacio académico")
-        ui.onNodeWithContentDescription("Actividades").performClick()
+        login("alumno")
         waitFor("Revisión de criterios de aceptación")
     }
     @Test fun failedPendingRequestShowsRetryThenRecoversFromRealBackend() {

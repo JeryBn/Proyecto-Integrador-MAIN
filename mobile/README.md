@@ -25,11 +25,11 @@ Android Studio, JDK 21, SDK Android 36, Gradle 8.13 (wrapper incluido), Android 
 2. Iniciar emulador o conectar dispositivo USB con depuración autorizada.
 3. Ejecutar `adb reverse tcp:8088 tcp:8088` para el dispositivo seleccionado.
 4. Compilar: `gradlew.bat assembleDebug testDebugUnitTest lintDebug`.
-5. Instalar `app/build/outputs/apk/debug/app-debug.apk`. Servidor: `http://127.0.0.1:8088`.
+5. Instalar `app/build/outputs/apk/debug/app-debug.apk`. La app usa el puerto local mediante el puente ADB. En el inicio de sesión solo se ingresan las credenciales.
 6. Demo: cuentas alumno, otro y vacio, contraseña sintética `MainDemo2026!`.
 7. Con backend iniciado y puente USB: `gradlew.bat connectedDebugAndroidTest`.
 
-Si Spring corre en otro puerto de Windows, ejecuta desde `mobile` `.\INSTALAR-APP.ps1 -BackendPort 8089` para reenviar el puerto 8088 del dispositivo a ese puerto de la PC. Conserva `http://127.0.0.1:8088` en la app.
+Si Spring corre en otro puerto de Windows, ejecuta desde `mobile` `.\INSTALAR-APP.ps1 -BackendPort 8089` para reenviar el puerto 8088 del dispositivo a ese puerto de la PC. La app conserva su conexión automática por el puerto 8088 del dispositivo.
 
 Opcional: en PowerShell `& .\INSTALAR-APP.ps1` instala el APK compilado y configura el puente para un único dispositivo. Si hay varios, indicar `-Device emulator-5554` o el identificador correspondiente. El script no inicia ni modifica otros servidores.
 

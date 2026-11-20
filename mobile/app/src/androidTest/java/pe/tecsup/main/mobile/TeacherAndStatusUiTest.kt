@@ -10,7 +10,7 @@ import java.util.UUID
 class TeacherAndStatusUiTest {
  @get:Rule val ui=createAndroidComposeRule<MainActivity>()
  private fun waitFor(text:String){try{ui.waitUntil(30000){ui.onAllNodesWithText(text,substring=true).fetchSemanticsNodes().isNotEmpty()}}catch(error:Throwable){Evidence.capture("fallo_notas_estados.png");throw AssertionError("Esperando: $text\n"+ui.onRoot().printToString(),error)}}
- private fun login(user:String,password:String){ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088");ui.onNodeWithText("Usuario").performTextReplacement(user);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")}
+ private fun login(user:String,password:String){ui.onNodeWithText("Usuario").performTextReplacement(user);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")}
  @Test fun teacherRecordsEditsAndStudentReadsTheSavedGrade(){
   val admin=AdminTestApi();val records=admin.list("/api/admin/v1/users?limit=100")
   if((0 until records.length()).none{records.getJSONObject(it).getString("username")=="docente_revision"})admin.post("/api/admin/v1/users",JSONObject().put("username","docente_revision").put("name","Profesor de revisión").put("role","DOCENTE").put("password","MainReview2026!").put("docenteId",1))

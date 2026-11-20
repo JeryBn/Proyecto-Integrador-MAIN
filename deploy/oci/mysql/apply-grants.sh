@@ -25,17 +25,9 @@ GRANT UPDATE(curso_id, titulo, descripcion, fecha_limite) ON main.actividad TO '
 GRANT SELECT, INSERT ON main.administrative_audit TO 'main_django'@'${host_pattern}';
 GRANT SELECT ON main.campus_post TO 'main_django'@'${host_pattern}';
 GRANT UPDATE(state, reviewed_at) ON main.campus_post TO 'main_django'@'${host_pattern}';
-GRANT SELECT, INSERT ON main.notification TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, DELETE ON main.matricula TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, UPDATE ON main.course_grade TO 'main_django'@'${host_pattern}';
-GRANT SELECT, UPDATE ON main.message TO 'main_django'@'${host_pattern}';
-GRANT SELECT, UPDATE ON main.message_revision TO 'main_django'@'${host_pattern}';
 GRANT SELECT, UPDATE ON main.status_update TO 'main_django'@'${host_pattern}';
-GRANT SELECT ON main.conversation TO 'main_django'@'${host_pattern}';
-GRANT UPDATE(id) ON main.conversation TO 'main_django'@'${host_pattern}';
-GRANT SELECT ON main.conversation_member TO 'main_django'@'${host_pattern}';
-GRANT SELECT ON main.message_attachment TO 'main_django'@'${host_pattern}';
-GRANT SELECT ON main.message_attachment_chunk TO 'main_django'@'${host_pattern}';
 GRANT SELECT ON main.status_media_chunk TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, UPDATE ON main.automatic_assessment TO 'main_django'@'${host_pattern}';
 GRANT SELECT, INSERT, UPDATE ON main.moderation_retention_hold TO 'main_django'@'${host_pattern}';

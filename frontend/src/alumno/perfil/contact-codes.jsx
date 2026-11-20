@@ -20,7 +20,7 @@ export function ContactCodes({active,canAdd,onAccepted}) {
 
   async function run(action,success){
     setBusy(true);setFeedback(null);
-    try{await action();setFeedback({text:success});}
+    try{setFeedback(await action()||{text:success});}
     catch(error){setFeedback({error:true,text:error.message});}
     finally{setBusy(false);}
   }
@@ -49,8 +49,17 @@ export function ContactCodes({active,canAdd,onAccepted}) {
     {canAdd&&<form onSubmit={event=>{
       event.preventDefault();
       if(!sixDigits.test(code)||busy)return;
-      run(async()=>{await userApi.call(base+'/requests',{method:'POST',json:{code}});setCode('');},
-        'Si el código corresponde a un compañero elegible, recibirá tu solicitud.');
+      run(async()=>{
+        const {status}=await userApi.call(base+'/requests',{method:'POST',json:{code}});
+        switch(status){
+          case 'SENT':setCode('');return {text:'Solicitud enviada. Tu compañero puede aceptarla en Avisos.'};
+          case 'PENDING':return {text:'Ya enviaste una solicitud. Está pendiente de respuesta.'};
+          case 'INCOMING':requests.reload();return {text:'Este compañero ya te envió una solicitud. Puedes aceptarla abajo.'};
+          case 'ALREADY_CONTACT':return {text:'Este compañero ya está en tus contactos.'};
+          case 'OWN_CODE':throw new Error('Ese es tu propio código.');
+          default:throw new Error('No se pudo enviar la solicitud. Revisa que el código sea de un estudiante de tu institución.');
+        }
+      });
     }}>
       <label>Código de 6 dígitos <input inputMode="numeric" pattern="[0-9]{6}" value={code}
         onChange={event=>setCode(event.target.value.replace(/[^0-9]/g,'').slice(0,6))}/></label>
@@ -61,6 +70,8 @@ export function ContactCodes({active,canAdd,onAccepted}) {
     </form>}
     {feedback&&<p role={feedback.error?'alert':'status'}>{feedback.text}</p>}
     {requests.error&&<p role="alert">{requests.error} <button onClick={requests.reload}>Reintentar</button></p>}
+    {canAdd&&<h3>Solicitudes recibidas</h3>}
+    {requests.data?.length===0&&<p>No tienes solicitudes pendientes.</p>}
     {!!requests.data?.length&&<ul>{requests.data.map(request=><li key={request.sender}>
       <strong>{request.name}</strong>{[true,false].map(accept=><button key={String(accept)} disabled={busy}
         onClick={()=>run(async()=>{

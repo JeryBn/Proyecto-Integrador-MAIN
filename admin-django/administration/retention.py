@@ -19,7 +19,7 @@ def holds(request):
     page = pagination(request)
     if page is None: return error(400, 'VALIDATION_ERROR', 'Paginación inválida.')
     offset, limit = page
-    values = human.rows('SELECT subject_kind,subject_id,reason,opened_by,opened_at FROM moderation_retention_hold WHERE active=TRUE ORDER BY opened_at,subject_kind,subject_id LIMIT %s OFFSET %s', [limit, offset])
+    values = human.rows("SELECT subject_kind,subject_id,reason,opened_by,opened_at FROM moderation_retention_hold WHERE active=TRUE AND subject_kind='statuses' ORDER BY opened_at,subject_kind,subject_id LIMIT %s OFFSET %s", [limit, offset])
     return JsonResponse([dict(kind=v['subject_kind'], id=v['subject_id'], reason=v['reason'], openedBy=v['opened_by'], openedAt=v['opened_at'].isoformat()) for v in values], safe=False)
 
 def locked(sql, args):
@@ -42,7 +42,7 @@ def event(action, subject, instant, actor='retention-worker'):
 @review_only
 @mutation
 def hold(request, kind, item_id):
-    if kind not in ('messages', 'statuses'):
+    if kind != 'statuses':
         return error(404, 'NOT_FOUND')
     if not parent(kind, item_id):
         return error(404, 'NOT_FOUND')

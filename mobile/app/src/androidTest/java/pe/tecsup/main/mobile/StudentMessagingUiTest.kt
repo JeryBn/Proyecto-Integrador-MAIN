@@ -21,7 +21,6 @@ class StudentMessagingUiTest {
   api.login("alumno","MainDemo2026!");api.savePreferences(pe.tecsup.main.mobile.data.UserPreferences())
   api.contacts().filter{it.username in listOf("otro","docente_revision")}.forEach{api.saveContact(it.copy(blocked=false))}
   admin.put("/api/admin/v1/courses/1/grades",JSONObject().put("studentId",1).put("assessment","Evaluación sintética de revisión").put("score",16).put("maximum",20))
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
   ui.onNodeWithText("Usuario").performTextReplacement("alumno")
   ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
   ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")

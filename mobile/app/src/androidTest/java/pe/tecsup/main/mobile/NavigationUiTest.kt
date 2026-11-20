@@ -30,7 +30,6 @@ class NavigationUiTest {
     }
 
     private fun login(user: String = "alumno") {
-        ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
         ui.onNodeWithText("Usuario").performTextReplacement(user)
         ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
         ui.onNodeWithText("Ingresar").performClick()

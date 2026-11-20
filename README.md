@@ -25,7 +25,7 @@ Abre [el portal de demostración local](http://127.0.0.1:8088/login.html). Este 
 
 Para probar el **sistema integrado**, prepara MySQL y Django según la [guía administrativa](admin-django/README.md) y la [arquitectura compartida](docs/ARQUITECTURA.md). Con los servicios configurados, el panel está en [Administración local](http://127.0.0.1:8090/admin.html). Usa la configuración privada del equipo o crea tus propias credenciales de prueba.
 
-Para activar **Gemma**, ejecuta `ollama pull gemma3:4b` y mantén Ollama escuchando en `127.0.0.1:11434`. En PowerShell, establece `$env:MAIN_OLLAMA_MODEL = 'gemma3:4b'` antes de arrancar Spring. El modelo puede tardar más en la primera consulta. La moderación de chats y estados tiene un flujo de revisión independiente.
+Para activar **Gemma**, ejecuta `ollama pull gemma3:4b` y mantén Ollama escuchando en `127.0.0.1:11434`. En PowerShell, establece `$env:MAIN_OLLAMA_MODEL = 'gemma3:4b'` antes de arrancar Spring. El modelo puede tardar más en la primera consulta. Para activar la moderación privada de chats, establece también `$env:MAIN_CHAT_MODERATION_MODEL = 'gemma3:4b'` antes de arrancar Spring. MAIN analiza el chat con Ollama en el mismo equipo y mantiene los envíos pendientes si el modelo no responde. La moderación administrativa de estados y publicaciones del campus funciona por separado.
 
 Para **Android**, consulta la [guía de compilación](mobile/README.md). La variante de entrega incorpora el origen HTTPS indicado mediante `MAIN_PUBLIC_ORIGIN`: el estudiante solo introduce usuario y contraseña. Si se usa un túnel temporal y cambia su URL, recompila el APK. Para firmarlo, sigue la [guía de firma privada](docs/FIRMA_PRIVADA_ANDROID.md).
 

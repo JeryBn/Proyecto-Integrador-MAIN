@@ -6,6 +6,7 @@ import {Profile,Notifications} from './perfil/profile.jsx';
 import {userApi} from './datos/user-api.mjs';
 import {useResource} from './datos/user-hooks.jsx';
 import './estilos/workspace.css';
+import './estilos/campus.css';
 import {Messages} from './comunicacion/messages.jsx';
 import {Statuses,emptyStatusDraft} from './comunicacion/statuses.jsx';
 import {CampusFeed} from './comunicacion/campus-feed.jsx';
@@ -102,7 +103,7 @@ function App() {
   ];
 
   return (
-    <div className={'app-shell'+(['','#inicio','#campus','#cursos','#perfil'].includes(hash)?' campus-editorial':'')} style={{'--campus-color':campus.data?.color||'#087f68'}}>
+    <div className="app-shell campus-editorial" style={{'--campus-color':campus.data?.color||'#087f68'}}>
       <a className="skip-link" href="#contenido-principal" onClick={event=>{event.preventDefault();document.getElementById('contenido-principal')?.focus();}}>Saltar al contenido principal</a>
       <nav className="sidebar institutional-sidebar" aria-label="Navegación principal">
         <a className="brand" href="#inicio" style={campusStyle}><span className="logo campus-mark">{campusMark}</span><span><strong>{campusName}</strong><small>Campus digital</small></span></a>
@@ -112,13 +113,11 @@ function App() {
           return <React.Fragment key={item.route}>{item.group&&<span className="nav-group-label">{item.group}</span>}<a className={'nav-item '+(active?'active':'')} aria-current={active?'page':undefined} href={item.route}><Icon name={item.icon}/><span>{item.label}</span>{item.route==='#avisos'&&notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}</b>}</a></React.Fragment>;
         })}
         </div>
-        <div className="sidebar-bottom"><div className="campus-card"><span><Icon name="graduation"/></span><div><strong>Comunidad MAIN</strong><p>Aprende, participa y avanza junto a tu institución.</p></div></div></div>
       </nav>
       <div className="main-area">
         <header className="topbar institutional-topbar">
           <div className="topbar-context"><span className="mobile-brand" style={campusStyle}><span className="logo campus-mark">{campusMark}</span>{campusName}</span><span className="breadcrumb"><Icon name={hash==='#cursos'?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
           <div className="topbar-actions">
-            <a className="topbar-search" href="#actividades"><Icon name="search" size={18}/><span>Buscar en MAIN</span></a>
             <a className="notice-button icon-notice" href="#avisos" aria-label="Ver avisos"><Icon name="bell" size={19}/>{notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}{notices.data.length===30?'+':''}</b>}</a>
             <a className="user-identity" href="#perfil"><span className="avatar small">{profile?.nombre?.slice(0,1)||'M'}</span><span><strong>{profile?.nombre||'Mi cuenta'}</strong><small>{profile?.rol||'MAIN'}</small></span></a>
           <div className="user-area">

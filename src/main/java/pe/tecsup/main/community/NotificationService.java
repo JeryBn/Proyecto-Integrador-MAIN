@@ -21,6 +21,9 @@ public class NotificationService {
   LEFT JOIN conversation_member cm ON cm.conversation_id=n.conversation_id AND cm.username=n.recipient
   WHERE n.recipient=? AND s.enabled=TRUE
   AND ((((n.kind='INVITATION' AND cm.state='INVITED') OR
+       (n.kind='CONTACT_REQUEST' AND EXISTS(SELECT 1 FROM contact_request r
+        JOIN main_user recipient ON recipient.username=r.recipient AND recipient.enabled=TRUE AND recipient.role='ALUMNO'
+        WHERE r.recipient=n.recipient AND r.sender=n.sender AND r.notice_key=n.event_key AND s.role='ALUMNO')) OR
        (n.kind='MESSAGE' AND cm.state='ACTIVE' AND EXISTS(SELECT 1 FROM message m WHERE m.id=n.message_id AND m.published_revision IS NOT NULL AND m.created_at>=cm.joined_at AND m.conversation_sequence>cm.joined_after_sequence)))
   AND NOT EXISTS(SELECT 1 FROM contact_preference p WHERE
    (p.blocked=TRUE AND ((p.owner=n.recipient AND p.subject=n.sender) OR (p.owner=n.sender AND p.subject=n.recipient))) OR

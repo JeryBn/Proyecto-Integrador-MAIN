@@ -104,8 +104,23 @@ class MainViewModel : ViewModel() {
         if (api === client) { personalContactCode = own; contactInvitations = incoming }
     }
 
-    fun requestContact(code: String) = accountOperation("Si el código corresponde a un compañero elegible, recibirá tu solicitud.") { client ->
-        withContext(Dispatchers.IO) { client.requestContact(code) }
+    fun requestContact(code: String) = accountOperation { client ->
+        val status = withContext(Dispatchers.IO) { client.requestContact(code) }
+        if (api !== client) return@accountOperation
+        when (status) {
+            "SENT" -> accountMessage = "Solicitud enviada. Tu compañero puede aceptarla en Avisos."
+            "PENDING" -> accountMessage = "Ya enviaste una solicitud. Está pendiente de respuesta."
+            "INCOMING" -> {
+                val incoming = withContext(Dispatchers.IO) { client.contactInvitations() }
+                if (api === client) {
+                    contactInvitations = incoming
+                    accountMessage = "Este compañero ya te envió una solicitud. Puedes aceptarla abajo."
+                }
+            }
+            "ALREADY_CONTACT" -> accountMessage = "Este compañero ya está en tus contactos."
+            "OWN_CODE" -> accountError = "Ese es tu propio código."
+            else -> accountError = "No se pudo enviar la solicitud. Revisa que el código sea de un estudiante de tu institución."
+        }
     }
 
     fun answerContact(sender: String, accept: Boolean) = accountOperation(if (accept) "Contacto agregado." else "Solicitud rechazada.") { client ->
@@ -134,7 +149,10 @@ class MainViewModel : ViewModel() {
         if(api===client)reminderPreferences=saved
     }
     fun openNotice(notice:Notice){
-        if(notice.kind=="REMINDER"){
+        if (notice.kind == "CONTACT_REQUEST") {
+            selectedSection = MainSection.PROFILE
+            settingsPage = "CONTACT_CODES"
+        } else if(notice.kind=="REMINDER"){
             val id=notice.activityId?:return
             if(id>0){selectedSection=MainSection.HOME;openDetail(id)}
         }else if(notice.conversationId.isNotBlank()){selectedSection=MainSection.MESSAGES;openConversation(notice.conversationId)}
@@ -333,7 +351,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 operation(client)
-                if (api === client) accountMessage = success
+                if (api === client && success.isNotEmpty()) accountMessage = success
             } catch (error: Exception) {
                 if (api === client) {
                     if (error is SessionExpired) expireSession() else accountError = friendly(error)

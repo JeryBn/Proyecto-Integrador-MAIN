@@ -48,7 +48,13 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
   FloatingActionButton(onClick={model.statusComposer=true},containerColor=MaterialTheme.colorScheme.primary){Icon(Icons.Outlined.AddPhotoAlternate,"Crear estado multimedia",tint=Color.White)}
  }}){padding->
  LazyColumn(Modifier.fillMaxSize().padding(padding),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-  item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Text("Estados",style=MaterialTheme.typography.headlineLarge);IconButton(onClick=model::loadStatuses,enabled=!model.statusBusy){Icon(Icons.Outlined.Refresh,"Actualizar estados")}}}
+  item{
+   CampusBanner("Estados"){
+    IconButton(onClick=model::loadStatuses,enabled=!model.statusBusy){
+     Icon(Icons.Outlined.Refresh,"Actualizar estados",tint=if(model.statusBusy)campusInk.copy(alpha=.38f) else campusInk)
+    }
+   }
+  }
   item{if(model.statusBusy)LinearProgressIndicator(Modifier.fillMaxWidth());if(model.statusError.isNotBlank())Text(model.statusError,color=MaterialTheme.colorScheme.error)}
   if(model.profile?.rol in listOf("Alumno","Docente"))item{
    Row(Modifier.fillMaxWidth().clickable(enabled=!model.statusBusy){if(own.isEmpty())model.statusComposer=true else model.openStatus(own.first())},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){

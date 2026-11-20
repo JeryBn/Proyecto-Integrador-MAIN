@@ -21,7 +21,7 @@ class AppealUiTest {
   val title="Apelación Android $stamp";val conversation=api.startGroup(title)
   api.sendMessage(conversation,UUID.randomUUID().toString(),"Mensaje sintético para apelar")
   val draft=api.messages(conversation).first();admin.review(draft.id,false)
-  ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088");ui.onNodeWithText("Usuario").performTextReplacement(owner);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")
+  ui.onNodeWithText("Usuario").performTextReplacement(owner);ui.onNodeWithText("Contraseña").performTextReplacement(password);ui.onNodeWithText("Ingresar").performClick();waitFor("Tu espacio académico")
   ui.onNodeWithContentDescription("Mensajes").performClick();waitFor(title);ui.onNodeWithText(title).performClick();waitFor("Apelar rechazo")
   ui.onNodeWithText("Apelar rechazo").performScrollTo().performClick();ui.onNodeWithText("Motivo de apelación").performTextInput("Solicito revisar el contexto educativo sintético.");ui.onNodeWithText("Enviar apelación").performClick()
   waitFor("Mis apelaciones");waitFor("En revisión");Evidence.capture("apelacion_android_abierta.png")

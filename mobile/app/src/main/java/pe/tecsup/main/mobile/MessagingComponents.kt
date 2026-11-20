@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -24,7 +25,7 @@ import androidx.compose.ui.unit.dp
 @Composable internal fun PageHeading(title:String,onBack:()->Unit) {
  Row(Modifier.fillMaxWidth().padding(vertical=8.dp),verticalAlignment=Alignment.CenterVertically) {
   IconButton(onClick=onBack){Icon(Icons.AutoMirrored.Outlined.ArrowBack,"Volver")}
-  Text(title,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold)
+  Text(title,style=MaterialTheme.typography.titleLarge,fontFamily=FontFamily.Serif,fontWeight=FontWeight.SemiBold)
  }
 }
 @Composable internal fun SettingsRow(icon:ImageVector,title:String,subtitle:String="",danger:Boolean=false,onClick:()->Unit) {

@@ -455,48 +455,17 @@ class AdministrationTests(TransactionTestCase):
         execute("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES('msg',1,'hola','PENDING',%s)",[digest])
         return dict(revision=1,contentHash=digest,approved=True,attachmentReviewed=False)
 
-    def test_moderation_message_contract_publish_and_notification_once(self):
+    def test_admin_cannot_list_review_or_download_chat_messages(self):
         from .moderation import rows
-        value=self.moderation_fixture()
-        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').json()[0]['senderName'],'alumno')
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,200)
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,409)
-        self.assertEqual(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'],1)
-        self.assertEqual(len(rows('SELECT id FROM notification')),1)
-        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').json(),[])
-
-    def test_moderation_does_not_notify_message_from_before_membership_boundary(self):
-        from .moderation import execute,rows
-        value=self.moderation_fixture()
-        execute("UPDATE conversation_member SET joined_at=(SELECT created_at FROM message WHERE id='msg'),joined_after_sequence=0 WHERE conversation_id='conv' AND username='recipient'")
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,200)
+        value=self.moderation_fixture(media=True)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').status_code,404)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages/msg/attachment?revision=1').status_code,404)
+        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,404)
+        self.assertEqual(rows("SELECT state FROM message_revision WHERE message_id='msg'")[0]['state'],'PENDING')
         self.assertEqual(rows('SELECT id FROM notification'),[])
 
-    def test_moderation_attachment_requires_review_and_integrity(self):
-        from .moderation import execute
-        value=self.moderation_fixture(media=True)
-        path='/api/admin/v1/moderation/messages/msg/attachment?revision=1'
-        response=self.client.get(path)
-        self.assertEqual(response.content,b'archivo')
-        self.assertIn('no-store',response['Cache-Control'])
-        self.assertEqual(response['X-Content-Type-Options'],'nosniff')
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,400)
-        value['attachmentReviewed']=True
-        execute("UPDATE message_attachment_chunk SET payload=%s WHERE message_id='msg'",[b'corrupto'])
-        self.assertEqual(self.client.get(path).status_code,409)
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,400)
 
-    def test_moderation_blocked_sender_stale_revision_and_audit_rollback(self):
-        from .moderation import execute,rows
-        value=self.moderation_fixture()
-        stale=dict(value,revision=2)
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',stale).status_code,409)
-        execute("INSERT INTO contact_preference VALUES('recipient','alumno',FALSE,TRUE)")
-        self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,403)
-        value.update(approved=False,reason='Categoría sintética')
-        with patch('administration.moderation.record',side_effect=IntegrityError('synthetic')):
-            self.assertEqual(self.academic_call('moderation/messages/msg/review',value).status_code,409)
-        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'PENDING')
+
 
     def status_fixture(self, kind='TEXT'):
         from .moderation import execute,now
@@ -523,48 +492,49 @@ class AdministrationTests(TransactionTestCase):
 
     def test_moderation_authentication_csrf_and_page_assets(self):
         self.assertEqual(self.client.get('/moderation.html').status_code,401)
-        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages/msg/attachment?revision=1').status_code,401)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses/status/media').status_code,401)
         self.login()
         for path in ('/moderation.html','/moderation.js','/moderation.css'):
             self.assertEqual(self.client.get(path).status_code,200)
-        self.assertEqual(self.client.post('/api/admin/v1/moderation/messages/msg/review','{}',content_type='application/json').status_code,403)
+        self.assertEqual(self.client.post('/api/admin/v1/moderation/statuses/status/review','{}',content_type='application/json').status_code,403)
 
     def test_automatic_clear_shadow_never_publishes_and_is_cached(self):
         from .automatic_moderation import process,Assessment
         from .moderation import rows
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
-        self.assertEqual(process('messages','msg',provider),'CLEAR_SHADOW')
-        self.assertEqual(process('messages','msg',provider),'CACHED_SHADOW')
-        self.assertIsNone(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'])
+        self.status_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('statuses','status',provider),'CLEAR_SHADOW')
+        self.assertEqual(process('statuses','status',provider),'CACHED_SHADOW')
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
         self.assertEqual(len(rows('SELECT id FROM notification')),0);self.assertEqual(provider.assess.call_count,1)
 
-    def test_automatic_apply_uses_shared_review_and_notifies_once(self):
+    def test_automatic_apply_uses_shared_review_for_statuses(self):
         from .automatic_moderation import process,Assessment
         from .moderation import rows
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
-        self.assertEqual(process('messages','msg',provider,True),'APPROVED')
-        self.assertEqual(process('messages','msg',provider,True),'STALE')
-        self.assertEqual(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'],1)
-        self.assertEqual(len(rows('SELECT id FROM notification')),1)
-        self.assertEqual(rows("SELECT reviewed_by FROM message_revision WHERE message_id='msg'")[0]['reviewed_by'],'MAIN_AUTOMATION')
+        self.status_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('statuses','status',provider,True),'APPROVED')
+        self.assertEqual(process('statuses','status',provider,True),'STALE')
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'APPROVED')
+        self.assertEqual(len(rows('SELECT id FROM notification')),0)
+        self.assertIsNone(rows("SELECT reviewed_by FROM status_update WHERE id='status'")[0]['reviewed_by'])
+        self.assertEqual(rows("SELECT actor FROM administrative_audit WHERE action='STATUS_APPROVED'")[0]['actor'],'MAIN_AUTOMATION')
 
     def test_automatic_flagged_content_remains_private_for_human(self):
         from .automatic_moderation import process,Assessment
         from .moderation import rows
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','synthetic',('harassment',))
-        self.assertEqual(process('messages','msg',provider,True),'HUMAN_REQUIRED')
-        self.assertEqual(rows("SELECT state FROM message_revision WHERE message_id='msg'")[0]['state'],'PENDING')
+        self.status_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','synthetic',('harassment',))
+        self.assertEqual(process('statuses','status',provider,True),'HUMAN_REQUIRED')
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
         self.assertEqual(len(rows('SELECT id FROM notification')),0)
 
     def test_automatic_provider_outage_is_bounded_and_fail_closed(self):
         from .automatic_moderation import process,ProviderUnavailable
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.side_effect=ProviderUnavailable('QUOTA')
-        self.assertEqual(process('messages','msg',provider,True),'PROVIDER_UNAVAILABLE')
-        self.assertEqual(process('messages','msg',provider,True),'WAITING_OR_LIMITED')
+        self.status_fixture();provider=Mock();provider.assess.side_effect=ProviderUnavailable('QUOTA')
+        self.assertEqual(process('statuses','status',provider,True),'PROVIDER_UNAVAILABLE')
+        self.assertEqual(process('statuses','status',provider,True),'WAITING_OR_LIMITED')
         self.assertEqual(provider.assess.call_count,1)
 
     def test_automatic_video_audio_are_never_partially_approved(self):
@@ -589,13 +559,13 @@ class AdministrationTests(TransactionTestCase):
         from .automatic_moderation import process,Assessment
         from .moderation import execute,rows
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock()
+        self.status_fixture();provider=Mock()
         def changed(*args):
-            execute("UPDATE message_revision SET content_hash='changed' WHERE message_id='msg'")
+            execute("UPDATE status_update SET content_hash='changed' WHERE id='status'")
             return Assessment('CLEAR','synthetic')
         provider.assess.side_effect=changed
-        self.assertEqual(process('messages','msg',provider,True),'STALE_OR_FORBIDDEN')
-        self.assertIsNone(rows("SELECT published_revision FROM message WHERE id='msg'")[0]['published_revision'])
+        self.assertEqual(process('statuses','status',provider,True),'STALE_OR_FORBIDDEN')
+        self.assertEqual(rows("SELECT state FROM status_update WHERE id='status'")[0]['state'],'PENDING')
 
     def test_automatic_requires_approved_policy_and_authorized_reviewer(self):
         from .automatic_moderation import run_batch
@@ -613,16 +583,17 @@ class AdministrationTests(TransactionTestCase):
     def test_automatic_shadow_can_be_applied_without_second_provider_call(self):
         from .automatic_moderation import process,Assessment
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
-        self.assertEqual(process('messages','msg',provider),'CLEAR_SHADOW')
-        self.assertEqual(process('messages','msg',provider,True),'APPROVED')
+        self.status_fixture();provider=Mock();provider.assess.return_value=Assessment('CLEAR','synthetic')
+        self.assertEqual(process('statuses','status',provider),'CLEAR_SHADOW')
+        self.assertEqual(process('statuses','status',provider,True),'APPROVED')
         self.assertEqual(provider.assess.call_count,1)
 
-    def test_automatic_completed_assessment_does_not_starve_other_queue_items(self):
+    def test_automatic_django_worker_ignores_private_chats(self):
         from .automatic_moderation import process,pending,Assessment
         from unittest.mock import Mock
         self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','synthetic')
-        process('messages','msg',provider)
+        self.assertEqual(process('messages','msg',provider),'PRIVATE_CHAT')
+        provider.assess.assert_not_called()
         self.status_fixture()
         self.assertEqual(pending(1,'test-only',False),[('statuses','status')])
 
@@ -638,14 +609,14 @@ class AdministrationTests(TransactionTestCase):
         from .automatic_moderation import process,Assessment
         from .moderation import execute
         from unittest.mock import Mock
-        self.moderation_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','controlled',('harassment','unknown-provider-field'))
-        process('messages','msg',provider)
-        summary=self.client.get('/api/admin/v1/moderation/messages').json()[0]['automaticReview']
+        self.status_fixture();provider=Mock();provider.assess.return_value=Assessment('HUMAN_REQUIRED','controlled',('harassment','unknown-provider-field'))
+        process('statuses','status',provider)
+        summary=self.client.get('/api/admin/v1/moderation/statuses').json()[0]['automaticReview']
         self.assertEqual(summary['categories'],['harassment']);self.assertEqual(summary['coverage'],'TEXT')
         self.assertTrue(summary['humanRequired']);self.assertNotIn('transcript',summary);self.assertNotIn('model',summary)
-        execute("UPDATE message_revision SET content_hash='new-version' WHERE message_id='msg'")
-        self.assertIsNone(self.client.get('/api/admin/v1/moderation/messages').json()[0]['automaticReview'])
-        self.assertEqual(Client().get('/api/admin/v1/moderation/messages').status_code,401)
+        execute("UPDATE status_update SET content_hash='new-version' WHERE id='status'")
+        self.assertIsNone(self.client.get('/api/admin/v1/moderation/statuses').json()[0]['automaticReview'])
+        self.assertEqual(Client().get('/api/admin/v1/moderation/statuses').status_code,401)
 
     def test_video_summary_has_partial_coverage_without_automatic_release(self):
         from .automatic_moderation import process,Assessment
@@ -705,20 +676,20 @@ class AdministrationTests(TransactionTestCase):
     def test_retention_hold_auth_csrf_audit_and_release_grace(self):
         from .retention import batch
         from .moderation import execute, rows, now
-        self.moderation_fixture(); instant=now()
-        path='/api/admin/v1/moderation/messages/msg/retention-hold'
+        self.status_fixture(); instant=now()
+        path='/api/admin/v1/moderation/statuses/status/retention-hold'
         value={'active':True,'reason':'Apelación sintética abierta'}
         self.assertEqual(Client().get(path).status_code,401)
         self.assertEqual(self.client.post(path,json.dumps(value),content_type='application/json').status_code,403)
-        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',value).status_code,200)
-        execute('UPDATE message_revision SET submitted_at=%s',[instant-timedelta(days=100)])
+        self.assertEqual(self.academic_call('moderation/statuses/status/retention-hold',value).status_code,200)
+        execute('UPDATE status_update SET retention_started_at=%s',[instant-timedelta(days=100)])
         execute('UPDATE administrative_audit SET occurred_at=%s',[instant-timedelta(days=100)])
         self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
         self.assertTrue(rows('SELECT id FROM administrative_audit'))
-        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',dict(value,active=False)).status_code,200)
+        self.assertEqual(self.academic_call('moderation/statuses/status/retention-hold',dict(value,active=False)).status_code,200)
         self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
         self.login('alumno')
-        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',value).status_code,401)
+        self.assertEqual(self.academic_call('moderation/statuses/status/retention-hold',value).status_code,401)
 
     def test_retention_status_media_audit_scope_and_rollback(self):
         from .retention import batch, event
@@ -753,11 +724,11 @@ class AdministrationTests(TransactionTestCase):
         with self.assertRaises(CommandError): call_command('retain_content',limit=501,stdout=StringIO())
 
     def test_retention_hold_listing_is_admin_only_and_paginated(self):
-        self.moderation_fixture()
+        self.status_fixture()
         self.assertEqual(Client().get('/api/admin/v1/retention-holds').status_code,401)
         self.assertEqual(self.client.get('/api/admin/v1/retention-holds?limit=1000').status_code,400)
-        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',{'active':True,'reason':'Apelación de prueba'}).status_code,200)
-        self.assertEqual(self.client.get('/api/admin/v1/retention-holds').json()[0]['id'],'msg')
+        self.assertEqual(self.academic_call('moderation/statuses/status/retention-hold',{'active':True,'reason':'Apelación de prueba'}).status_code,200)
+        self.assertEqual(self.client.get('/api/admin/v1/retention-holds').json()[0]['id'],'status')
         self.assertEqual(self.client.get('/api/admin/v1/retention-holds?offset=1').json(),[])
 
     def test_retention_old_assessments_and_closed_holds_expire(self):
@@ -788,44 +759,44 @@ class AdministrationTests(TransactionTestCase):
 
     def test_appeal_independent_resolution_returns_to_review_without_publication(self):
         from .moderation import rows
-        value=self.appeal_fixture()
+        value=self.appeal_fixture(status=True)
         self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,403)
         self.login('reviewer_test')
         response=self.academic_call('appeals/appeal/resolve',value)
         self.assertEqual(response.status_code,200);self.assertFalse(response.json()['published'])
-        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'PENDING')
-        self.assertIsNone(rows('SELECT published_revision FROM message')[0]['published_revision'])
+        self.assertEqual(rows('SELECT state FROM status_update')[0]['state'],'PENDING')
         self.assertFalse(rows('SELECT * FROM notification'))
         self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
 
     def test_open_appeal_protects_content_audit_and_cannot_be_removed_as_manual_hold(self):
         from .moderation import execute,rows,now
         from .retention import batch
-        self.appeal_fixture();instant=now()
-        execute('UPDATE message_revision SET submitted_at=%s,reviewed_at=%s',[instant-timedelta(days=100)]*2)
-        execute("INSERT INTO administrative_audit VALUES('audit','admin_test','APPEAL_OPENED','msg',%s)",[instant-timedelta(days=100)])
+        self.appeal_fixture(status=True);instant=now()
+        execute('UPDATE status_update SET retention_started_at=%s,reviewed_at=%s',[instant-timedelta(days=100)]*2)
+        execute("INSERT INTO administrative_audit VALUES('audit','admin_test','APPEAL_OPENED','status',%s)",[instant-timedelta(days=100)])
         self.assertEqual(batch(apply=True,instant=instant)['counts']['purged'],0)
         self.assertTrue(rows("SELECT id FROM administrative_audit WHERE id='audit'"))
-        self.assertEqual(self.academic_call('moderation/messages/msg/retention-hold',{'active':False,'reason':'No puede cerrar apelación'}).status_code,409)
+        self.assertEqual(self.academic_call('moderation/statuses/status/retention-hold',{'active':False,'reason':'No puede cerrar apelación'}).status_code,409)
 
     def test_appeal_detail_media_auth_csrf_and_hash_integrity(self):
         from .moderation import execute
-        value=self.appeal_fixture()
+        value=self.appeal_fixture(status=True)
         self.assertEqual(Client().get('/api/admin/v1/appeals').status_code,401)
         self.assertEqual(self.client.get('/api/admin/v1/appeals').json()[0]['reason'],'Contexto educativo')
         self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal').json()['text'],'hola')
-        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').content,b'archivo')
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').content,b'imagen')
         self.assertEqual(self.client.post('/api/admin/v1/appeals/appeal/resolve',json.dumps(value),content_type='application/json').status_code,403)
-        execute("UPDATE message_attachment_chunk SET payload=%s",[b'bad'])
+        execute("UPDATE status_media_chunk SET payload=%s",[b'bad'])
         self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').status_code,409)
 
-    def test_appeal_stale_revision_cannot_return_and_closes_as_superseded(self):
-        from .moderation import execute,rows,now
+    def test_historical_chat_appeal_cannot_disclose_or_modify_a_message(self):
+        from .moderation import rows
         value=self.appeal_fixture();self.login('reviewer_test')
-        execute("INSERT INTO message_revision(message_id,revision,body,state,content_hash) VALUES('msg',2,'nuevo','PENDING','new')")
-        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
-        self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='SUPERSEDED')).status_code,200)
-        self.assertEqual(rows('SELECT state FROM message_revision WHERE revision=2')[0]['state'],'PENDING')
+        self.assertEqual(self.client.get('/api/admin/v1/appeals').json(),[])
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal').status_code,404)
+        self.assertEqual(self.client.get('/api/admin/v1/appeals/appeal/media').status_code,404)
+        self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,404)
+        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'REJECTED')
 
     def test_expired_status_appeal_can_close_without_extending_lifetime(self):
         from .moderation import execute,rows,now
@@ -838,11 +809,11 @@ class AdministrationTests(TransactionTestCase):
     def test_appeal_resolution_rolls_back_and_resolved_history_expires(self):
         from .moderation import rows,execute,now
         from .retention import batch
-        value=self.appeal_fixture();self.login('reviewer_test')
+        value=self.appeal_fixture(status=True);self.login('reviewer_test')
         with patch('administration.retention.event',side_effect=IntegrityError('synthetic')):
             self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,409)
         self.assertEqual(rows('SELECT state FROM moderation_appeal')[0]['state'],'OPEN')
-        self.assertEqual(rows('SELECT state FROM message_revision')[0]['state'],'REJECTED')
+        self.assertEqual(rows('SELECT state FROM status_update')[0]['state'],'REJECTED')
         self.assertEqual(self.academic_call('appeals/appeal/resolve',dict(value,outcome='UPHELD')).status_code,200)
         old=now()-timedelta(days=90);execute('UPDATE moderation_appeal SET decided_at=%s',[old])
         self.assertEqual(batch(apply=True)['counts']['appealsPurged'],1)
@@ -866,7 +837,7 @@ class AdministrationTests(TransactionTestCase):
 
     def test_reviewer_can_access_review_but_never_academic_identity_or_audit_modules(self):
         self.assertEqual(self.reviewer_fixture().status_code,200)
-        for path in ('moderation/messages','moderation/statuses','appeals','retention-holds'):
+        for path in ('moderation/statuses','appeals','retention-holds'):
             self.assertEqual(self.client.get('/api/admin/v1/'+path).status_code,200,path)
         for path in ('users','courses','audit'):
             self.assertEqual(self.client.get('/api/admin/v1/'+path).status_code,403,path)
@@ -878,7 +849,7 @@ class AdministrationTests(TransactionTestCase):
 
     def test_initial_reviewer_must_set_password_before_reading_any_content(self):
         self.assertTrue(self.reviewer_fixture(initial=True).json()['mustChangePassword'])
-        response=self.client.get('/api/admin/v1/moderation/messages')
+        response=self.client.get('/api/admin/v1/moderation/statuses')
         self.assertEqual(response.status_code,403);self.assertEqual(response.json()['error']['code'],'PASSWORD_CHANGE_REQUIRED')
         self.assertEqual(self.client.get('/moderation.html').status_code,403)
         self.assertEqual(self.client.get('/api/admin/perfil').status_code,200)
@@ -893,7 +864,7 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(other.post('/api/admin/login',{'username':'limited_reviewer','password':PASSWORD},HTTP_X_CSRFTOKEN=csrf).status_code,200)
         self.assertEqual(self.change_own_password().status_code,200)
         self.assertFalse(self.client.get('/api/admin/perfil').json()['mustChangePassword'])
-        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').status_code,200)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses').status_code,200)
         self.assertEqual(other.get('/api/admin/perfil').status_code,401)
         self.assertEqual(self.login('limited_reviewer').status_code,401)
         self.assertEqual(self.login('limited_reviewer','SyntheticPersonalReview2026!').status_code,200)
@@ -925,12 +896,12 @@ class AdministrationTests(TransactionTestCase):
 
     def test_disabled_reviewer_is_immediately_revoked_and_cannot_be_a_contact(self):
         self.reviewer_fixture();SharedUser.objects.filter(username='limited_reviewer').update(enabled=False)
-        self.assertEqual(self.client.get('/api/admin/v1/moderation/messages').status_code,401)
+        self.assertEqual(self.client.get('/api/admin/v1/moderation/statuses').status_code,401)
         SharedUser.objects.filter(username='limited_reviewer').update(enabled=True)
         self.login();self.assertEqual(self.academic_call('contacts',dict(first='alumno',second='limited_reviewer')).status_code,400)
 
     def test_limited_reviewer_can_resolve_appeal_independently(self):
-        value=self.appeal_fixture();self.reviewer_fixture()
+        value=self.appeal_fixture(status=True);self.reviewer_fixture()
         self.assertEqual(self.academic_call('appeals/appeal/resolve',value).status_code,200)
         self.assertEqual(self.client.get('/api/admin/v1/users').status_code,403)
 

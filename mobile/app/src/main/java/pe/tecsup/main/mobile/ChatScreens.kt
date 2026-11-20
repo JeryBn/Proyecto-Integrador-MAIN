@@ -32,10 +32,11 @@ import pe.tecsup.main.mobile.data.ChatMessage
   floatingActionButton={ExtendedFloatingActionButton(modifier=Modifier.semantics{contentDescription="Nuevo chat"},onClick={model.showChatPicker=true},icon={Icon(Icons.Outlined.ChatBubbleOutline,null)},text={Text("Nuevo chat")})}
  ) { padding ->
  Column(Modifier.fillMaxSize().padding(padding)){
-  Row(Modifier.fillMaxWidth().padding(start=20.dp,top=12.dp,end=8.dp),verticalAlignment=Alignment.CenterVertically){
-   Text("Chats",Modifier.weight(1f),style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
-   IconButton(onClick={showNotices=!showNotices}){Icon(Icons.Outlined.Notifications,"Ver avisos")}
-   IconButton(onClick=model::loadConversations,enabled=!model.chatBusy){Icon(Icons.Outlined.Refresh,"Actualizar conversaciones")}
+  Box(Modifier.padding(start=16.dp,end=16.dp,top=12.dp,bottom=8.dp)){
+   CampusBanner("Chats"){
+    IconButton(onClick={showNotices=!showNotices;if(showNotices)model.loadConversations()}){Icon(Icons.Outlined.Notifications,"Ver avisos",tint=campusInk)}
+    IconButton(onClick=model::loadConversations,enabled=!model.chatBusy){Icon(Icons.Outlined.Refresh,"Actualizar conversaciones",tint=if(model.chatBusy)campusInk.copy(alpha=.38f) else campusInk)}
+   }
   }
   OutlinedTextField(value=search,onValueChange={search=it},placeholder={Text("Buscar chats")},singleLine=true,
    leadingIcon={Icon(Icons.Outlined.Search,null)},shape=RoundedCornerShape(28.dp),modifier=Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=8.dp))
@@ -48,7 +49,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
     item{Text("Avisos",Modifier.padding(20.dp),style=MaterialTheme.typography.titleLarge)}
     if(model.notices.isEmpty()) item{Text("No hay avisos visibles.",Modifier.padding(20.dp))}
     items(model.notices,key={"notice-"+it.id}){notice->
-     ListItem(modifier=Modifier.clickable{model.openNotice(notice)},headlineContent={Text(when(notice.kind){"REMINDER"->"Actividad próxima a vencer";"MESSAGE"->"Mensaje aprobado disponible";else->"Invitación a grupo"})},
+     ListItem(modifier=Modifier.clickable{model.openNotice(notice)},headlineContent={Text(when(notice.kind){"CONTACT_REQUEST"->"Solicitud de contacto";"REMINDER"->"Actividad próxima a vencer";"MESSAGE"->"Mensaje aprobado disponible";else->"Invitación a grupo"})},
       supportingContent={Text(if(notice.read)"Leído" else "Sin leer")},
       trailingContent={if(!notice.read)TextButton(onClick={model.readNotice(notice.id)},enabled=!model.chatBusy){Text("Marcar leído")}})
     }
@@ -177,8 +178,8 @@ import pe.tecsup.main.mobile.data.ChatMessage
         Text((message.attachmentSize/1024).toString()+" KB",style=MaterialTheme.typography.labelSmall)
        }
        Row(verticalAlignment=Alignment.CenterVertically){
-        Text(when(message.state){"PENDING"->"Pendiente de revisión";"REJECTED"->"No enviado · revisar";"CANCELLED"->"Cancelado";else->"Entregado"},style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        if(mine&&message.state!="CANCELLED")Box{
+        Text(when(message.state){"PENDING"->"En revisión por IA";"REMOVED"->"Eliminado";"REJECTED"->"No enviado · revisar";"CANCELLED"->"Cancelado";else->"Entregado"},style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        if(mine&&message.state!="CANCELLED"&&message.state!="REMOVED")Box{
          IconButton(onClick={actions=true},modifier=Modifier.size(30.dp)){Icon(Icons.Outlined.MoreHoriz,"Opciones del mensaje",Modifier.size(18.dp))}
          DropdownMenu(expanded=actions,onDismissRequest={actions=false}){
           DropdownMenuItem(text={Text("Editar mensaje")},onClick={model.editMessage(message);actions=false})
@@ -188,7 +189,6 @@ import pe.tecsup.main.mobile.data.ChatMessage
        }
        if(message.reason.isNotBlank())Text(message.reason,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodySmall)
        if(mine&&message.state=="REJECTED")TextButton(onClick={model.editMessage(message)},enabled=!model.chatBusy){Text("Corregir mensaje")}
-       if(mine&&message.state=="REJECTED")TextButton(onClick={model.openAppeal(pe.tecsup.main.mobile.data.AppealTarget("messages",message.id,message.revision,message.contentHash))},enabled=!model.accountBusy){Text("Apelar rechazo")}
        if(mine&&message.state=="REJECTED"&&message.attachmentKind!="NONE")Text("Para sustituir el archivo, cancela este envío y adjunta uno nuevo.",style=MaterialTheme.typography.bodySmall)
        if(message.correctedBeforeDelivery)Text("Editado antes del envío para cumplir las normas de MAIN",style=MaterialTheme.typography.labelSmall)
        if(message.editedAfterDelivery)Text("Editado después del envío",style=MaterialTheme.typography.labelSmall)

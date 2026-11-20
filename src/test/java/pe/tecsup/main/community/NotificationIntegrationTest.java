@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:notice_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_notice","main.admin.password=SyntheticNotices2026!"})
 @AutoConfigureMockMvc @Transactional
 class NotificationIntegrationTest {
- @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired NotificationService notices;@Autowired MockMvc mvc;
+ @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired NotificationService notices;@Autowired MockMvc mvc;@Autowired ContactCodeController contactCodes;
  @BeforeEach void setup(){users.approveContact("admin_notice","alumno","otro");}
  CommunicationService.Message send(String id){return chat.send("alumno",id,new CommunicationService.Send(UUID.randomUUID().toString(),"Texto privado de prueba"));}
  void approve(CommunicationService.Message m){chat.review("admin_notice",m.id(),new CommunicationService.Review(m.revision(),m.contentHash(),true,""));}
@@ -41,6 +41,18 @@ class NotificationIntegrationTest {
   assertEquals(1,notices.list("otro",0,30).size());chat.invitation("otro",id,true);assertTrue(notices.list("otro",0,30).isEmpty());
   approve(send(id));assertEquals(1,notices.list("otro",0,30).size());
   chat.membership("alumno",id,"otro",false,true);assertTrue(notices.list("otro",0,30).isEmpty());
+ }
+ @Test void studentsWithoutSharedCoursesCanAcceptContactRequestsAndStartChats(){
+  String code=contactCodes.mine(()->"vacio").code();
+  assertEquals("SENT",contactCodes.send(()->"alumno",new ContactCodeController.Code(code)).get("status"));
+  assertEquals("PENDING",contactCodes.send(()->"alumno",new ContactCodeController.Code(code)).get("status"));
+  assertEquals(List.of("alumno"),contactCodes.incoming(()->"vacio").stream().map(ContactCodeController.Invitation::sender).toList());
+  assertEquals(List.of("CONTACT_REQUEST"),notices.list("vacio",0,30).stream().map(NotificationService.Notice::kind).toList());
+  assertThrows(DomainException.class,()->chat.direct("alumno","vacio"));
+  contactCodes.respond(()->"vacio","alumno",new ContactCodeController.Decision(true));
+  assertTrue(contactCodes.incoming(()->"vacio").isEmpty());
+  assertTrue(notices.list("vacio",0,30).isEmpty());
+  assertEquals(chat.direct("alumno","vacio"),chat.direct("vacio","alumno"));
  }
  @Test void readRequiresCsrfAndPaginationIsBounded()throws Exception{
   mvc.perform(post("/api/v1/notifications/missing/read").with(user("otro").roles("ALUMNO")).contentType("application/json").content("{}")).andExpect(status().isForbidden());

@@ -36,4 +36,4 @@ if ($LASTEXITCODE) { throw 'No se pudo conectar el puente local.' }
 if ($LASTEXITCODE) { throw 'No se pudo instalar la aplicación.' }
 & $adb -s $Device shell am start -n pe.tecsup.main.mobile/.MainActivity
 if ($LASTEXITCODE) { throw 'No se pudo abrir la aplicación.' }
-Write-Output "MAIN instalada. En la app usa http://127.0.0.1:8088. El puente apunta al puerto $BackendPort de esta PC."
+Write-Output "MAIN instalada. El puente automático apunta al puerto $BackendPort de esta PC."

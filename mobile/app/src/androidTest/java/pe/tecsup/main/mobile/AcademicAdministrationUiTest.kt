@@ -20,7 +20,6 @@ class AcademicAdministrationUiTest {
    admin.post("/api/admin/v1/courses",JSONObject().put("id",id).put("name",label).put("teacherUsername","docente_revision"))
   admin.put("/api/admin/v1/courses/$id/students",JSONObject().put("username","alumno").put("enrolled",true))
   try{
-   ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
    ui.onNodeWithText("Usuario").performTextReplacement("alumno")
    ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
    ui.onNodeWithText("Ingresar").performClick()

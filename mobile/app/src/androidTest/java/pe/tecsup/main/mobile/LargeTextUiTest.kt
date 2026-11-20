@@ -37,7 +37,6 @@ class LargeTextUiTest {
 
     @Test fun primaryNavigationAndLoginRemainUsableWithDoubleFontSize() {
         assertTrue("Run with font_scale=2.0, not a simulated assertion", ui.activity.resources.configuration.fontScale >= 1.9f)
-        ui.onNodeWithText("Servidor").performTextReplacement("http://127.0.0.1:8088")
         ui.onNodeWithText("Usuario").performTextReplacement("vacio")
         ui.onNodeWithText("Contraseña").performTextReplacement("MainDemo2026!")
         ui.onNodeWithText("Ingresar").performScrollTo().assertIsDisplayed().performClick()
