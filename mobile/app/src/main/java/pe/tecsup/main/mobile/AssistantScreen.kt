@@ -12,7 +12,7 @@ internal fun AssistantScreen(model:MainViewModel) {
  Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
   verticalArrangement=Arrangement.spacedBy(14.dp)) {
   Text("Asistente académico",style=MaterialTheme.typography.headlineMedium)
-  Text("Tu consulta y los nombres de tus cursos y horarios autorizados se envían a OpenAI. No se envían tus chats ni contactos. Evita incluir datos personales. Las respuestas pueden contener errores; comprueba la información importante.",
+  Text("El asistente procesa tu consulta y el contexto académico autorizado. No usa tus chats ni contactos. Evita incluir datos personales y comprueba la información importante.",
    style=MaterialTheme.typography.bodySmall)
   OutlinedTextField(value=model.assistantQuestion,onValueChange={if(it.length<=2000)model.assistantQuestion=it},
    modifier=Modifier.fillMaxWidth(),label={Text("Consulta académica")},enabled=!model.assistantBusy,minLines=3)

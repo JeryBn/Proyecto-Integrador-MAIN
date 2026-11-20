@@ -1,5 +1,11 @@
 # Proyecto Integrador MAIN - seccion A
 
+### Asistente académico local para la demo
+
+En la misma laptop que ejecuta Spring, instala Ollama y descarga `ollama pull gemma3:4b`. Mantén Ollama en `127.0.0.1:11434`. Configura `$env:MAIN_OLLAMA_MODEL = 'gemma3:4b'` en PowerShell antes de iniciar MAIN. Web y Android usan la misma API autenticada y sus límites de consultas. Para la demostración pública, usa cuentas y datos ficticios. El túnel HTTPS apunta al portal MAIN y Ollama se mantiene en la interfaz local.
+
+Esta opción cubre el asistente académico. La moderación de mensajes y estados mantiene su flujo de revisión y configuración independientes.
+
 ## Estado de cierre — actualizado el 16 de noviembre de 2026
 
 La rama institucional más reciente tiene 173 pruebas Spring y 52 web aprobadas, además de las 92 Django, 13 Android y 16 comprobaciones HTTP del cierre anterior. La experiencia web fue renovada para alumnos y docentes: inicio académico, cursos, entregas con borrador, notas, chats, estados, perfil y navegación móvil. El docente puede publicar actividades únicamente en sus cursos y consultar entregas/borradores; el alumno las recibe en su lista autorizada. Spring y Django conservan comprobaciones de salud mínimas y mensajes de error sin detalles internos. El rediseño administrativo de Pamela mantiene su autoría y sus correcciones accesibles separadas.
