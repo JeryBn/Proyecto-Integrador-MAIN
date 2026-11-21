@@ -12,7 +12,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!","MAIN_TURN_URLS=turn:relay.example.invalid","MAIN_TURN_SECRET=synthetic-turn-test-value"})
+@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:communication_tests;DB_CLOSE_DELAY=-1","main.admin.username=admin_chat","main.admin.password=SyntheticChatTest2026!","main.chat.encrypted-transport-preview=true","MAIN_TURN_URLS=turn:relay.example.invalid","MAIN_TURN_SECRET=synthetic-turn-test-value"})
 @AutoConfigureMockMvc @Transactional
 class CommunicationIntegrationTest{
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
@@ -72,6 +72,34 @@ class CommunicationIntegrationTest{
   signature.update(payload
       .getBytes(java.nio.charset.StandardCharsets.UTF_8));
   return json.writeValueAsString(new ChatDeviceIdentity.Registration(key,base64.encodeToString(signature.sign()),encryption));
+ }
+ @Test void encryptedTransportScopesOpaqueEnvelopesToTheRecipientDevice()throws Exception{
+  users.approveContact(admin,"alumno","otro");
+  String path="/api/v1/conversations/"+chat.direct("alumno","otro")+"/encrypted";
+  UUID senderDevice=UUID.randomUUID(), receiverDevice=UUID.randomUUID(), message=UUID.randomUUID();
+  var sender=user("alumno").roles("ALUMNO");
+  var receiver=user("otro").roles("ALUMNO");
+  byte[] point=new byte[65];
+  point[0]=4;
+  var encoder=Base64.getUrlEncoder().withoutPadding();
+  String key=encoder.encodeToString(point), bytes=encoder.encodeToString(new byte[32]);
+  db.update("INSERT INTO chat_device_identity (username,device_id,signing_key,encryption_key) VALUES (?,?,?,?)",
+      "alumno",senderDevice.toString(),bytes,key);
+  db.update("INSERT INTO chat_device_identity (username,device_id,signing_key,encryption_key) VALUES (?,?,?,?)",
+      "otro",receiverDevice.toString(),bytes,key);
+  String payload=json.writeValueAsString(new EncryptedChatTransport.Send(message,senderDevice,receiverDevice,1,key,bytes));
+  for(int attempt=0;attempt<2;attempt++){
+   mvc.perform(post(path).with(sender).with(csrf()).contentType("application/json").content(payload))
+       .andExpect(status().isNoContent());
+  }
+  String inbox=path+"/devices/"+receiverDevice;
+  var delivery=mvc.perform(get(inbox).with(receiver)).andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].ciphertext").value(bytes))
+      .andExpect(jsonPath("$[0].messageId").value(message.toString())).andReturn();
+  String cursor=json.readTree(delivery.getResponse().getContentAsString()).get(0).get("cursor").asText();
+  mvc.perform(get(inbox).param("after",cursor).with(receiver)).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(get(inbox).with(sender)).andExpect(status().isNotFound());
+  mvc.perform(get(inbox).with(user("vacio").roles("ALUMNO"))).andExpect(status().isNotFound());
  }
  @Test void managedTurnReturnsTheScopedRelayCredentials(){
   var controller=new DirectCalls(db,chat,users,java.time.Clock.systemUTC(),
