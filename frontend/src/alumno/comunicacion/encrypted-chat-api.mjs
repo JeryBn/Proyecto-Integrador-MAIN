@@ -1,3 +1,4 @@
+import {createLocalChatModerator} from './local-chat-moderation.mjs';
 import {userApi} from '../datos/user-api.mjs';
 import {decryptChatText, encryptChatText} from './chat-envelope.mjs';
 import {deviceSafetyCode, registerChatDevice, storedChatDevice, verifyChatEncryptionIdentity} from './chat-device.mjs';
@@ -61,4 +62,20 @@ export async function readEncryptedChatTexts({username, conversationId, after = 
       {conversationId, messageId, senderDeviceId, recipientDeviceId}, context.keyPair, publicKey);
     return {cursor, messageId, sender, text};
   }));
+}
+
+
+export async function openEncryptedChatSession({username, conversationId, contactUsername, verifiedCodes, signal, onDownload}) {
+  const moderator = await createLocalChatModerator({signal, onDownload});
+  return {
+    prepare: (text, recipientDeviceId, requestSignal) => prepareEncryptedChatText({
+      username, conversationId, contactUsername, recipientDeviceId, text, verifiedCodes,
+      moderateLocally: moderator.moderate, signal: requestSignal
+    }),
+    send: (envelope, requestSignal) => sendEncryptedChatEnvelope(conversationId, envelope, requestSignal),
+    read: (after, requestSignal) => readEncryptedChatTexts({
+      username, conversationId, after, verifiedCodes, signal: requestSignal
+    }),
+    close: moderator.destroy
+  };
 }
