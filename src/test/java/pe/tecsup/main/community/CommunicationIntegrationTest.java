@@ -18,6 +18,43 @@ class CommunicationIntegrationTest{
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Test void chatIdentityRequiresPossessionAndIsVisibleOnlyToChatParticipants()throws Exception{
+  users.approveContact(admin,"alumno","otro");
+  String conversation=chat.direct("alumno","otro"), root="/api/v1/chat-identity";
+  UUID device=UUID.randomUUID();
+  var generator=java.security.KeyPairGenerator.getInstance("Ed25519");
+  var sender=user("alumno").roles("ALUMNO");
+  var receiver=user("otro").roles("ALUMNO");
+  var outsider=user("vacio").roles("ALUMNO");
+  String registration=chatIdentityRegistration("alumno",device,generator.generateKeyPair());
+  String unregisterable=chatIdentityRegistration("otro",device,generator.generateKeyPair());
+  String path=root+"/devices/"+device;
+  mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json").content(unregisterable))
+      .andExpect(status().isBadRequest());
+  for(int attempt=0;attempt<2;attempt++){
+   mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json").content(registration))
+       .andExpect(status().isNoContent());
+  }
+  mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json")
+      .content(chatIdentityRegistration("alumno",device,generator.generateKeyPair())))
+      .andExpect(status().isConflict());
+  String listing=root+"/conversations/"+conversation+"/devices";
+  mvc.perform(get(listing).with(receiver)).andExpect(status().isOk())
+      .andExpect(header().string("Cache-Control","no-store"))
+      .andExpect(jsonPath("$[0].deviceId").value(device.toString()));
+  mvc.perform(get(listing).with(outsider)).andExpect(status().isNotFound());
+ }
+
+ private String chatIdentityRegistration(String actor,UUID device,java.security.KeyPair keys)throws Exception{
+  var base64=Base64.getUrlEncoder().withoutPadding();
+  byte[] encoded=keys.getPublic().getEncoded();
+  String key=base64.encodeToString(Arrays.copyOfRange(encoded,encoded.length-32,encoded.length));
+  var signature=java.security.Signature.getInstance("Ed25519");
+  signature.initSign(keys.getPrivate());
+  signature.update(String.join("\n",ChatDeviceIdentity.PROOF_DOMAIN,actor,device.toString(),key)
+      .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+  return json.writeValueAsString(new ChatDeviceIdentity.Registration(key,base64.encodeToString(signature.sign())));
+ }
  @Test void managedTurnReturnsTheScopedRelayCredentials(){
   var controller=new DirectCalls(db,chat,users,java.time.Clock.systemUTC(),
       "turns:relay.example.invalid:443?transport=tcp","","test-user","test-relay-password");
