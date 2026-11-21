@@ -1,3 +1,4 @@
+import {registerChatDevice} from './chat-device.mjs';
 import {requestCall} from './calls.jsx';
 import {useEffect,useRef,useState} from 'react';
 import {userApi,enc,fileError,submissionKey,labels,localDate} from '../datos/user-api.mjs';
@@ -42,6 +43,10 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
  const scrollRef=useRef(null),pinned=useRef(true);
  const metadata=useResource('/api/v1/conversations/'+enc(id),{interval:5000});
  const allowed=metadata.data?.state==='ACTIVE';
+ const direct=metadata.data?.kind==='DIRECT';
+ useEffect(()=>{
+  if(allowed&&direct)registerChatDevice(profile.usuario).catch(()=>{});
+ },[allowed,direct,profile.usuario]);
  const messages=useResource(`/api/v1/conversations/${enc(id)}/messages?offset=${offset}&limit=30`,{enabled:allowed,interval:5000});
  useEffect(()=>{if(offset===0&&pinned.current&&scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[messages.data,offset]);
  const members=useResource('/api/v1/conversations/'+enc(id)+'/members',{enabled:allowed,interval:5000});
