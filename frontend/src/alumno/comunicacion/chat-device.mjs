@@ -40,7 +40,7 @@ function accountDevice(database, username, candidate) {
   });
 }
 
-async function storedDevice(username) {
+export async function storedChatDevice(username) {
   const database = await openIdentityStore();
   try {
     const existing = await accountDevice(database, username);
@@ -62,7 +62,7 @@ async function storedDevice(username) {
 }
 
 async function register(username) {
-  const {id, privateKey, signingKey, encryptionKeys} = await storedDevice(username);
+  const {id, privateKey, signingKey, encryptionKeys} = await storedChatDevice(username);
   const encryptionKey = await exportChatEncryptionKey(encryptionKeys.publicKey);
   const payload = new TextEncoder().encode([proofDomain, username, id, signingKey, encryptionKey].join('\n'));
   const proof = base64url(await crypto.subtle.sign('Ed25519', privateKey, payload));
