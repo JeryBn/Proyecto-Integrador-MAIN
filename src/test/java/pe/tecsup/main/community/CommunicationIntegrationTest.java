@@ -26,7 +26,8 @@ class CommunicationIntegrationTest{
   var sender=user("alumno").roles("ALUMNO");
   var receiver=user("otro").roles("ALUMNO");
   var outsider=user("vacio").roles("ALUMNO");
-  String registration=chatIdentityRegistration("alumno",device,generator.generateKeyPair());
+  var identity=generator.generateKeyPair();
+  String registration=chatIdentityRegistration("alumno",device,identity);
   String unregisterable=chatIdentityRegistration("otro",device,generator.generateKeyPair());
   String path=root+"/devices/"+device;
   mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json").content(unregisterable))
@@ -38,22 +39,39 @@ class CommunicationIntegrationTest{
   mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json")
       .content(chatIdentityRegistration("alumno",device,generator.generateKeyPair())))
       .andExpect(status().isConflict());
+  var key=Base64.getUrlEncoder().withoutPadding();
+  byte[] point=new byte[65];
+  point[0]=4;
+  String encryption=key.encodeToString(point);
+  String binding=chatIdentityRegistration("alumno",device,identity,encryption);
+  mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json").content(binding))
+      .andExpect(status().isNoContent());
+  point[1]=1;
+  mvc.perform(put(path).with(sender).with(csrf()).contentType("application/json")
+      .content(chatIdentityRegistration("alumno",device,identity,key.encodeToString(point))))
+      .andExpect(status().isConflict());
   String listing=root+"/conversations/"+conversation+"/devices";
   mvc.perform(get(listing).with(receiver)).andExpect(status().isOk())
       .andExpect(header().string("Cache-Control","no-store"))
-      .andExpect(jsonPath("$[0].deviceId").value(device.toString()));
+      .andExpect(jsonPath("$[0].deviceId").value(device.toString())).andExpect(jsonPath("$[0].encryptionKey").value(encryption));
   mvc.perform(get(listing).with(outsider)).andExpect(status().isNotFound());
  }
 
  private String chatIdentityRegistration(String actor,UUID device,java.security.KeyPair keys)throws Exception{
+  return chatIdentityRegistration(actor,device,keys,null);
+ }
+
+ private String chatIdentityRegistration(String actor,UUID device,java.security.KeyPair keys,String encryption)throws Exception{
   var base64=Base64.getUrlEncoder().withoutPadding();
   byte[] encoded=keys.getPublic().getEncoded();
   String key=base64.encodeToString(Arrays.copyOfRange(encoded,encoded.length-32,encoded.length));
   var signature=java.security.Signature.getInstance("Ed25519");
   signature.initSign(keys.getPrivate());
-  signature.update(String.join("\n",ChatDeviceIdentity.PROOF_DOMAIN,actor,device.toString(),key)
+  String payload=encryption==null?String.join("\n",ChatDeviceIdentity.PROOF_DOMAIN,actor,device.toString(),key)
+      :String.join("\n",ChatDeviceIdentity.ENCRYPTION_DOMAIN,actor,device.toString(),key,encryption);
+  signature.update(payload
       .getBytes(java.nio.charset.StandardCharsets.UTF_8));
-  return json.writeValueAsString(new ChatDeviceIdentity.Registration(key,base64.encodeToString(signature.sign())));
+  return json.writeValueAsString(new ChatDeviceIdentity.Registration(key,base64.encodeToString(signature.sign()),encryption));
  }
  @Test void managedTurnReturnsTheScopedRelayCredentials(){
   var controller=new DirectCalls(db,chat,users,java.time.Clock.systemUTC(),

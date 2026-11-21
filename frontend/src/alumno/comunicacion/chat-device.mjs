@@ -1,7 +1,9 @@
 import {userApi} from '../datos/user-api.mjs';
 
+import {exportChatEncryptionKey, generateChatEncryptionKey, importChatEncryptionKey} from './chat-envelope.mjs';
+
 const registrations = new Map();
-const proofDomain = 'MAIN chat device identity v1';
+const proofDomain = 'MAIN chat encryption key v1';
 
 function base64url(bytes) {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)))
@@ -28,6 +30,9 @@ function accountDevice(database, username, candidate) {
       if (!device && candidate) {
         device = candidate;
         store.add(device, username);
+      } else if (device && candidate && !device.encryptionKeys) {
+        device = {...device, encryptionKeys: candidate.encryptionKeys};
+        store.put(device, username);
       }
     };
     transaction.oncomplete = () => resolve(device);
@@ -39,12 +44,15 @@ async function storedDevice(username) {
   const database = await openIdentityStore();
   try {
     const existing = await accountDevice(database, username);
-    if (existing) return existing;
+    if (existing?.encryptionKeys) return existing;
 
+    const encryptionKeys = await generateChatEncryptionKey();
+    if (existing) return await accountDevice(database, username, {...existing, encryptionKeys});
     const keys = await crypto.subtle.generateKey('Ed25519', false, ['sign', 'verify']);
     const candidate = {
       id: crypto.randomUUID(),
       privateKey: keys.privateKey,
+      encryptionKeys,
       signingKey: base64url(await crypto.subtle.exportKey('raw', keys.publicKey))
     };
     return await accountDevice(database, username, candidate);
@@ -54,14 +62,15 @@ async function storedDevice(username) {
 }
 
 async function register(username) {
-  const {id, privateKey, signingKey} = await storedDevice(username);
-  const payload = new TextEncoder().encode([proofDomain, username, id, signingKey].join('\n'));
+  const {id, privateKey, signingKey, encryptionKeys} = await storedDevice(username);
+  const encryptionKey = await exportChatEncryptionKey(encryptionKeys.publicKey);
+  const payload = new TextEncoder().encode([proofDomain, username, id, signingKey, encryptionKey].join('\n'));
   const proof = base64url(await crypto.subtle.sign('Ed25519', privateKey, payload));
   await userApi.call('/api/v1/chat-identity/devices/' + id, {
     method: 'PUT',
-    json: {signingKey, proof}
+    json: {signingKey, proof, encryptionKey}
   });
-  return {username, deviceId: id, signingKey};
+  return {username, deviceId: id, signingKey, encryptionKey};
 }
 
 export function registerChatDevice(username) {
@@ -77,9 +86,9 @@ export function registerChatDevice(username) {
 }
 
 export async function deviceSafetyCode(first, second) {
-  const serialize = ({username, deviceId, signingKey}) => JSON.stringify([username, deviceId, signingKey]);
+  const serialize = ({username, deviceId, signingKey, encryptionKey}) => JSON.stringify([username, deviceId, signingKey, encryptionKey]);
   const values = [serialize(first), serialize(second)].sort();
-  const payload = new TextEncoder().encode(JSON.stringify(['MAIN device comparison v1', ...values]));
+  const payload = new TextEncoder().encode(JSON.stringify(['MAIN device comparison v2', ...values]));
   const digest = await crypto.subtle.digest('SHA-256', payload);
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0'))
     .join('').toUpperCase().match(/.{4}/g).join(' ');
@@ -90,8 +99,20 @@ export async function chatSafetyCodes(username, conversationId, contactUsername,
   if (!current) throw new Error('Este navegador no puede verificar dispositivos.');
   const devices = await userApi.call('/api/v1/chat-identity/conversations/' +
     encodeURIComponent(conversationId) + '/devices', {signal});
-  return Promise.all(devices.filter(device => device.username === contactUsername).map(async device => ({
-    deviceId: device.deviceId,
-    code: await deviceSafetyCode(current, device)
-  })));
+  const peers = devices.filter(device => device.username === contactUsername && device.encryptionKey);
+  return Promise.all(peers.map(async device => {
+    await verifyChatEncryptionIdentity(device);
+    return {deviceId: device.deviceId, code: await deviceSafetyCode(current, device)};
+  }));
+}
+
+export async function verifyChatEncryptionIdentity(device) {
+  const {username, deviceId, signingKey, encryptionKey, encryptionProof} = device;
+  const decode = value => Uint8Array.from(atob(value.replaceAll('-', '+').replaceAll('_', '/')), char => char.charCodeAt(0));
+  const verifier = await crypto.subtle.importKey('raw', decode(signingKey), 'Ed25519', false, ['verify']);
+  const payload = new TextEncoder().encode([proofDomain, username, deviceId, signingKey, encryptionKey].join('\n'));
+  if (!await crypto.subtle.verify('Ed25519', verifier, decode(encryptionProof), payload)) {
+    throw new Error('No se pudo verificar la clave de cifrado de tu contacto.');
+  }
+  return importChatEncryptionKey(encryptionKey);
 }
