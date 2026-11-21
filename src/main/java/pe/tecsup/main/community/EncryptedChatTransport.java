@@ -32,6 +32,12 @@ class EncryptedChatTransport {
                     int version, String encapsulatedKey, String ciphertext) {}
     record Stored(String conversationId, String encapsulatedKey, String ciphertext) {}
 
+    @GetMapping("/availability")
+    public ResponseEntity<Void> availability(Principal principal, @PathVariable String conversationId) {
+        directPeer(principal.getName(), conversationId);
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
+
     @PostMapping
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @ResponseStatus(HttpStatus.NO_CONTENT)
