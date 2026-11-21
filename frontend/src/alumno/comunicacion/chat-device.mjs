@@ -61,6 +61,7 @@ async function register(username) {
     method: 'PUT',
     json: {signingKey, proof}
   });
+  return {username, deviceId: id, signingKey};
 }
 
 export function registerChatDevice(username) {
@@ -73,4 +74,24 @@ export function registerChatDevice(username) {
     registrations.set(username, pending);
   }
   return registrations.get(username);
+}
+
+export async function deviceSafetyCode(first, second) {
+  const serialize = ({username, deviceId, signingKey}) => JSON.stringify([username, deviceId, signingKey]);
+  const values = [serialize(first), serialize(second)].sort();
+  const payload = new TextEncoder().encode(JSON.stringify(['MAIN device comparison v1', ...values]));
+  const digest = await crypto.subtle.digest('SHA-256', payload);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0'))
+    .join('').toUpperCase().match(/.{4}/g).join(' ');
+}
+
+export async function chatSafetyCodes(username, conversationId, contactUsername, signal) {
+  const current = await registerChatDevice(username);
+  if (!current) throw new Error('Este navegador no puede verificar dispositivos.');
+  const devices = await userApi.call('/api/v1/chat-identity/conversations/' +
+    encodeURIComponent(conversationId) + '/devices', {signal});
+  return Promise.all(devices.filter(device => device.username === contactUsername).map(async device => ({
+    deviceId: device.deviceId,
+    code: await deviceSafetyCode(current, device)
+  })));
 }
