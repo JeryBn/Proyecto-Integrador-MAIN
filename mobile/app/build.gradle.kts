@@ -68,6 +68,7 @@ tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle
 }
 
 dependencies {
+    implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     implementation("com.google.zxing:core:3.5.4")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
     implementation("com.google.firebase:firebase-messaging")

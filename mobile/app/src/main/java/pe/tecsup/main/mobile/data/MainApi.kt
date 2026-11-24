@@ -240,10 +240,40 @@ class MainApi(val endpoint: String) {
     fun editMessage(id:String,revision:Int,text:String) { mutate("/api/v1/messages/"+id,JSONObject().put("expectedRevision",revision).put("text",text)) }
     fun cancelMessage(id:String,revision:Int) { mutate("/api/v1/messages/"+id+"/cancel",JSONObject().put("expectedRevision",revision),"POST") }
 
-    private fun mutate(path: String, body: JSONObject, method: String = "PUT"): JSONObject {
+    internal fun registerEncryptedChatDevice(device: java.util.UUID, signingKey: String, encryptionKey: String, proof: String) {
+        mutateBody("/api/v1/chat-identity/devices/$device",
+            JSONObject().put("signingKey", signingKey).put("encryptionKey", encryptionKey).put("proof", proof))
+    }
+
+    internal fun encryptedChatDevices(conversation: java.util.UUID): List<EncryptedChatDevice> =
+        rows(JSONArray(checked(request("/api/v1/chat-identity/conversations/$conversation/devices")))) {
+            EncryptedChatDevice(it.getString("username"), java.util.UUID.fromString(it.getString("deviceId")),
+                it.getString("signingKey"), it.optString("encryptionKey"), it.optString("encryptionProof"))
+        }
+
+    internal fun sendEncryptedChatText(conversation: java.util.UUID, outgoing: OutgoingEncryptedChatText) {
+        mutateBody("/api/v1/conversations/$conversation/encrypted", JSONObject()
+            .put("messageId", outgoing.messageId.toString()).put("senderDeviceId", outgoing.senderDeviceId.toString())
+            .put("recipientDeviceId", outgoing.recipientDeviceId.toString()).put("version", outgoing.envelope.version)
+            .put("encapsulatedKey", outgoing.envelope.encapsulatedKey).put("ciphertext", outgoing.envelope.ciphertext), "POST")
+    }
+
+    internal fun encryptedChatInbox(conversation: java.util.UUID, device: java.util.UUID, after: Long = 0): List<IncomingEncryptedChatText> {
+        require(after >= 0)
+        return rows(JSONArray(checked(request("/api/v1/conversations/$conversation/encrypted/devices/$device?after=$after")))) {
+            IncomingEncryptedChatText(it.getLong("cursor"), it.getString("sender"),
+                java.util.UUID.fromString(it.getString("senderDeviceId")), java.util.UUID.fromString(it.getString("messageId")),
+                EncryptedChatPayload(it.getInt("version"), it.getString("encapsulatedKey"), it.getString("ciphertext")))
+        }
+    }
+
+    private fun mutate(path: String, body: JSONObject, method: String = "PUT"): JSONObject =
+        JSONObject(mutateBody(path, body, method))
+
+    private fun mutateBody(path: String, body: JSONObject, method: String = "PUT"): String {
         val token = json("/api/csrf")
-        return JSONObject(checked(request(path, payload=body, method=method,
-            headers=mapOf(token.optString("headerName","X-CSRF-TOKEN") to token.getString("token")))))
+        return checked(request(path, payload=body, method=method,
+            headers=mapOf(token.optString("headerName","X-CSRF-TOKEN") to token.getString("token"))))
     }
 
     fun preferences(): UserPreferences = parsePreferences(json("/api/v1/preferences"))
