@@ -96,8 +96,10 @@ public class CommunicationService {
  }
  @Transactional public void invitation(String actor,String id,boolean accept){
   lock(id);users.active(actor);
-  if(db.update("UPDATE conversation_member SET state=?,joined_at=?,joined_after_sequence=? WHERE conversation_id=? AND username=? AND state='INVITED'",
-   accept?"ACTIVE":"REMOVED",accept?Timestamp.valueOf(now()):null,accept?lastSequence(id):-1L,id,actor)==0)throw DomainException.missing();
+  long encryptedBoundary=accept?db.queryForObject(
+      "SELECT COALESCE(MAX(sequence_id),0) FROM encrypted_chat_envelope WHERE conversation_id=?",Long.class,id):0;
+  if(db.update("UPDATE conversation_member SET state=?,joined_at=?,joined_after_sequence=?,encrypted_joined_after=?,encrypted_join_revision=? WHERE conversation_id=? AND username=? AND state='INVITED'",
+   accept?"ACTIVE":"REMOVED",accept?Timestamp.valueOf(now()):null,accept?lastSequence(id):-1L,encryptedBoundary,accept?UUID.randomUUID().toString():null,id,actor)==0)throw DomainException.missing();
   audit.record(actor,accept?"GROUP_INVITATION_ACCEPTED":"GROUP_INVITATION_REJECTED",id);
  }
  public List<Member> members(String actor,String id){

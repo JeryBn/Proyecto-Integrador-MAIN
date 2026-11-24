@@ -101,6 +101,43 @@ class CommunicationIntegrationTest{
   mvc.perform(get(inbox).with(sender)).andExpect(status().isNotFound());
   mvc.perform(get(inbox).with(user("vacio").roles("ALUMNO"))).andExpect(status().isNotFound());
  }
+ @Test void encryptedGroupRejectsStaleRosterAndDoesNotRestoreEarlierInboxAfterRejoin()throws Exception{
+  users.approveContact(admin,"alumno","otro");
+  String group=chat.group("alumno","Grupo de cifrado");
+  chat.invite("alumno",group,"otro");
+  chat.invitation("otro",group,true);
+  String path="/api/v1/conversations/"+group+"/encrypted";
+  UUID a=UUID.randomUUID(), b=UUID.randomUUID();
+  var sender=user("alumno").roles("ALUMNO");
+  var receiver=user("otro").roles("ALUMNO");
+  byte[] point=new byte[65];
+  point[0]=4;
+  var encoder=Base64.getUrlEncoder().withoutPadding();
+  String key=encoder.encodeToString(point), bytes=encoder.encodeToString(new byte[32]);
+  for(var entry:Map.of("alumno",a,"otro",b).entrySet()){
+   db.update("INSERT INTO chat_device_identity (username,device_id,signing_key,encryption_key) VALUES (?,?,?,?)",
+       entry.getKey(),entry.getValue().toString(),bytes,key);
+  }
+  var response=mvc.perform(get(path+"/group-recipients").with(sender)).andExpect(status().isOk())
+      .andExpect(jsonPath("$.devices.length()").value(1)).andReturn();
+  String revision=json.readTree(response.getResponse().getContentAsString()).get("revision").asText();
+  var groupSend=new EncryptedChatTransport.GroupSend(UUID.randomUUID(),a,revision,
+      List.of(new EncryptedChatTransport.GroupEnvelope("otro",b,key,bytes)));
+  String payload=json.writeValueAsString(groupSend);
+  for(int attempt=0;attempt<2;attempt++){
+   mvc.perform(post(path+"/group").with(sender).with(csrf()).contentType("application/json").content(payload))
+       .andExpect(status().isNoContent());
+  }
+  String inbox=path+"/devices/"+b;
+  mvc.perform(get(inbox).with(receiver)).andExpect(jsonPath("$.length()").value(1));
+  chat.membership("alumno",group,"otro",false,true);
+  mvc.perform(get(inbox).with(receiver)).andExpect(status().isNotFound());
+  chat.invite("alumno",group,"otro");
+  chat.invitation("otro",group,true);
+  mvc.perform(get(inbox).with(receiver)).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(post(path+"/group").with(sender).with(csrf()).contentType("application/json").content(payload))
+      .andExpect(status().isConflict()).andExpect(jsonPath("$.error.code").value("GROUP_DEVICES_CHANGED"));
+ }
  @Test void managedTurnReturnsTheScopedRelayCredentials(){
   var controller=new DirectCalls(db,chat,users,java.time.Clock.systemUTC(),
       "turns:relay.example.invalid:443?transport=tcp","","test-user","test-relay-password");
