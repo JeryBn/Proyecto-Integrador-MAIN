@@ -246,10 +246,29 @@ class MainApi(val endpoint: String) {
     }
 
     internal fun encryptedChatDevices(conversation: java.util.UUID): List<EncryptedChatDevice> =
-        rows(JSONArray(checked(request("/api/v1/chat-identity/conversations/$conversation/devices")))) {
-            EncryptedChatDevice(it.getString("username"), java.util.UUID.fromString(it.getString("deviceId")),
-                it.getString("signingKey"), it.optString("encryptionKey"), it.optString("encryptionProof"))
+        encryptedDeviceRows(JSONArray(checked(request("/api/v1/chat-identity/conversations/$conversation/devices"))))
+
+    private fun encryptedDeviceRows(array: JSONArray): List<EncryptedChatDevice> = rows(array) {
+        EncryptedChatDevice(it.getString("username"), java.util.UUID.fromString(it.getString("deviceId")),
+            it.getString("signingKey"), it.optString("encryptionKey"), it.optString("encryptionProof"))
+    }
+
+    internal fun encryptedChatGroup(conversation: java.util.UUID): EncryptedChatGroup {
+        val group = json("/api/v1/conversations/$conversation/encrypted/group-recipients")
+        return EncryptedChatGroup(group.getString("revision"), encryptedDeviceRows(group.getJSONArray("devices")))
+    }
+
+    internal fun sendEncryptedChatGroup(conversation: java.util.UUID, message: java.util.UUID,
+            sender: java.util.UUID, revision: String, envelopes: List<Pair<EncryptedChatDevice, EncryptedChatPayload>>) {
+        val payloads = JSONArray()
+        for ((recipient, payload) in envelopes) {
+            payloads.put(JSONObject().put("username", recipient.username).put("deviceId", recipient.deviceId.toString())
+                .put("encapsulatedKey", payload.encapsulatedKey).put("ciphertext", payload.ciphertext))
         }
+        mutateBody("/api/v1/conversations/$conversation/encrypted/group", JSONObject()
+            .put("messageId", message.toString()).put("senderDeviceId", sender.toString())
+            .put("revision", revision).put("envelopes", payloads), "POST")
+    }
 
     internal fun sendEncryptedChatText(conversation: java.util.UUID, outgoing: OutgoingEncryptedChatText) {
         mutateBody("/api/v1/conversations/$conversation/encrypted", JSONObject()

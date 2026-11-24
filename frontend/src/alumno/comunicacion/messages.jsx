@@ -56,16 +56,16 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
  const contact=metadata.data?.kind==='DIRECT'?(contacts.data||[]).find(c=>c.username===other?.username):null;
  const [previewAvailable,setPreviewAvailable]=useState(false),[previewOpen,setPreviewOpen]=useState(false);
  useEffect(()=>{
-  if(!allowed||!direct||!other||contact?.blocked||!globalThis.LanguageModel)return;
+  if(!allowed||(direct&&(!other||contact?.blocked))||!globalThis.LanguageModel)return;
   const check=new AbortController();
   userApi.call('/api/v1/conversations/'+enc(id)+'/encrypted/availability',{signal:check.signal})
     .then(()=>{if(!check.signal.aborted)setPreviewAvailable(true);}).catch(()=>{});
   return ()=>check.abort();
  },[allowed,direct,other?.username,contact?.blocked,id]);
  useEffect(()=>()=>{alive.current=false;control.current?.abort();},[]);
- if(previewOpen&&allowed&&direct&&other&&contact?.blocked!==true)return <article className="conversation-panel user-panel">
+ if(previewOpen&&allowed&&(!direct||(other&&contact?.blocked!==true)))return <article className="conversation-panel user-panel">
   <button type="button" onClick={()=>setPreviewOpen(false)}>Volver al chat habitual</button>
-  <EncryptedChatPreview username={profile.usuario} conversationId={id} contactUsername={other.username}/>
+  <EncryptedChatPreview username={profile.usuario} conversationId={id} contactUsername={other?.username} group={!direct}/>
  </article>;
 
  const update=value=>setDraft(old=>({...old,...value}));
@@ -89,8 +89,8 @@ function Conversation({id,profile,contacts,onOpen,onListChanged,draft,setDraft})
     <button type="button" disabled={contact?.blocked} onClick={()=>requestCall(id,'AUDIO')}>Llamar</button>
     <button type="button" disabled={contact?.blocked} onClick={()=>requestCall(id,'VIDEO')}>Videollamada</button>
     {previewAvailable&&contact?.blocked!==true&&<button type="button" onClick={()=>setPreviewOpen(true)}>Chat cifrado de prueba</button>}
-   </div>}<button className="icon-button" aria-label="Actualizar conversación" title="Actualizar conversación" onClick={refresh}><Icon name="refresh"/></button>{metadata.data?.kind==='GROUP'&&allowed&&<button className={'icon-button '+(manage?'active-icon':'')} aria-label="Administrar miembros del grupo" title="Miembros del grupo" onClick={()=>setManage(v=>!v)}><Icon name="users"/></button>}</header>
-  {allowed&&direct&&other&&contact?.blocked!==true&&<ChatSafetyCodes username={profile.usuario} conversationId={id} contactUsername={other.username}/>}
+   </div>}{!direct&&previewAvailable&&<button type="button" onClick={()=>setPreviewOpen(true)}>Chat cifrado de prueba</button>}<button className="icon-button" aria-label="Actualizar conversación" title="Actualizar conversación" onClick={refresh}><Icon name="refresh"/></button>{metadata.data?.kind==='GROUP'&&allowed&&<button className={'icon-button '+(manage?'active-icon':'')} aria-label="Administrar miembros del grupo" title="Miembros del grupo" onClick={()=>setManage(v=>!v)}><Icon name="users"/></button>}</header>
+  {allowed&&direct&&other&&contact?.blocked!==true&&<ChatSafetyCodes username={profile.usuario} conversationId={id} contactUsername={other?.username} group={!direct}/>}
   <Feedback resource={metadata}/>{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {metadata.data?.state==='INVITED'&&<section className="card-form"><h3>Invitación a {metadata.data.title}</h3><p>Solo podrás leer los mensajes publicados después de aceptar.</p><button disabled={busy} onClick={()=>run(()=>userApi.call('/api/v1/conversations/'+enc(id)+'/invitation',{method:'POST',json:{accept:true}}),'Invitación aceptada.')}>Aceptar invitación</button><button disabled={busy} onClick={()=>run(async()=>{await userApi.call('/api/v1/conversations/'+enc(id)+'/invitation',{method:'POST',json:{accept:false}});onOpen(null);},'')}>Rechazar invitación</button></section>}
   {allowed&&<><Feedback resource={messages}/>{manage&&metadata.data.kind==='GROUP'&&<section className="card-form" aria-label="Administrar grupo"><h3>Miembros del grupo</h3><Feedback resource={members}/><ul className="contact-list">{members.data?.map(m=><li key={m.username}><span className="grow"><strong>{m.name}</strong><small>{m.state==='INVITED'?'Invitado':m.administrator?'Administrador':'Miembro'}</small></span>{metadata.data.administrator&&m.state==='ACTIVE'&&m.username!==profile.usuario&&<><button disabled={busy} onClick={()=>run(()=>userApi.call(`/api/v1/conversations/${enc(id)}/members/${enc(m.username)}`,{method:'PUT',json:{administrator:!m.administrator,remove:false}}),'Rol actualizado.')}>{m.administrator?'Quitar administración a':'Hacer administrador a'} {m.name}</button><button disabled={busy} onClick={()=>{confirm('¿Retirar a '+m.name+' del grupo?',()=>run(()=>userApi.call(`/api/v1/conversations/${enc(id)}/members/${enc(m.username)}`,{method:'PUT',json:{administrator:false,remove:true}}),'Miembro retirado.'));}}>Retirar a {m.name}</button></>}</li>)}</ul>

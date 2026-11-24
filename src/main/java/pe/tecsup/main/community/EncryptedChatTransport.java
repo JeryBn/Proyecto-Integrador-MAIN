@@ -39,7 +39,12 @@ class EncryptedChatTransport {
 
     @GetMapping("/availability")
     public ResponseEntity<Void> availability(Principal principal, @PathVariable String conversationId) {
-        directPeer(principal.getName(), conversationId);
+        String actor = principal.getName();
+        if ("GROUP".equals(chats.conversation(actor, conversationId).kind())) {
+            requireGroup(actor, conversationId);
+        } else {
+            directPeer(actor, conversationId);
+        }
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 

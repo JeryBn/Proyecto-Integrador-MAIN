@@ -26,3 +26,5 @@ internal data class IncomingEncryptedChatText(
     val messageId: UUID,
     val envelope: EncryptedChatPayload
 )
+
+internal data class EncryptedChatGroup(val revision: String, val devices: List<EncryptedChatDevice>)

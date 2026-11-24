@@ -1,8 +1,8 @@
 import {useEffect, useRef, useState} from 'react';
 import {chatSafetyCodes} from './chat-device.mjs';
-import {openEncryptedChatSession} from './encrypted-chat-api.mjs';
+import {groupChatSafetyCodes, openEncryptedChatSession} from './encrypted-chat-api.mjs';
 
-export function EncryptedChatPreview({username, conversationId, contactUsername}) {
+export function EncryptedChatPreview({username, conversationId, contactUsername, group = false}) {
   const session = useRef(null);
   const controller = useRef(null);
   const pending = useRef(null);
@@ -21,7 +21,8 @@ export function EncryptedChatPreview({username, conversationId, contactUsername}
     session.current?.close();
   }, []);
 
-  const selected = devices.find(device => device.deviceId === selection);
+  const deviceOption = device => JSON.stringify([device.username ?? contactUsername, device.deviceId]);
+  const selected = devices.find(device => deviceOption(device) === selection);
   const normalized = value => value.replace(/\s/g, '').toUpperCase();
 
   async function run(action) {
@@ -43,7 +44,7 @@ export function EncryptedChatPreview({username, conversationId, contactUsername}
   async function start() {
     await run(async signal => {
       const opened = await openEncryptedChatSession({username, conversationId, contactUsername,
-        verifiedCodes: verified.current, signal, onDownload: value => {
+        verifiedCodes: verified.current, signal, group, onDownload: value => {
           if (!signal.aborted) setNotice('Descargando la IA local… ' + Math.round(value * 100) + '%');
         }});
       if (signal.aborted) {
@@ -59,9 +60,14 @@ export function EncryptedChatPreview({username, conversationId, contactUsername}
   async function send(event) {
     event.preventDefault();
     await run(async signal => {
-      const envelope = pending.current ?? await session.current.prepare(text, selection, signal);
+      const envelope = pending.current ?? await session.current.prepare(text, selected.deviceId, signal);
       pending.current = envelope;
-      await session.current.send(envelope, signal);
+      try {
+        await session.current.send(envelope, signal);
+      } catch (error) {
+        if (error.code === 'GROUP_DEVICES_CHANGED') pending.current = null;
+        throw error;
+      }
       pending.current = null;
       setText('');
       setMessages(previous => [...previous, {messageId: envelope.messageId, sender: username, text}]);
@@ -70,18 +76,19 @@ export function EncryptedChatPreview({username, conversationId, contactUsername}
 
   return <section className="card-form" aria-label="Prueba de chat cifrado">
     <h3>Chat cifrado de prueba</h3>
-    <p>Solo texto. Comparen el código por otro canal antes de enviar.</p>
+    <p>Solo texto. Comparen los códigos por otro canal antes de enviar.</p>
     <button disabled={working || !!pending.current} onClick={() => run(async signal => {
-      const result = await chatSafetyCodes(username, conversationId, contactUsername, signal);
+      const result = group ? await groupChatSafetyCodes(username, conversationId, signal)
+        : await chatSafetyCodes(username, conversationId, contactUsername, signal);
       setDevices(result);
-      setSelection(result[0]?.deviceId ?? '');
+      setSelection(result.length ? deviceOption(result[0]) : '');
       if (!result.length) setNotice('Tu contacto debe abrir esta conversación desde su dispositivo.');
     })}>Cargar códigos</button>
     {devices.length > 0 && <><label>Dispositivo del contacto
       <select value={selection} disabled={working || !!pending.current} onChange={event => {
         setSelection(event.target.value);
         setConfirmation('');
-      }}>{devices.map(({deviceId, code}) => <option key={deviceId} value={deviceId}>{code.slice(0, 9)}</option>)}</select>
+      }}>{devices.map(device => <option key={deviceOption(device)} value={deviceOption(device)}>{device.username ? device.username + " · " : ""}{device.code.slice(0, 9)}</option>)}</select>
     </label>
     {selected && <p><code style={{overflowWrap:'anywhere'}}>{selected.code}</code></p>}
     {selected && !verified.current.has(selected.code) && <><label>Código recibido por otro canal
@@ -97,7 +104,7 @@ export function EncryptedChatPreview({username, conversationId, contactUsername}
       <form onSubmit={send}>
         <label>Mensaje cifrado<textarea value={text} maxLength={4000} disabled={working || !!pending.current}
           onChange={event => setText(event.target.value)}/></label>
-        <button disabled={working || !text.trim()}>{pending.current ? 'Reintentar envío' : 'Enviar cifrado'}</button>
+        <button disabled={working || !text.trim() || (group && devices.some(device => !verified.current.has(device.code)))}>{pending.current ? 'Reintentar envío' : 'Enviar cifrado'}</button>
       </form>
       <button disabled={working || !!pending.current} onClick={() => run(async signal => {
         const incoming = await session.current.read(cursor, signal);
