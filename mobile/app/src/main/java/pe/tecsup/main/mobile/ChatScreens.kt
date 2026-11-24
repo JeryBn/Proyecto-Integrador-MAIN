@@ -135,6 +135,11 @@ import pe.tecsup.main.mobile.data.ChatMessage
  var manage by rememberSaveable{mutableStateOf(false)}
  var menu by rememberSaveable{mutableStateOf(false)}
  val conversation=model.conversations.firstOrNull{it.id==id}
+ var encrypted by remember(id,model.profile?.usuario){mutableStateOf(false)}
+ if(encrypted&&id!=null&&conversation!=null){
+  EncryptedConversationScreen(model,id,conversation.kind=="GROUP"){encrypted=false}
+  return
+ }
  val other=model.chatMembers.firstOrNull{it.username!=model.profile?.usuario}
  val contact=model.contacts.firstOrNull{it.username==other?.username}
  Column(Modifier.fillMaxSize().imePadding()){
@@ -151,6 +156,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
      IconButton(onClick={menu=true}){Icon(Icons.Outlined.MoreVert,"Opciones del chat")}
      DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
       DropdownMenuItem(text={Text("Actualizar")},onClick={model.refreshMessages();menu=false})
+      if(conversation?.state=="ACTIVE")DropdownMenuItem(text={Text("Chat cifrado de prueba")},onClick={encrypted=true;menu=false})
       if(conversation?.kind=="GROUP")DropdownMenuItem(text={Text("Miembros del grupo")},onClick={manage=true;menu=false})
       else if(contact!=null)DropdownMenuItem(text={Text("Ver contacto")},onClick={model.contactProfile=contact.username;menu=false})
      }

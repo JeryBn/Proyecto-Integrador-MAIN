@@ -240,6 +240,10 @@ class MainApi(val endpoint: String) {
     fun editMessage(id:String,revision:Int,text:String) { mutate("/api/v1/messages/"+id,JSONObject().put("expectedRevision",revision).put("text",text)) }
     fun cancelMessage(id:String,revision:Int) { mutate("/api/v1/messages/"+id+"/cancel",JSONObject().put("expectedRevision",revision),"POST") }
 
+    internal fun requireEncryptedChatPreview(conversation: java.util.UUID) {
+        checked(request("/api/v1/conversations/$conversation/encrypted/availability"))
+    }
+
     internal fun registerEncryptedChatDevice(device: java.util.UUID, signingKey: String, encryptionKey: String, proof: String) {
         mutateBody("/api/v1/chat-identity/devices/$device",
             JSONObject().put("signingKey", signingKey).put("encryptionKey", encryptionKey).put("proof", proof))

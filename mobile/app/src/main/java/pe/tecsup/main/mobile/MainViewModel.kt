@@ -542,6 +542,22 @@ class MainViewModel : ViewModel() {
         val result = withContext(Dispatchers.IO) { client.invitation(id,accept); client.conversations() }
         if (api === client) conversations = result
     }
+    internal suspend fun openEncryptedChat(context: android.content.Context, id: String, group: Boolean,
+            isVerified: (EncryptedChatDevice) -> Boolean): AndroidEncryptedChatSession {
+        val client = api ?: throw SessionExpired()
+        val username = profile?.usuario ?: throw SessionExpired()
+        val conversation = java.util.UUID.fromString(id)
+        val session = withContext(Dispatchers.IO) {
+            client.requireEncryptedChatPreview(conversation)
+            val store = AndroidChatIdentityStore(context.applicationContext)
+            val identity = store.load(client.endpoint, username)
+            store.register(client, username)
+            AndroidEncryptedChatSession(client, conversation, identity, group, username, isVerified)
+        }
+        if (api !== client || selectedConversation != id) throw ResourceUnavailable()
+        return session
+    }
+
     fun openConversation(id: String) {
         if (chatBusy) return
         selectedConversation = id; chatMessages = emptyList(); chatMembers = emptyList(); chatPage = 0; cancelEdit()

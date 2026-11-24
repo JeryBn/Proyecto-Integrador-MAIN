@@ -68,6 +68,7 @@ tasks.matching { it.name == "packageRelease" || it.name == "packageReleaseBundle
 }
 
 dependencies {
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
     implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     implementation("com.google.zxing:core:3.5.4")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
