@@ -12,6 +12,8 @@ MAIN reúne el portal académico web, la aplicación Android y la administració
 
 ## Ejecutar desde el código de `main`
 
+Para preparar la sustentación con MySQL, Django, Gemma y Android, sigue la [guía de demostración desde una copia limpia](docs/DEMO_LOCAL.md).
+
 Con JDK 21, Maven y Node.js instalados, ejecuta desde la raíz del repositorio:
 
 ```powershell
@@ -29,15 +31,12 @@ Para activar **Gemma**, ejecuta `ollama pull gemma3:4b` y mantén Ollama escucha
 
 Para **Android**, consulta la [guía de compilación](mobile/README.md). La variante de entrega incorpora el origen HTTPS indicado mediante `MAIN_PUBLIC_ORIGIN`: el estudiante solo introduce usuario y contraseña. Si se usa un túnel temporal y cambia su URL, recompila el APK. Para firmarlo, sigue la [guía de firma privada](docs/FIRMA_PRIVADA_ANDROID.md).
 
-## Verificación y alcance al 19 de noviembre de 2026
+## Verificación y alcance al 24 de noviembre de 2026
 
-- Pasaron 173 pruebas de Spring, 52 web y 94 de Django en las rondas registradas. Android pasó 13 pruebas unitarias y seis instrumentadas en un Motorola con Android 15.
-- Se verificó el acceso de alumno y docente en la web por HTTPS, la actualización del APK firmado, el ingreso en Android con el servidor preconfigurado y una respuesta de Gemma desde la app. [Evidencia Android](docs/informes/2026-11-16-android-fisico/LEEME.md)
-- En MySQL local pasaron 19 comprobaciones de integración y 38 de moderación. También se verificó la edición desde Django, su reflejo en Spring y el guardado de una entrega del alumno.
-- Queda el ensayo final con el equipo o docente, incluida la consulta de esa entrega por el docente y la comprobación de Android sobre la base compartida. Las notificaciones push con la app cerrada requieren configurar Firebase/FCM y probar la recepción en el teléfono.
-
-La presentación puede usar HTTPS temporal con datos ficticios y la laptop encendida. Antes de distribuir el APK firmado, guarda un respaldo recuperable de la firma. Mantén fuera de Git las contraseñas, credenciales de proveedores, archivos privados de configuración y claves de firma.
-
+- Pasaron 194 pruebas de Spring, 94 de Django, 60 web y 16 pruebas instrumentadas seleccionadas en el emulador Android.
+- Se verificaron notas, asistencia por sesión, controles por rol, contactos por código y QR, mensajería moderada y manejo de errores de sesión, conexión y permisos.
+- Android permite llamadas de voz y video en chats directos. Se verificó la conexión y la recepción de video de la cámara virtual entre dos clientes Android. Para la demo se usa una API local y datos ficticios.
+- Los mensajes se moderan en el servidor. El cifrado experimental y la prueba de llamadas Android a web quedan fuera del alcance de esta entrega.
 ## Identidad institucional
 
 Para una instalación dedicada, configura `MAIN_CAMPUS_NAME` y `MAIN_CAMPUS_COLOR` (formato `#RRGGBB`) antes de iniciar Spring. El portal muestra estos valores en su cabecera. Usa el mismo `MAIN_CAMPUS_NAME` al compilar Android para cambiar el nombre visible dentro de la app. Cada instalación debe usar su propia configuración y su propia base. La personalización visual no habilita el alojamiento compartido entre escuelas.
