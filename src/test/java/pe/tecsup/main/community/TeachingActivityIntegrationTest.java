@@ -94,6 +94,16 @@ class TeachingActivityIntegrationTest {
       .andExpect(status().isOk()).andExpect(jsonPath("$.qr[0]").exists()).andReturn().getResponse().getContentAsString();
   String code=json.readTree(result).get("code").asText();
   assertTrue(code.matches("[0-9]{6}"));
+  var qr=json.readTree(result).get("qr");
+  int scale=4, width=qr.get(0).asText().length()*scale, height=qr.size()*scale;
+  int[] pixels=new int[width*height];
+  for(int y=0;y<height;y++){
+   String row=qr.get(y/scale).asText();
+   for(int x=0;x<width;x++)pixels[y*width+x]=row.charAt(x/scale)=='1'?0xff000000:0xffffffff;
+  }
+  var source=new com.google.zxing.RGBLuminanceSource(width,height,pixels);
+  var bitmap=new com.google.zxing.BinaryBitmap(new com.google.zxing.common.HybridBinarizer(source));
+  assertEquals(code,new com.google.zxing.qrcode.QRCodeReader().decode(bitmap).getText());
   mvc.perform(post(root+"/mine").with(recipient).with(csrf())).andExpect(jsonPath("$.code").value(code));
   String request="{\"code\":\""+code+"\"}";
   mvc.perform(post(root+"/requests").with(sender).with(csrf()).contentType("application/json").content(request))
