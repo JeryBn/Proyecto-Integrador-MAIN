@@ -151,6 +151,10 @@ import pe.tecsup.main.mobile.data.ChatMessage
      IconButton(onClick={menu=true}){Icon(Icons.Outlined.MoreVert,"Opciones del chat")}
      DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
       DropdownMenuItem(text={Text("Actualizar")},onClick={model.refreshMessages();menu=false})
+      if(id!=null&&conversation?.kind=="DIRECT"&&conversation.state=="ACTIVE"&&contact?.blocked!=true){
+       DropdownMenuItem(text={Text("Llamar")},onClick={model.outgoingCall=id to "AUDIO";menu=false})
+       DropdownMenuItem(text={Text("Videollamada")},onClick={model.outgoingCall=id to "VIDEO";menu=false})
+      }
       if(conversation?.kind=="GROUP")DropdownMenuItem(text={Text("Miembros del grupo")},onClick={manage=true;menu=false})
       else if(contact!=null)DropdownMenuItem(text={Text("Ver contacto")},onClick={model.contactProfile=contact.username;menu=false})
      }

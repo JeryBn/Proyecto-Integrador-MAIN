@@ -240,6 +240,30 @@ class MainApi(val endpoint: String) {
     fun editMessage(id:String,revision:Int,text:String) { mutate("/api/v1/messages/"+id,JSONObject().put("expectedRevision",revision).put("text",text)) }
     fun cancelMessage(id:String,revision:Int) { mutate("/api/v1/messages/"+id+"/cancel",JSONObject().put("expectedRevision",revision),"POST") }
 
+    internal fun incomingCalls(): List<DirectCallSignal> =
+        rows(JSONArray(checked(request("/api/v1/calls/incoming"))), DirectCallSignal::read)
+
+    internal fun callIceServers(): List<CallIceServer> =
+        rows(json("/api/v1/calls/ice").getJSONArray("iceServers")) { server ->
+            val urls = server.getJSONArray("urls")
+            CallIceServer(List(urls.length()) { urls.getString(it) }, server.getString("username"), server.getString("credential"))
+        }
+
+    internal fun callSignal(id: java.util.UUID) = DirectCallSignal.read(json("/api/v1/calls/$id"))
+
+    internal fun startCall(id: java.util.UUID, conversation: java.util.UUID, kind: String, sdp: String) {
+        mutateBody("/api/v1/calls", JSONObject().put("id", id.toString())
+            .put("conversationId", conversation.toString()).put("kind", kind).put("sdp", sdp), "POST")
+    }
+
+    internal fun answerCall(id: java.util.UUID, sdp: String) {
+        mutateBody("/api/v1/calls/$id/answer", JSONObject().put("sdp", sdp))
+    }
+
+    internal fun endCall(id: java.util.UUID) {
+        mutateBody("/api/v1/calls/$id", JSONObject(), "DELETE")
+    }
+
     internal fun requireEncryptedChatPreview(conversation: java.util.UUID) {
         checked(request("/api/v1/conversations/$conversation/encrypted/availability"))
     }

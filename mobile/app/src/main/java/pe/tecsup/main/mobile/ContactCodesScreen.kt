@@ -47,6 +47,7 @@ internal fun ContactCodesScreen(model: MainViewModel) {
             scanError = if (detected == null) "No se pudo leer el QR. Acerca la cámara o escribe el código." else ""
         }
     }
+    val cameraAccess = rememberCameraAccess { scanError = "Permite el acceso a la cámara." }
     LaunchedEffect(Unit) { model.loadContactCodes() }
     PageHeading("Agregar compañeros") { model.settingsPage = "MAIN" }
     Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -69,7 +70,7 @@ internal fun ContactCodesScreen(model: MainViewModel) {
                     model.requestContact(input)
                 }) { Text("Enviar solicitud") }
                 OutlinedButton(enabled = !model.accountBusy, onClick = {
-                    try { camera.launch(null) } catch (_: ActivityNotFoundException) { scanError = "Cámara no disponible." }
+                    cameraAccess { try { camera.launch(null) } catch (_: ActivityNotFoundException) { scanError = "Cámara no disponible." } }
                 }) { Text("Leer QR") }
             }
             TextButton(enabled = !model.accountBusy, onClick = model::loadContactCodes) { Text("Actualizar solicitudes") }

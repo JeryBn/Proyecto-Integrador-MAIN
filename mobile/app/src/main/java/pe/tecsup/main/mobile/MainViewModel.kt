@@ -78,6 +78,8 @@ class MainViewModel : ViewModel() {
         private set
     private var detailRequest = 0L
     private var api: MainApi? = null
+    internal fun activeCallApi(): MainApi? = api
+    internal var outgoingCall by mutableStateOf<Pair<String, String>?>(null)
     fun loadCampus(view:String, offset:Int, courseId:Long?, onLoaded:(List<MainApi.CampusPost>)->Unit) = accountOperation { client ->
         val result = withContext(Dispatchers.IO) { client.campusPosts(view,offset,courseId) }
         if(api===client)onLoaded(result)

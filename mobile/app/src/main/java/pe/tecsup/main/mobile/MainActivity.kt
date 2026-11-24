@@ -90,7 +90,10 @@ class MainActivity : ComponentActivity() {
     LaunchedEffect(model.profile?.usuario) { if (model.profile == null) PushLocal.clear(pushContext) }
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (model.profile == null) LoginScreen(model)
-        else MainNavigationScreen(model)
+        else {
+            MainNavigationScreen(model)
+            DirectCallHost(model)
+        }
     }
 }
 

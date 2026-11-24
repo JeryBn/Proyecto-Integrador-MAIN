@@ -96,7 +96,8 @@ private fun statusLabel(state:String)=when(state){"PENDING"->"Pendiente de revis
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null)readAttachment(uri)}
  val photo=rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()){success->val file=captureFile;if(success && file!=null)readAttachment(androidx.core.content.FileProvider.getUriForFile(context,context.packageName+".statusfiles",file),"image/jpeg")else{file?.delete();captureFile=null}}
  val video=rememberLauncherForActivityResult(ActivityResultContracts.CaptureVideo()){success->val file=captureFile;if(success && file!=null)readAttachment(androidx.core.content.FileProvider.getUriForFile(context,context.packageName+".statusfiles",file),"video/mp4")else{file?.delete();captureFile=null}}
- fun capture(record:Boolean){
+ val cameraAccess=rememberCameraAccess { error="Permite el acceso a la cámara." }
+ fun capture(record:Boolean)=cameraAccess {
   try{val folder=File(context.cacheDir,"status-captures").also{it.mkdirs()};val file=File.createTempFile("capture-",if(record)".mp4" else ".jpg",folder);captureFile=file
    val uri=androidx.core.content.FileProvider.getUriForFile(context,context.packageName+".statusfiles",file);if(record)video.launch(uri)else photo.launch(uri)
   }catch(e:Exception){captureFile?.delete();captureFile=null;error="No hay una cámara disponible para esta acción."}
