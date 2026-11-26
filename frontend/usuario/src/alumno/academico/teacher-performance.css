@@ -1,0 +1,14 @@
+.teacher-performance {margin:24px 0;min-width:0;}
+.performance-filters {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px;}
+.performance-summary {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:24px 0;}
+.performance-summary article {padding:20px;background:var(--soft);border:1px solid var(--border);border-radius:12px;}
+.performance-summary strong {display:block;margin-top:12px;font-size:1.7rem;color:var(--ink);}
+.performance-chart {padding:0;list-style:none;}
+.performance-row {padding:20px 0;border-bottom:1px solid var(--border);}
+.performance-label {display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px;}
+.performance-track {position:relative;height:24px;border-radius:6px;background:var(--soft);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;}
+.performance-track span {display:block;height:100%;background:#2563eb;}
+.performance-row.support .performance-track span {background:#d97706;}
+.performance-track i {position:absolute;top:0;bottom:0;border-left:2px dashed var(--ink);}
+.performance-legend {color:var(--muted);font-size:.9rem;}
+@media(max-width:750px){.performance-summary{grid-template-columns:repeat(2,minmax(0,1fr));}.performance-summary article{padding:14px;}}

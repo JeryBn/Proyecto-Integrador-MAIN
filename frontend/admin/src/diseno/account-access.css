@@ -1,0 +1,22 @@
+.colegia-family-registration{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:16px;padding:16px;border:1px solid #e5eeff;border-radius:12px;font:12px/18px Inter,'Segoe UI',sans-serif;color:#45464f;background:#f8f9ff;}
+.stitch .colegia-family-registration button{display:inline-flex;align-items:center;gap:4px;background:transparent;border:0;padding:0;min-height:32px;color:#0062a0;font:600 14px/20px Inter,'Segoe UI',sans-serif;cursor:pointer;}
+.colegia-family-registration .material-symbols-outlined{font-size:16px;}
+.modernism .account-invitations{padding:24px;margin:24px 0;border:1px solid #e5eeff;border-radius:12px;background:white;}
+.modernism .account-invitations legend{padding:0 8px;font-size:16px;font-weight:700;color:#000420;}
+.modernism .account-invitations>p{margin:0 0 16px;font-size:14px;color:#45464f;}
+.modernism .account-invitations form{margin:16px 0;display:grid;gap:12px;}
+.modernism .account-invitations label{margin:0;font-size:14px;}
+.modernism .account-invitations .account-contact-check{display:flex;gap:8px;align-items:center;font-weight:400;font-size:12px;}
+.modernism .account-invitations input[type=checkbox]{width:16px;height:16px;min-height:16px;flex:none;margin:0;accent-color:#0c1b4b;}
+.modernism .account-invitations .account-invitation-result{padding:16px;background:#eff4ff;border-radius:12px;}
+.modernism .account-invitation-result input{font-family:ui-monospace,monospace;}
+.modernism .account-requests{padding:16px;margin:0 0 24px;border:1px solid #e5eeff;border-radius:12px;background:#f8f9ff;}
+.modernism .account-requests-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.modernism .account-requests-heading h3{margin:0;font-size:16px;line-height:24px;color:#000420;}
+.modernism .account-requests-heading button,.modernism .account-requests-pagination button{font-size:12px;min-height:32px;padding:6px 12px;}
+.modernism .account-requests td small{display:block;font-size:11px;color:#767680;}
+.modernism .pending-request-badge{display:inline-flex;padding:4px 8px;border-radius:9999px;background:#fef3c7;color:#92400e;font-size:11px;font-weight:600;white-space:nowrap;}
+.modernism .account-requests-pagination{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;}
+.modernism #create-school-account{scroll-margin-top:88px;}
+.modernism #create-school-account .account-contact-check{display:flex;align-items:center;gap:8px;font-weight:400;font-size:14px;}
+.modernism #create-school-account .account-contact-check input{width:16px;height:16px;min-height:16px;flex:none;accent-color:#0c1b4b;margin:0;}
