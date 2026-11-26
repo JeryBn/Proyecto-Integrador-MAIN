@@ -1,0 +1,1 @@
+ALTER TABLE main_user ALTER COLUMN dark_theme SET DEFAULT TRUE;
