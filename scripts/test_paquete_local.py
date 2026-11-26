@@ -8,7 +8,7 @@ class PackageTests(unittest.TestCase):
   (root/'README.md').write_text('Fuente de prueba',encoding='utf-8');(root/'.gitignore').write_text('.env.local\nvar/\ntarget/\n')
   for args in [('add','.'),('-c','user.name=Synthetic','-c','user.email=synthetic@example.invalid','commit','-qm','fixture')]:
    subprocess.run(['git','-C',str(root),*args],check=True)
-  (root/'target').mkdir();(root/'target/main-sprint1-0.1.0.jar').write_bytes(b'synthetic-jar')
+  (root/'backend/springboot/target').mkdir(parents=True);(root/'backend/springboot/target/main-sprint1-0.1.0.jar').write_bytes(b'synthetic-jar')
   return root
  def test_ignored_files_never_enter_archive_and_manifest_matches(self):
   with tempfile.TemporaryDirectory() as folder:

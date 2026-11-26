@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Usuarios MAIN - MariaDB (8088)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="pe.tecsup.main.MainApplication" />
+    <module name="main-sprint1" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/springboot" />
+    <method v="2"><option name="Make" enabled="true" /></method>
+  </configuration>
+</component>

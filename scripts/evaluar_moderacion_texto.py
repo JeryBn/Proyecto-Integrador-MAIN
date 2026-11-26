@@ -28,7 +28,7 @@ if not key:
         if line.startswith('OPENAI_API_KEY='):
             key=line.split('=',1)[1].strip().strip('"\'');break
 if not key:raise SystemExit('Falta la clave existente; no se creó ni solicitó otra.')
-sys.path.insert(0,str(root/'admin-django'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.test_settings')
+sys.path.insert(0,str(root/'backend/django-admin'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.test_settings')
 import django
 django.setup()
 from administration.automatic_moderation import OpenAiModerator,ProviderUnavailable

@@ -30,7 +30,7 @@ $backup = Require-File 'deploy/oci/backup.sh'
 $springImage = Require-File 'deploy/oci/spring.Dockerfile'
 $djangoImage = Require-File 'deploy/oci/django.Dockerfile'
 $caddy = Require-File 'deploy/Caddyfile'
-$production = Require-File 'admin-django/main_admin/production_settings.py'
+$production = Require-File 'backend/django-admin/main_admin/production_settings.py'
 $ignore = Require-File '.gitignore'
 
 foreach ($required in @(

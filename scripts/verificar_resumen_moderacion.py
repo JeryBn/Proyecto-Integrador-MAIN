@@ -5,7 +5,7 @@ from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import patch
 repo=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(repo/'admin-django'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.settings')
+sys.path.insert(0,str(repo/'backend/django-admin'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.settings')
 import django
 django.setup()
 from administration.automatic_moderation import Assessment,process

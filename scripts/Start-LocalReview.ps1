@@ -1,7 +1,7 @@
 param([string]$JavaHome = $env:JAVA_HOME)
 $ErrorActionPreference = 'Stop'
 $reviewRepo = Split-Path $PSScriptRoot -Parent
-$reviewJar = Join-Path $reviewRepo 'target/main-sprint1-0.1.0.jar'
+$reviewJar = Join-Path $reviewRepo 'backend/springboot/target/main-sprint1-0.1.0.jar'
 if (!(Test-Path -LiteralPath $reviewJar)) { throw 'Primero compila el servidor con Maven verify.' }
 if (!$JavaHome -or !(Test-Path -LiteralPath (Join-Path $JavaHome 'bin/java.exe'))) { throw 'Configura JAVA_HOME con JDK 21.' }
 if (Get-NetTCPConnection -LocalPort 8088 -State Listen -ErrorAction SilentlyContinue) { throw 'Ya hay un servidor en 8088. Comprueba su origen; no se detuvo ningún proceso.' }

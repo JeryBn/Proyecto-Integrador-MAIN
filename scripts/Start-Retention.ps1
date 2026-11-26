@@ -37,11 +37,11 @@ try {
  if($Apply){$arguments+='--apply'}
  if($Background){
   $arguments+=@('--watch','--interval',[string]$IntervalSeconds)
-  $process=Start-Process -FilePath $PythonExecutable -ArgumentList $arguments -WorkingDirectory (Join-Path $repository 'admin-django') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'worker.stdout.log') -RedirectStandardError (Join-Path $logs 'worker.stderr.log') -PassThru
+  $process=Start-Process -FilePath $PythonExecutable -ArgumentList $arguments -WorkingDirectory (Join-Path $repository 'backend/django-admin') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'worker.stdout.log') -RedirectStandardError (Join-Path $logs 'worker.stderr.log') -PassThru
   $process.Id | Set-Content $pidFile
   Write-Output 'Proceso de retención iniciado; revisar var/retention para confirmar cada lote. No se modifica el inicio de Windows.'
  }else{
-  Push-Location (Join-Path $repository 'admin-django')
+  Push-Location (Join-Path $repository 'backend/django-admin')
   try { & $PythonExecutable @arguments; if($LASTEXITCODE){throw 'Falló la retención; revisar permisos y configuración.'} } finally {Pop-Location}
  }
 }finally{

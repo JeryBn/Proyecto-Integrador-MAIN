@@ -10,7 +10,7 @@ repo=Path(__file__).resolve().parents[1]
 source=Path(os.environ['MAIN_SYNTHETIC_MEDIA']).resolve()
 if not source.is_relative_to((repo/'var').resolve()) or source.name!='synthetic-probe.mp4':
     raise SystemExit('Use only a freshly generated synthetic-probe.mp4 inside var.')
-sys.path.insert(0,str(repo/'admin-django'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.test_settings')
+sys.path.insert(0,str(repo/'backend/django-admin'));os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.test_settings')
 import django
 django.setup()
 from administration.automatic_moderation import OpenAiModerator,ProviderUnavailable

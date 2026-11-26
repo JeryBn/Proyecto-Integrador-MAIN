@@ -54,7 +54,7 @@ def main():
  expect('stale_identity_logout_rejected',raw(student,'/logout','POST',{},headers)[0],409)
  expect('correct_session_survives_stale_logout',student.call('/api/perfil')[0],200)
  expect('preferences_not_changed_by_stale_tab',student.call('/api/v1/preferences')[1],dict(darkTheme=False,notifications=True,statusAudience='CONTACTS'))
- asset=Path(__file__).resolve().parents[1]/'src/main/resources/static/assets/main.js'
+ asset=Path(__file__).resolve().parents[1]/'backend/springboot/src/main/resources/static/assets/main.js'
  code,data=raw(student,'/assets/main.js');expect('packaged_asset_http_ok',code,200)
  expect('packaged_asset_equals_build',hashlib.sha256(data).hexdigest(),hashlib.sha256(asset.read_bytes()).hexdigest())
  a.result.parent.mkdir(parents=True,exist_ok=True);a.result.write_text(json.dumps(dict(timestampUTC=datetime.now(timezone.utc).isoformat(),checks=checks,passed=len(checks),limitation='Solo entorno local y datos sintéticos; no incluye aceptación ni éxito del proveedor IA.'),ensure_ascii=False,indent=2),encoding='utf-8')

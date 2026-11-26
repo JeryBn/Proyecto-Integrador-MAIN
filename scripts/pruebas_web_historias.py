@@ -13,7 +13,7 @@ from pathlib import Path
 from time import sleep
 from urllib.parse import urlsplit
 
-STATIC = Path(__file__).resolve().parents[1] / 'src/main/resources/static'
+STATIC = Path(__file__).resolve().parents[1] / 'backend/springboot/src/main/resources/static'
 ACTIVITY = dict(id=1, cursoId=1, titulo='Actividad sintética de prueba de interfaz',
                 curso='Curso de prueba', docente='Docente sintético', descripcion='Instrucciones sintéticas.',
                 fechaLimite='2026-10-06T15:30:00', vencida=True, completada=False)

@@ -8,7 +8,7 @@ config=json.loads(args.configuration.read_text(encoding='utf-8-sig'))
 assert config['database']=='main_architecture_review' and config['port']==3307,'Solo la base local aislada de pruebas'
 password=os.environ['MAIN_TEST_OPERATOR_PASSWORD']
 os.environ.update(MAIN_DB_NAME=config['database'],MAIN_DB_HOST='127.0.0.1',MAIN_DB_PORT=str(config['port']),MAIN_DB_USER=os.getenv('MAIN_TEST_OPERATOR_USER','root'),MAIN_DB_PASSWORD=password,MAIN_DJANGO_SECRET_KEY=config['django_secret'],DJANGO_SETTINGS_MODULE='main_admin.settings')
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'admin-django'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend/django-admin'))
 import django
 django.setup()
 from django.db import transaction

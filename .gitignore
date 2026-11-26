@@ -29,8 +29,12 @@ deploy/oci/secrets/
 deploy/oci/backups/
 deploy/oci/initial-access.txt
 
-frontend/node_modules/
-frontend/dist/
 
-frontend/node_modules/
-frontend/dist/
+
+# COLEGIA web
+**/node_modules/
+**/dist/
+**/target/
+**/.venv/
+.env.*
+!.env.example

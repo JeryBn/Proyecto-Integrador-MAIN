@@ -3,7 +3,7 @@ import os, sys, json, uuid
 from datetime import timedelta
 from pathlib import Path
 repo=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(repo/'admin-django'))
+sys.path.insert(0,str(repo/'backend/django-admin'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.settings')
 import django
 django.setup()

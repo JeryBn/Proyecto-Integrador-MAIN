@@ -17,7 +17,7 @@ $previous=@{};foreach($name in $names){$previous[$name]=[Environment]::GetEnviro
 try{
  $env:MAIN_DB_NAME=$configuration.database;$env:MAIN_DB_HOST='127.0.0.1';$env:MAIN_DB_PORT=[string]$configuration.port
  $env:MAIN_DB_USER='main_migration';$env:MAIN_DB_PASSWORD=$configuration.migration_password;$env:MAIN_DJANGO_SECRET_KEY=$configuration.django_secret
- Push-Location (Join-Path $repository 'admin-django')
+ Push-Location (Join-Path $repository 'backend/django-admin')
  try{
   foreach($account in @(@{username='jery.revision';name='Jery Becerra Ninaquispe'},@{username='michael.revision';name='Michael Julian Fernandez Camarena'})){
    $inspection=& $python manage.py provision_reviewer --username $account.username --name $account.name --inspect

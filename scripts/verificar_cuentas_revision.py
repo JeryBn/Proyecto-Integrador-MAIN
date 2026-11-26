@@ -10,7 +10,7 @@ parser=argparse.ArgumentParser();parser.add_argument('--configuration',type=Path
 config=json.loads(args.configuration.read_text(encoding='utf-8-sig'))
 assert config['database']=='main_architecture_review' and config['port']==3307,'Solo el entorno local aislado'
 os.environ.update(MAIN_DB_NAME=config['database'],MAIN_DB_HOST='127.0.0.1',MAIN_DB_PORT=str(config['port']),MAIN_DB_USER='main_migration',MAIN_DB_PASSWORD=config['migration_password'],MAIN_DJANGO_SECRET_KEY=config['django_secret'],DJANGO_SETTINGS_MODULE='main_admin.settings')
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'admin-django'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend/django-admin'))
 import django
 django.setup()
 from django.core.management import call_command

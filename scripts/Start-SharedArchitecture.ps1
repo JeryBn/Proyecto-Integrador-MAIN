@@ -10,7 +10,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $repository=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-if(!$JarPath){$JarPath=Join-Path $repository 'target/main-sprint1-0.1.0.jar'}
+if(!$JarPath){$JarPath=Join-Path $repository 'backend/springboot/target/main-sprint1-0.1.0.jar'}
 foreach($file in @($ConfigurationPath,$JavaExecutable,$PythonExecutable,$MySqlExecutable,$JarPath)){
   if(!(Test-Path -LiteralPath $file -PathType Leaf)){throw "No existe el archivo requerido: $file"}
   if($file -match '["\r\n]'){throw 'Ruta con caracteres no admitidos'}
@@ -96,7 +96,7 @@ if(!$djangoProcess -and (Test-LocalPort 8090)){
 if($djangoProcess){
   if($djangoProcess.CommandLine -notlike "*$PythonExecutable*" -or $djangoProcess.CommandLine -notlike '*main_admin.wsgi:application*'){throw '8090 está ocupado por otro servidor; no se detiene'}
 } else {
-  Start-Process -FilePath $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8090','--threads=4','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repository 'admin-django') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'django.stdout.log') -RedirectStandardError (Join-Path $logs 'django.stderr.log') | Out-Null
+  Start-Process -FilePath $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8090','--threads=4','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repository 'backend/django-admin') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $logs 'django.stdout.log') -RedirectStandardError (Join-Path $logs 'django.stderr.log') | Out-Null
 }
 Wait-LocalPort 8090
 Write-Host 'MAIN: usuarios http://127.0.0.1:8088/ y administración http://127.0.0.1:8090/admin.html'

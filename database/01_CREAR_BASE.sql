@@ -11,7 +11,21 @@ CREATE TABLE entrega (alumno_id BIGINT REFERENCES alumno(id), actividad_id BIGIN
 
 INSERT INTO alumno VALUES (1,'alumno','Alex Demo'),(2,'otro','Sam Demo'),(3,'vacio','Sol Demo');
 INSERT INTO docente VALUES (1,'Docente de demostraciÃƒÂ³n'),(2,'Docente de otro curso');
-INSERT INTO curso(id,nombre,docente_id) VALUES (1,'ConstrucciÃƒÂ³n y Pruebas de Software',1),(2,'Desarrollo de Aplicaciones Web',1),(3,'Curso privado de otro alumno',2);
+INSERT INTO curso(id,nombre,docente_id) VALUES (1,'Geometría',1),
+(2,'Trigonometría',1),
+(3,'Historia',2),
+(4,'Comprensión lectora',1),
+(5,'Aritmética',1),
+(6,'Álgebra',1),
+(7,'Comunicación',1),
+(8,'Biología',1),
+(9,'Física',1),
+(10,'Química',1),
+(11,'Inglés',1),
+(12,'Educación Física',1),
+(13,'Arte y Cultura',1),
+(14,'Desarrollo Personal, Ciudadanía y Cívica',1),
+(15,'Educación para el Trabajo',1);
 INSERT INTO matricula VALUES (1,1),(1,2),(2,3);
 INSERT INTO actividad VALUES
 (1,1,'Primer avance de MAIN','Demuestra el listado de pendientes y el detalle. Adjunta criterios de aceptaciÃƒÂ³n, pruebas y evidencia real del Sprint 1.',TIMESTAMP '2026-10-06 15:30:00'),

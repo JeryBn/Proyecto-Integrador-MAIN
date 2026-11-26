@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "COLEGIA Django (8000)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/django-admin/manage.py",
+      "args": [
+        "runserver",
+        "127.0.0.1:8000",
+        "--noreload"
+      ],
+      "cwd": "${workspaceFolder}/backend/django-admin",
+      "envFile": "${workspaceFolder}/backend/django-admin/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "COLEGIA Spring Boot",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "pe.tecsup.main.MainApplication",
+      "cwd": "${workspaceFolder}/backend/springboot"
+    }
+  ]
+}

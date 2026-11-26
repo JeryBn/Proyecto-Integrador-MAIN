@@ -19,3 +19,10 @@ var
 **/*.keystore
 **/google-services.json
 **/*firebase-adminsdk*.json
+
+**/node_modules
+**/dist
+**/target
+**/.venv
+.env*
+!**/.env.example

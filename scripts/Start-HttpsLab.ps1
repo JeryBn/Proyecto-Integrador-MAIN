@@ -6,7 +6,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$jar=Join-Path $repo 'target/main-sprint1-0.1.0.jar'
+$jar=Join-Path $repo 'backend/springboot/target/main-sprint1-0.1.0.jar'
 foreach($file in @($ConfigurationPath,$JavaExecutable,$PythonExecutable,$CaddyExecutable,$jar)){
  if(!(Test-Path -LiteralPath $file -PathType Leaf) -or $file -match '["\r\n]'){throw 'Ruta requerida inválida'}
 }
@@ -52,7 +52,7 @@ try{
  Set-LabEnv 'MAIN_DJANGO_SECRET_KEY' $config.django_secret
  Set-LabEnv 'DJANGO_SETTINGS_MODULE' 'main_admin.production_settings'
  Set-LabEnv 'MAIN_PUBLIC_ORIGIN' 'https://localhost:8443'
- $started+=Start-Process $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8190','--threads=4','--trusted-proxy=127.0.0.1','--trusted-proxy-headers=x-forwarded-proto','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repo 'admin-django') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logs 'django.out.log') -RedirectStandardError (Join-Path $logs 'django.err.log')
+ $started+=Start-Process $PythonExecutable -ArgumentList @('-m','waitress','--listen=127.0.0.1:8190','--threads=4','--trusted-proxy=127.0.0.1','--trusted-proxy-headers=x-forwarded-proto','main_admin.wsgi:application') -WorkingDirectory (Join-Path $repo 'backend/django-admin') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logs 'django.out.log') -RedirectStandardError (Join-Path $logs 'django.err.log')
  Wait-LabPort 8190
  Set-LabEnv 'MAIN_CADDY_DATA_DIR' ((Join-Path $repo 'var/caddy').Replace('\','/'))
  $started+=Start-Process $CaddyExecutable -ArgumentList @('run','--config','deploy/Caddyfile.local','--adapter','caddyfile') -WorkingDirectory $repo -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logs 'caddy.out.log') -RedirectStandardError (Join-Path $logs 'caddy.err.log')

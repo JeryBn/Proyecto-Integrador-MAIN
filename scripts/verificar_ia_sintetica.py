@@ -29,7 +29,7 @@ if not child_env.get('OPENAI_API_KEY'):
                 break
 moderation=dict(attempted=False)
 if child_env.get('OPENAI_API_KEY'):
-    run=subprocess.run([sys.executable,'manage.py','moderate_pending','--synthetic-probe','--settings=main_admin.test_settings'],cwd=root/'admin-django',env=child_env,capture_output=True,text=True,timeout=45)
+    run=subprocess.run([sys.executable,'manage.py','moderate_pending','--synthetic-probe','--settings=main_admin.test_settings'],cwd=root/'backend/django-admin',env=child_env,capture_output=True,text=True,timeout=45)
     moderation=dict(attempted=True,success=run.returncode==0)
     if run.returncode==0:
         value=json.loads(run.stdout.strip().splitlines()[-1]);moderation.update(outcome=value['outcome'],model=value['model'])

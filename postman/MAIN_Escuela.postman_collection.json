@@ -1,0 +1,336 @@
+{
+  "info": {
+    "name": "MAIN - Seguimiento escolar web",
+    "description": "Configura las credenciales en valores locales de las variables. No exportes contraseñas. Las consultas de familia necesitan vínculo verificado y matrícula escolar por año/aula. Ejecuta las carpetas por separado para cambiar de sesión. La colección consulta datos y descarga el PDF; no crea notas, cuentas ni publicaciones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8088",
+      "type": "string"
+    },
+    {
+      "key": "familyUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "familyPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "teacherUsername",
+      "value": "Docente",
+      "type": "string"
+    },
+    {
+      "key": "teacherPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "studentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "yearId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "periodId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "yearFrom",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "yearTo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assignmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "csrfParameter",
+      "value": "_csrf",
+      "type": "string"
+    },
+    {
+      "key": "csrfToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Apoderado",
+      "item": [
+        {
+          "name": "Preparar acceso",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/login-token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Acceso preparado',()=>pm.response.to.have.status(200));",
+                  "const t=pm.response.json();pm.collectionVariables.set('csrfToken',t.token);pm.collectionVariables.set('csrfParameter',t.parameterName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingresar como family",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/login",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{familyUsername}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{familyPassword}}",
+                  "type": "text"
+                },
+                {
+                  "key": "{{csrfParameter}}",
+                  "value": "{{csrfToken}}",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Comprobar perfil de apoderado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/perfil"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Es un apoderado',()=>pm.expect(pm.response.json().rol).to.eql('Familiar'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hijos vinculados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta permitida',()=>pm.response.to.have.status(200));const s=pm.response.json();if(s.length)pm.collectionVariables.set('studentId',String(s[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Años y periodos del estudiante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students/{{studentId}}/catalog"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta permitida',()=>pm.response.to.have.status(200));const c=pm.response.json(),y=c.years[0];if(y){pm.collectionVariables.set('yearId',String(y.id));pm.collectionVariables.set('yearFrom',y.id+'-01-01');pm.collectionVariables.set('yearTo',y.id+'-12-31');const p=c.periods.find(p=>p.id===y.activePeriodId)||c.periods.find(p=>p.yearId===y.id);if(p)pm.collectionVariables.set('periodId',p.id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Notas por competencias y periodo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students/{{studentId}}/report?yearId={{yearId}}&periodId={{periodId}}"
+          }
+        },
+        {
+          "name": "Libreta PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students/{{studentId}}/report.pdf?yearId={{yearId}}&periodId={{periodId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Libreta PDF',()=>{pm.response.to.have.status(200);pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asistencia del año",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students/{{studentId}}/attendance?yearId={{yearId}}&from={{yearFrom}}&to={{yearTo}}"
+          }
+        },
+        {
+          "name": "Comunicados tareas y exámenes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/family/students/{{studentId}}/publications"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Docente",
+      "item": [
+        {
+          "name": "Preparar acceso",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/login-token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Acceso preparado',()=>pm.response.to.have.status(200));",
+                  "const t=pm.response.json();pm.collectionVariables.set('csrfToken',t.token);pm.collectionVariables.set('csrfParameter',t.parameterName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingresar como teacher",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/login",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{teacherUsername}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{teacherPassword}}",
+                  "type": "text"
+                },
+                {
+                  "key": "{{csrfParameter}}",
+                  "value": "{{csrfToken}}",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Comprobar perfil docente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/perfil"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Es docente',()=>pm.expect(pm.response.json().rol).to.eql('Docente'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cursos y aulas asignados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/teaching/school/scopes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta permitida',()=>pm.response.to.have.status(200));const a=pm.response.json();if(a.length)pm.collectionVariables.set('assignmentId',a[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Periodos y estudiantes del aula",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/teaching/school/{{assignmentId}}/marks"
+          }
+        },
+        {
+          "name": "Publicaciones y lecturas confirmadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/teaching/publications"
+          }
+        }
+      ]
+    }
+  ]
+}

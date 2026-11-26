@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 from types import SimpleNamespace
 repo=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(repo/'admin-django'))
+sys.path.insert(0,str(repo/'backend/django-admin'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE','main_admin.test_settings')
 import django
 django.setup()

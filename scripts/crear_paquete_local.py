@@ -15,7 +15,7 @@ def build(root,output):
     root=Path(root).resolve();output=Path(output).resolve()
     if git(root,'status','--porcelain','--untracked-files=no').strip():
         raise ValueError('Guarda los cambios del código en un commit antes de empaquetar.')
-    jar=root/'target/main-sprint1-0.1.0.jar'
+    jar=root/'backend/springboot/target/main-sprint1-0.1.0.jar'
     if not jar.is_file():raise ValueError('Primero compila el servidor con mvn package.')
     sources=[]
     for raw in git(root,'ls-files','-z').split(b'\0'):

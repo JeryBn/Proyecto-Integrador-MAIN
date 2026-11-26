@@ -1,0 +1,78 @@
+name: ${COMPOSE_PROJECT_NAME:-colegia}
+services:
+  mysql:
+    image: mysql:8.0
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=-05:00"]
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-colegia}
+      MYSQL_USER: ${DB_USER:-colegia_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Prepara .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Prepara .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --host=127.0.0.1 --user=$$MYSQL_USER --database=$$MYSQL_DATABASE --execute='SELECT 1' >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+  springboot:
+    build: ./backend/springboot
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8081
+      MAIN_DB_URL: jdbc:mysql://mysql:3306/${DB_NAME:-colegia}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Lima
+      MAIN_DB_USER: ${DB_USER:-colegia_app}
+      MAIN_DB_PASSWORD: ${DB_PASSWORD:?Prepara .env}
+      MAIN_DEMO_ENABLED: "false"
+      MAIN_ADMIN_LEGACY_ENABLED: "false"
+      MAIN_ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      MAIN_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Prepara .env}
+      MAIN_AI_PROVIDER: ${AI_PROVIDER:-disabled}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MAIN_OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      MAIN_OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma3:4b}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    ports: ["127.0.0.1:${SPRING_PORT:-8081}:8081"]
+    depends_on:
+      mysql: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8081/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 45
+      start_period: 30s
+  django-admin:
+    build:
+      context: .
+      dockerfile: backend/django-admin/Dockerfile
+    environment:
+      MAIN_DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Prepara .env}
+      MAIN_ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      MAIN_DJANGO_HOSTS: localhost,127.0.0.1,django-admin,web-admin
+      MAIN_DB_HOST: mysql
+      MAIN_DB_PORT: 3306
+      MAIN_DB_NAME: ${DB_NAME:-colegia}
+      MAIN_DB_USER: ${DB_USER:-colegia_app}
+      MAIN_DB_PASSWORD: ${DB_PASSWORD:?Prepara .env}
+    ports: ["127.0.0.1:${DJANGO_PORT:-8000}:8000"]
+    depends_on:
+      springboot: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/admin/health',timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  web-usuario:
+    build: ./frontend/usuario
+    ports: ["127.0.0.1:${WEB_USER_PORT:-5173}:80"]
+    depends_on:
+      springboot: {condition: service_healthy}
+  web-admin:
+    build: ./frontend/admin
+    ports: ["127.0.0.1:${WEB_ADMIN_PORT:-5174}:80"]
+    depends_on:
+      django-admin: {condition: service_healthy}
+volumes:
+  mysql-data:
