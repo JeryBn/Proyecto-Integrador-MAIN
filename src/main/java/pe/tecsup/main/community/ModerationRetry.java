@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 class ModerationRetry {
-    static final String DELAY_MESSAGE = "La revisión por IA está demorada. COLEGIA MAIN volverá a intentarlo.";
+    static final String DELAY_MESSAGE = "La revisión por IA está demorada. COLEGIA volverá a intentarlo.";
     private static final Logger log = LoggerFactory.getLogger(ModerationRetry.class);
     private final JdbcTemplate db;
     private final Clock clock;

@@ -131,7 +131,7 @@ function AcademicDashboard({profile,items,loading,error,onReload,notices=[]}){
 
    <section className="dashboard-card dashboard-notices">
     <header><div><span className="section-kicker">COMUNIDAD</span><h2>Avisos recientes</h2></div><a href="#avisos">Ver bandeja <Icon name="arrowRight" size={16}/></a></header>
-    {!latest.length?<div className="compact-empty"><p>No tienes avisos recientes.</p></div>:<ul>{latest.map(item=><li key={item.id}><a href={noticeTarget(item)||'#avisos'}><span className="notice-dot" data-read={item.read}/><span><strong>{noticeLabel(item)}</strong><small>{item.createdAt?localDate(item.createdAt):'Aviso de COLEGIA MAIN'}</small></span><Icon name="arrowRight" size={16}/></a></li>)}</ul>}
+    {!latest.length?<div className="compact-empty"><p>No tienes avisos recientes.</p></div>:<ul>{latest.map(item=><li key={item.id}><a href={noticeTarget(item)||'#avisos'}><span className="notice-dot" data-read={item.read}/><span><strong>{noticeLabel(item)}</strong><small>{item.createdAt?localDate(item.createdAt):'Aviso de COLEGIA'}</small></span><Icon name="arrowRight" size={16}/></a></li>)}</ul>}
    </section>
   </div>
  </section>;

@@ -41,7 +41,7 @@ export function FamilyPortal({profile,section}) {
   const heading={summary:'Acompaña su aprendizaje',grades:'Notas y libreta',attendance:'Asistencia escolar',publications:'Comunicados del aula'}[tab];
   if(tab==='summary')return <StitchFamily profile={profile} students={students} studentId={studentId} setStudent={setStudent} catalog={catalog} year={year} report={report} attendance={attendance} publications={publications} error={error} download={download} downloading={downloading}/>;
   return <section className="school-portal family-portal">
-    <header className="school-page-heading"><span className="eyebrow">COLEGIA MAIN · ESPACIO DEL APODERADO</span><h1>{heading}</h1><p>Hola, {profile.nombre}. Consulta la información de los estudiantes vinculados a tu cuenta.</p><button onClick={()=>setRevision(v=>v+1)}>Actualizar información</button></header>
+    <header className="school-page-heading"><span className="eyebrow">COLEGIA · ESPACIO DEL APODERADO</span><h1>{heading}</h1><p>Hola, {profile.nombre}. Consulta la información de los estudiantes vinculados a tu cuenta.</p><button onClick={()=>setRevision(v=>v+1)}>Actualizar información</button></header>
     {error&&<p className="school-error" role="alert">{error}</p>}
     {students===null&&!error&&<p role="status">Cargando tu familia…</p>}
     {students?.length===0&&<div className="user-panel school-empty-state"><h2>Aún no tienes estudiantes vinculados</h2><p>Solicita a administración que verifique tu identidad y registre el parentesco. Después podrás consultar la información de tu hijo.</p></div>}

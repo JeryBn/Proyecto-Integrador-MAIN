@@ -552,7 +552,7 @@ function App() {
           </span>
           <div>
             <strong>
-              COLEGIA MAIN<span className="brand-dot">.</span>
+              COLEGIA<span className="brand-dot">.</span>
             </strong>
             <small>Portal administrativo</small>
           </div>
@@ -617,7 +617,7 @@ function App() {
       <div className="admin-workspace">
         <div className="admin-topbar">
           <span>
-            COLEGIA MAIN <span className="breadcrumb-divider">/</span> Administración
+            COLEGIA <span className="breadcrumb-divider">/</span> Administración
           </span>
           <span className="workspace-tag">
             <span aria-hidden="true" />
@@ -651,7 +651,7 @@ function App() {
           )}
         </main>
         <footer className="admin-footer">
-          COLEGIA MAIN · Gestión académica <span>Un espacio para aprender y conectar.</span>
+          COLEGIA · Gestión académica <span>Un espacio para aprender y conectar.</span>
         </footer>
       </div>
     </div>

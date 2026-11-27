@@ -559,7 +559,7 @@ function App() {
         </button></div></details>
       </header>
       <div className="admin-workspace">
-        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><span className="assistant-trigger admin-assistant-label" title="Asistente no habilitado en Administración"><Icon name="spark"/><span>Asistente COLEGIA MAIN</span></span><span className="admin-notice-indicator" aria-label="Notificaciones"><Icon name="bell"/></span><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
+        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><span className="assistant-trigger admin-assistant-label" title="Asistente no habilitado en Administración"><Icon name="spark"/><span>Asistente COLEGIA</span></span><span className="admin-notice-indicator" aria-label="Notificaciones"><Icon name="bell"/></span><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
         <main id="admin-content" tabIndex={-1}>
           {view.name === 'dashboard' && <AdminDashboard api={api} onExpire={expire} onNavigate={(name, focus)=>setView({name, focus})}/>}
           {['school','enrollments'].includes(view.name) && <AcademicAdmin api={api} onExpire={expire} />}
@@ -590,7 +590,7 @@ function App() {
           )}
         </main>
         <footer className="admin-footer">
-          COLEGIA MAIN · Gestión académica <span>Un espacio para aprender y conectar.</span>
+          COLEGIA · Gestión académica <span>Un espacio para aprender y conectar.</span>
         </footer>
       </div>
     </div>

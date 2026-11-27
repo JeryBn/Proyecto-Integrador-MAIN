@@ -17,7 +17,7 @@ export function Profile({profile,preferences,onPreferences,active,onChat}){
     <AppealHistory active={active}/>
     <h2>Ajustes</h2>{preferences?<fieldset disabled={busy} className="settings-list"><legend>Preferencias de tu cuenta</legend>
       <label><input type="checkbox" checked={preferences.darkTheme} onChange={e=>save(()=>onPreferences({...preferences,darkTheme:e.target.checked}),'Tema guardado.')}/> Tema oscuro</label>
-      <label><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/> Avisos dentro de COLEGIA MAIN</label>
+      <label><input type="checkbox" checked={preferences.notifications} onChange={e=>save(()=>onPreferences({...preferences,notifications:e.target.checked}),'Preferencia de avisos guardada.')}/> Avisos dentro de COLEGIA</label>
       <label>Privacidad de estados<select value={preferences.statusAudience} onChange={e=>save(()=>onPreferences({...preferences,statusAudience:e.target.value}),'Privacidad guardada.')}><option value="CONTACTS">Mis contactos autorizados</option><option value="PRIVATE">Solo yo</option></select></label>
       <p>Esta preferencia limita quién puede ver tus estados. Los bloqueos y la audiencia se comprueban también en el servidor.</p>
     </fieldset>:<p role="status">No se cargaron tus preferencias. Usa Actualizar cuenta para reintentar.</p>}

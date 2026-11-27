@@ -4,7 +4,7 @@ let appealsOffset=0;
 const notice=document.getElementById('notice');
 async function request(path,options={}){
  const response=await fetch(path,{...options,credentials:'same-origin',headers:{Accept:'application/json',...options.headers}});
- if(response.status===401)throw Error('Tu sesión terminó. Ingresa nuevamente desde el acceso de COLEGIA MAIN.');
+ if(response.status===401)throw Error('Tu sesión terminó. Ingresa nuevamente desde el acceso de COLEGIA.');
  const value=await response.json();
  if(!response.ok)throw Error(value.error?.message||'No se pudo completar la operación.');
  return value;

@@ -2,7 +2,7 @@ name: Calidad integral
 
 on:
   push:
-    branches: [main]
+    branches: [main, integracion/colegia-pamela]
     paths:
       - 'src/**'
       - 'pom.xml'
@@ -85,6 +85,13 @@ jobs:
           node build.mjs
       - name: Verificar que los archivos servidos están actualizados
         run: git diff --exit-code -- src/main/resources/static
+      - name: Probar y compilar los portales integrados
+        run: |
+          for portal in usuario admin; do
+            npm --prefix "frontend/$portal" ci
+            npm --prefix "frontend/$portal" test
+            npm --prefix "frontend/$portal" run build
+          done
       - name: Probar Spring Boot
         run: mvn --batch-mode --no-transfer-progress test
       - name: Guardar informes Spring
@@ -134,20 +141,28 @@ jobs:
       - name: Comprobar acceso web, Android y administración
         run: |
           curl -fsS http://127.0.0.1:8088/actuator/health
-          curl -fsS http://127.0.0.1:8088/portada.html | grep -F 'MAIN'
+          curl -fsS http://127.0.0.1:8088/portada.html | grep -F 'COLEGIA'
           curl -fsS http://127.0.0.1:8088/login-modern.css > /dev/null
           curl -fsS http://127.0.0.1:8090/api/admin/health
           curl -fsS http://127.0.0.1:8090/assets/admin.js > /dev/null
+          curl -fsS --retry 5 --retry-connrefused http://127.0.0.1:5173/login.html | grep -F 'COLEGIA'
+          curl -fsS http://127.0.0.1:5174/api/admin/health
           cookies=$(mktemp)
           trap 'rm -f "$cookies"' EXIT
-          token=$(curl -fsS -c "$cookies" http://127.0.0.1:8088/login-token | jq -r .token)
+          token=$(curl -fsS -c "$cookies" http://127.0.0.1:5173/login-token | jq -r .token)
           curl -fsS -b "$cookies" -c "$cookies" --data-urlencode "_csrf=$token" \
-            --data-urlencode username=alumno --data-urlencode 'password=MainDemo2026!' http://127.0.0.1:8088/login
-          curl -fsS -b "$cookies" http://127.0.0.1:8088/api/actividades | jq -e 'type == "array"'
-          token=$(curl -fsS -c "$cookies" http://127.0.0.1:8090/api/admin/csrf | jq -r .token)
+            --data-urlencode username=alumno --data-urlencode 'password=MainDemo2026!' http://127.0.0.1:5173/login
+          curl -fsS -b "$cookies" http://127.0.0.1:5173/api/actividades | jq -e 'type == "array"'
+          curl -fsS -b "$cookies" http://127.0.0.1:5173/api/actividades/1/entrega | jq -e 'has("revision")'
+          token=$(curl -fsS -b "$cookies" http://127.0.0.1:5173/api/csrf | jq -r .token)
+          curl -fsS -b "$cookies" -X PUT -H "X-CSRF-TOKEN: $token" -H 'Content-Type: application/json' \
+            --data '{"note":"Evidencia de prueba","evidenceUrl":"","status":"DRAFT","expectedRevision":0}' \
+            http://127.0.0.1:5173/api/actividades/1/entrega | jq -e '.saved and (.submitted | not) and (.revision == 1)'
+          curl -fsS -b "$cookies" http://127.0.0.1:5173/api/v1/campus/feed | jq -e 'type == "array"'
+          token=$(curl -fsS -c "$cookies" http://127.0.0.1:5174/api/admin/csrf | jq -r .token)
           curl -fsS -b "$cookies" -c "$cookies" -H "X-CSRFToken: $token" \
             --data-urlencode username=admin_local --data-urlencode "password=$MAIN_LOCAL_ADMIN_PASSWORD" \
-            http://127.0.0.1:8090/api/admin/login | jq -e '.rol == "ADMIN"'
+            http://127.0.0.1:5174/api/admin/login | jq -e '.rol == "ADMIN"'
       - name: Mostrar estado si falla
         if: failure()
         run: docker compose ps --all

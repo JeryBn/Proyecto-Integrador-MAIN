@@ -51,8 +51,8 @@ import pe.tecsup.main.mobile.data.ContactUser
     SettingsRow(Icons.Outlined.Lock,"Privacidad","Contactos bloqueados y audiencia",onClick={model.settingsPage="PRIVACY"})
     SettingsRow(Icons.Outlined.RateReview,"Mis apelaciones","Solicitudes y resoluciones",onClick={model.settingsPage="APPEALS";model.loadAppeals()})
     Column(Modifier.padding(horizontal=20.dp,vertical=10.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-     PreferenceSwitch("Tema oscuro","Apariencia de COLEGIA MAIN",model.darkTheme,!model.accountBusy){model.savePreferences(model.preferences.copy(darkTheme=it))}
-     PreferenceSwitch("Avisos en COLEGIA MAIN","Mensajes e invitaciones",model.preferences.notifications,!model.accountBusy){model.savePreferences(model.preferences.copy(notifications=it))}
+     PreferenceSwitch("Tema oscuro","Apariencia de COLEGIA",model.darkTheme,!model.accountBusy){model.savePreferences(model.preferences.copy(darkTheme=it))}
+     PreferenceSwitch("Avisos en COLEGIA","Mensajes e invitaciones",model.preferences.notifications,!model.accountBusy){model.savePreferences(model.preferences.copy(notifications=it))}
      PushSettings(model)
      if(model.profile?.rol=="Alumno")ReminderSettings(model)
     }
@@ -74,7 +74,7 @@ import pe.tecsup.main.mobile.data.ContactUser
    FilterChip(selected=value.minutesBefore==minutes,onClick={model.saveReminders(value.copy(minutesBefore=minutes))},enabled=!model.accountBusy,label={Text(label)})
   }
  }
- Text("Activa Avisos en COLEGIA MAIN. Para avisos con la app cerrada también se necesita push configurado y permiso.",style=MaterialTheme.typography.bodySmall)
+ Text("Activa Avisos en COLEGIA. Para avisos con la app cerrada también se necesita push configurado y permiso.",style=MaterialTheme.typography.bodySmall)
 }
 @Composable internal fun ContactRow(contact:ContactUser,onClick:()->Unit) {
  Row(Modifier.fillMaxWidth().clickable(onClick=onClick).padding(horizontal=20.dp,vertical=13.dp),
@@ -112,7 +112,7 @@ import pe.tecsup.main.mobile.data.ContactUser
   confirmButton={TextButton(enabled=!model.accountBusy,onClick={model.saveContact(contact.copy(blocked=!contact.blocked));confirmBlock=false}){Text(if(contact.blocked)"Desbloquear" else "Bloquear")}},
   dismissButton={TextButton(onClick={confirmBlock=false}){Text("Cancelar")}})
  if(report&&contact!=null)AlertDialog(onDismissRequest={report=false},title={Text("Reportar contacto")},
-  text={Column{Text("El motivo será revisado por la administración de COLEGIA MAIN.");OutlinedTextField(value=reason,onValueChange={reason=it.take(1000)},label={Text("Motivo del reporte")});AccountFeedback(model)}},
+  text={Column{Text("El motivo será revisado por la administración de COLEGIA.");OutlinedTextField(value=reason,onValueChange={reason=it.take(1000)},label={Text("Motivo del reporte")});AccountFeedback(model)}},
   confirmButton={TextButton(enabled=reason.isNotBlank()&&!model.accountBusy,onClick={model.reportContact(contact.username,reason)}){Text("Enviar reporte")}},
   dismissButton={TextButton(onClick={report=false}){Text("Cancelar")}})
 }

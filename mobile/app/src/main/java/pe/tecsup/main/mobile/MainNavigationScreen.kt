@@ -179,7 +179,7 @@ private fun HomeSection(model: MainViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Text("Información recibida de tu cuenta en COLEGIA MAIN.", style = MaterialTheme.typography.bodySmall)
+                Text("Información recibida de tu cuenta en COLEGIA.", style = MaterialTheme.typography.bodySmall)
                 Button(modifier=Modifier.semantics{contentDescription="Actividades"},onClick = { model.selectSection(MainSection.ACTIVITIES) }) {
                     Text("Ver actividades")
                 }

@@ -1,7 +1,7 @@
 import React from 'react';
 const symbols={grid:'grid_view',grades:'fact_check',school:'school',clock:'schedule',mail:'mail',chart:'monitoring',users:'group',spark:'auto_awesome',bell:'notifications',user:'how_to_reg',exit:'logout',book:'menu_book',shield:'security',plus:'add',eye:'visibility',help:'help_outline',calendar:'calendar_month',settings:'more_vert'};
 export function Icon({name='grid',className='',...rest}){return <span className={'material-symbols-outlined colegia-icon '+className} aria-hidden="true" {...rest}>{symbols[name]||'grid_view'}</span>;}
-export function Brand({href='/bienvenida.html'}){return <a className="colegia-brand" href={href} aria-label="COLEGIA MAIN, inicio"><img src="/diseno/logo-colegia.png" alt="" width="150" height="40"/><strong>MAIN</strong></a>;}
+export function Brand({href='/bienvenida.html'}){return <a className="colegia-brand" href={href} aria-label="COLEGIA, inicio"><img src="/diseno/logo-colegia.png" alt="" width="150" height="40"/></a>;}
 export const roleNames=['Alumno','Docente','Apoderado','Administrador'];
 export function accountInitials(name){return String(name||'').replace(/^(?:(?:Lic|Prof|Dr|Dra)\.?\s+)+/gi,'').split(/\s+/).filter(Boolean).slice(0,2).map(word=>word[0]).join('').toUpperCase()||'C';}
 export function RoleStrip({role}){const selected=role==='Familiar'?'Apoderado':role==='ADMIN'?'Administrador':role;return <div className="role-strip" aria-label={'Sesión actual: '+selected}>{roleNames.map(name=><span key={name} aria-current={name===selected?'page':undefined} title={name===selected?'Tu espacio actual':'Se requiere una cuenta de este rol'}>{name}</span>)}</div>;}

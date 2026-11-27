@@ -9,7 +9,7 @@ public class CampusBrandController {
     private final Brand brand;
 
     public CampusBrandController(
-            @Value("${MAIN_CAMPUS_NAME:COLEGIA MAIN}") String name,
+            @Value("${MAIN_CAMPUS_NAME:COLEGIA}") String name,
             @Value("${MAIN_CAMPUS_COLOR:#087f68}") String color) {
         String displayName = name.strip();
         if (displayName.isEmpty() || displayName.length() > 80 ||

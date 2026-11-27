@@ -86,5 +86,25 @@ services:
       timeout: 5s
       retries: 20
 
+  portal:
+    build:
+      context: .
+      dockerfile: frontend/usuario/Dockerfile
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      spring:
+        condition: service_healthy
+
+  panel:
+    build:
+      context: .
+      dockerfile: frontend/admin/Dockerfile
+    ports:
+      - "127.0.0.1:5174:80"
+    depends_on:
+      django:
+        condition: service_healthy
+
 volumes:
   mysql-data:

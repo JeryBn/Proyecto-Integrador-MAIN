@@ -20,10 +20,10 @@ export class AppErrorBoundary extends Component {
     return <main className="fatal-error" role="alert">
       <span className="logo" aria-hidden="true">M</span>
       <h1>No pudimos mostrar esta sección</h1>
-      <p>Tu cuenta y tus datos no se modificaron. Intenta abrir la sección nuevamente; si el problema continúa, recarga COLEGIA MAIN.</p>
+      <p>Tu cuenta y tus datos no se modificaron. Intenta abrir la sección nuevamente; si el problema continúa, recarga COLEGIA.</p>
       <div className="toolbar">
         <button onClick={() => this.setState({failed: false})}>Intentar de nuevo</button>
-        <button onClick={() => location.reload()}>Recargar COLEGIA MAIN</button>
+        <button onClick={() => location.reload()}>Recargar COLEGIA</button>
       </div>
     </main>;
   }

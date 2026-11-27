@@ -24,10 +24,10 @@ class MainMessagingService:FirebaseMessagingService(){
   if(!acceptsPush(PushLocal.binding(this),message.data["binding"],message.data["event"]))return
   if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return
   val manager=getSystemService(NotificationManager::class.java)
-  manager.createNotificationChannel(NotificationChannel("main_updates","Novedades de COLEGIA MAIN",NotificationManager.IMPORTANCE_DEFAULT))
+  manager.createNotificationChannel(NotificationChannel("main_updates","Novedades de COLEGIA",NotificationManager.IMPORTANCE_DEFAULT))
   val open=PendingIntent.getActivity(this,0,Intent(this,MainActivity::class.java),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   val notice=NotificationCompat.Builder(this,"main_updates").setSmallIcon(pe.tecsup.main.mobile.R.drawable.ic_main)
-   .setContentTitle(BuildConfig.CAMPUS_NAME).setContentText("Tienes novedades. Abre COLEGIA MAIN para consultarlas.")
+   .setContentTitle(BuildConfig.CAMPUS_NAME).setContentText("Tienes novedades. Abre COLEGIA para consultarlas.")
    .setVisibility(NotificationCompat.VISIBILITY_SECRET).setContentIntent(open).setAutoCancel(true).build()
   // Stable ID collapses redelivery and never includes a student's name or text.
   try{NotificationManagerCompat.from(this).notify(1001,notice)}catch(_:SecurityException){}

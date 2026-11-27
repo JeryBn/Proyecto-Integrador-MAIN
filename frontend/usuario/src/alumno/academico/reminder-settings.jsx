@@ -12,6 +12,6 @@ export function ReminderSettings({active}){
    <label><input type="checkbox" checked={value.enabled} onChange={e=>save({...value,enabled:e.target.checked})}/> Activar recordatorios</label>
    <label>Anticipación <select value={value.minutesBefore} onChange={e=>save({...value,minutesBefore:Number(e.target.value)})}><option value="15">15 minutos</option><option value="60">Una hora</option><option value="1440">Un día</option></select></label>
   </fieldset>}
-  <p>Solo tareas pendientes de tus cursos. Activa también Avisos dentro de COLEGIA MAIN. Los avisos del teléfono requieren push configurado y permiso.</p>
+  <p>Solo tareas pendientes de tus cursos. Activa también Avisos dentro de COLEGIA. Los avisos del teléfono requieren push configurado y permiso.</p>
  </section>;
 }

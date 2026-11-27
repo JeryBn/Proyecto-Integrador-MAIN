@@ -1,10 +1,12 @@
-# Integración de COLEGIA MAIN
+# Integración de COLEGIA
 
 Esta rama reúne la implementación de MAIN con los portales React de `origin/web/frontend-backend`. Ambos portales y Android consumen el mismo Spring y la misma base de datos. El panel utiliza el Django vigente. La web que ya sirve Spring en 8088 sigue disponible.
 
 ## Probar el diseño
 
-Arranca los backends locales siguiendo [la guía de demostración](DEMO_LOCAL.md). Desde la raíz instala las dependencias y arranca cada portal en una terminal:
+Con Docker, usa la configuración de [la guía de demostración](DEMO_LOCAL.md) y ejecuta `docker compose up --build --detach --wait`. Los servicios `portal` y `panel` publican los mismos puertos que el modo de desarrollo.
+
+Para el modo de desarrollo, arranca los backends locales siguiendo la misma guía. Desde la raíz instala las dependencias y arranca cada portal en una terminal:
 
 ```powershell
 npm --prefix frontend ci

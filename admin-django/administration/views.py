@@ -39,7 +39,7 @@ def api_not_found(request, exception=None):
 def api_server_error(request):
     if request.path.startswith('/api/'):
         return error(500, 'INTERNAL_ERROR', 'Ocurrió un problema inesperado. Intenta nuevamente.')
-    return HttpResponse('COLEGIA MAIN no pudo completar la solicitud.', status=500, content_type='text/plain; charset=utf-8')
+    return HttpResponse('COLEGIA no pudo completar la solicitud.', status=500, content_type='text/plain; charset=utf-8')
 
 @never_cache
 @require_GET
