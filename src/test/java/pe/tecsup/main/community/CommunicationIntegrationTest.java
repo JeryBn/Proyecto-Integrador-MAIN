@@ -18,6 +18,27 @@ class CommunicationIntegrationTest{
  @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
  @Autowired IdentityService users;@Autowired CommunicationService chat;@Autowired MockMvc mvc;@Autowired JdbcTemplate db;
  final String admin="admin_chat";
+ @Autowired java.time.Clock clock;
+ @Autowired org.springframework.security.crypto.password.PasswordEncoder passwords;
+
+ @Test void schoolInvitationRequiresCsrfAndCanOnlySetThePasswordOnce() throws Exception {
+  String username = "alumno";
+  String code = "A".repeat(32);
+  String replacement = "Synthetic-Activation-2026!";
+  String originalHash = db.queryForObject("SELECT password_hash FROM main_user WHERE username=?", String.class, username);
+  db.update("INSERT INTO account_activation_invitation (username,token_hash,credential_version,expires_at) VALUES (?,?,?,?)",
+      username, AccountActivation.digest(code), AccountActivation.digest(originalHash + "\0ALUMNO"),
+      java.sql.Timestamp.valueOf(java.time.LocalDateTime.now(clock).plusMinutes(30)));
+  String request = json.writeValueAsString(Map.of("username", username, "code", code, "password", replacement));
+  String path = "/api/access/activate";
+  mvc.perform(post(path).contentType("application/json").content(request)).andExpect(status().isForbidden());
+  mvc.perform(post(path).with(csrf()).contentType("application/json").content(request.replace(code, "B".repeat(32))))
+      .andExpect(status().isBadRequest());
+  mvc.perform(post(path).with(csrf()).contentType("application/json").content(request)).andExpect(status().isNoContent());
+  String newHash = db.queryForObject("SELECT password_hash FROM main_user WHERE username=?", String.class, username);
+  assertTrue(passwords.matches(replacement, newHash));
+  mvc.perform(post(path).with(csrf()).contentType("application/json").content(request)).andExpect(status().isBadRequest());
+ }
  @Test void chatIdentityRequiresPossessionAndIsVisibleOnlyToChatParticipants()throws Exception{
   users.approveContact(admin,"alumno","otro");
   String conversation=chat.direct("alumno","otro"), root="/api/v1/chat-identity";

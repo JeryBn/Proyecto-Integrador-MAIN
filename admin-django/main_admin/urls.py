@@ -1,7 +1,7 @@
 from django.urls import path
 from administration import views
 from administration import academic, school, enrollment_import
-from administration import identity
+from administration import identity, account_activation
 from administration import scheduling, grades
 from administration import moderation
 from administration import retention
@@ -12,6 +12,7 @@ handler404 = 'administration.views.api_not_found'
 handler500 = 'administration.views.api_server_error'
 
 urlpatterns = [
+    path('api/admin/v1/users/<str:username>/invitation', account_activation.invitation),
     path('api/admin/health', views.health),
     path('api/admin/reviewer/password', review_accounts.change_password),
     path('api/admin/v1/appeals', appeals.queue),

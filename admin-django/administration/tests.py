@@ -17,6 +17,7 @@ PASSWORD = 'SyntheticDjangoTest2026!'
 HASH = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
 
 class AdministrationTests(TransactionTestCase):
+    invitation_table = ('account_activation_invitation',)
     school_tables=('course_section','school_section','academic_period','academic_year')
     moderation_tables=('campus_post','moderation_appeal','moderation_retention_hold','automatic_assessment','notification','message_attachment_chunk','message_attachment','message_revision','message',
                        'conversation_member','conversation','status_view','status_recipient','status_media_chunk','status_update','contact_preference')
@@ -37,7 +38,7 @@ class AdministrationTests(TransactionTestCase):
             cursor.execute('CREATE TABLE contact_report(id VARCHAR(36), reporter VARCHAR(60), subject VARCHAR(60), reason VARCHAR(1000), created_at TIMESTAMP)')
             cursor.execute('CREATE TABLE contact_preference(owner VARCHAR(60),subject VARCHAR(60),muted BOOLEAN,blocked BOOLEAN,PRIMARY KEY(owner,subject))')
             migrations=Path(__file__).resolve().parents[2]/'src/main/resources/db/migration'
-            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__','V26__','V29__'):
+            for prefix in ('V3__','V5__','V7__','V9__','V11__','V14__','V15__','V16__','V18__','V22__','V26__','V29__','V36__'):
                 source=next(migrations.glob(prefix+'*.sql')).read_text()
                 for sql in source.split(';'):
                     if sql.strip() and 'ADD CONSTRAINT fk_campus_post_parent' not in sql:
@@ -46,7 +47,7 @@ class AdministrationTests(TransactionTestCase):
     @classmethod
     def tearDownClass(cls):
         with connection.cursor() as cursor:
-            for table in cls.school_tables + cls.moderation_tables:
+            for table in cls.school_tables + cls.moderation_tables + cls.invitation_table:
                 cursor.execute('DROP TABLE '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DROP TABLE ' + table)
@@ -58,7 +59,7 @@ class AdministrationTests(TransactionTestCase):
     def setUp(self):
         cache.clear()
         with connection.cursor() as cursor:
-            for table in self.school_tables + self.moderation_tables:
+            for table in self.school_tables + self.moderation_tables + self.invitation_table:
                 cursor.execute('DELETE FROM '+table)
             for table in ('course_grade','guardian_link','contact_link','contact_report','timetable', 'matricula', 'alumno'):
                 cursor.execute('DELETE FROM ' + table)
@@ -75,6 +76,23 @@ class AdministrationTests(TransactionTestCase):
 
     def login(self, username='admin_test', password=PASSWORD):
         return self.client.post('/api/admin/login', {'username':username, 'password':password}, HTTP_X_CSRFTOKEN=self.token())
+
+    def test_only_admin_can_issue_an_invitation_and_reissue_replaces_the_code(self):
+        path = '/api/admin/v1/users/alumno/invitation'
+        self.assertEqual(self.client.post(path, HTTP_X_CSRFTOKEN=self.token()).status_code, 401)
+        self.assertEqual(self.login().status_code, 200)
+        self.assertEqual(self.client.post(path).status_code, 403)
+        token = self.token()
+        first = self.client.post(path, HTTP_X_CSRFTOKEN=token)
+        second = self.client.post(path, HTTP_X_CSRFTOKEN=token)
+        self.assertEqual((first.status_code, second.status_code), (201, 201))
+        self.assertIn('no-store', second['Cache-Control'])
+        self.assertNotEqual(first.json()['code'], second.json()['code'])
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT token_hash FROM account_activation_invitation WHERE username=%s', ['alumno'])
+            self.assertEqual(cursor.fetchall(), [(hashlib.sha256(second.json()['code'].encode()).hexdigest(),)])
+        self.assertEqual(Audit.objects.filter(action='ACCOUNT_INVITATION_CREATED', subject='alumno').count(), 2)
+        self.assertEqual(self.client.post('/api/admin/v1/users/admin_test/invitation', HTTP_X_CSRFTOKEN=token).status_code, 409)
 
     def test_enrollment_import_previews_validates_and_repeats_without_duplicates(self):
         from .moderation import execute, rows

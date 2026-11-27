@@ -24,6 +24,8 @@ export function CommunityAdmin({ api, onExpire, currentUser }) {
     [second, setSecond] = useState('');
   const [target, setTarget] = useState(''),
     [password, setPassword] = useState('');
+  const [invitationUser, setInvitationUser] = useState('');
+  const [invitation, setInvitation] = useState(null);
   const fail = (e) => {
     if (e.status === 401 || e.status === 403) onExpire();
     else setError(e.message);
@@ -302,6 +304,34 @@ export function CommunityAdmin({ api, onExpire, currentUser }) {
           </label>
           <button type="submit">Autorizar contacto</button>
         </form>
+      </fieldset>
+      <fieldset disabled={busy} className="card">
+        <legend>Invitar a activar una cuenta</legend>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          setInvitation(null);
+          save(async () => {
+            setInvitation(await api(`/v1/users/${encodeURIComponent(invitationUser.trim())}/invitation`, {
+              method: 'POST',
+            }));
+          }, 'Código de activación generado.');
+        }}>
+          <label>
+            Usuario de la comunidad
+            <input required value={invitationUser} autoComplete="off"
+              onChange={(event) => {
+                setInvitationUser(event.target.value);
+                setInvitation(null);
+              }} />
+          </label>
+          <button type="submit" disabled={!invitationUser.trim()}>Generar código</button>
+        </form>
+        {invitation && (
+          <div role="status">
+            <p>Comparte este código de un solo uso con {invitation.username}. Vence en 30 minutos.</p>
+            <code>{invitation.code}</code>
+          </div>
+        )}
       </fieldset>
       <fieldset disabled={busy} className="card">
         <legend>Restablecer contraseña</legend>

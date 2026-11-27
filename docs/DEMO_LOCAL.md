@@ -53,6 +53,8 @@ java -jar target/main-sprint1-0.1.0.jar --spring.profiles.active=mysql --main.de
 
 Espera a que Flyway termine y abre el [portal de usuarios](http://127.0.0.1:8088/login.html). Spring crea la cuenta de administración al inicializar la base. Los ejemplos usan `Read-Host -MaskInput` de PowerShell 7.
 
+Para invitar a una cuenta escolar habilitada, genera un código en **Cuentas y vínculos** del panel administrativo. Compártelo directamente con la persona titular. En **Activar cuenta con un código**, el usuario establece su contraseña para ingresar desde la web o desde Android. El código vence en 30 minutos y se invalida al usarlo o generar uno nuevo.
+
 ### Panel administrativo
 
 En otra terminal, desde la raíz. Ejecuta las migraciones de Django la primera vez que prepares esa base.

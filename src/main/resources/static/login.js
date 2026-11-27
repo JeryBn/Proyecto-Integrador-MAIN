@@ -11,10 +11,42 @@ async function refreshToken() {
   const input=document.querySelector('#csrf');
   input.name=token.parameterName;
   input.value=token.token;
+  return token.token;
 }
 refreshToken().then(()=>submit.disabled=false).catch(()=>{
   message.textContent='No pudimos preparar el acceso. Pulsa Ingresar para reintentar.';
   submit.disabled=false;
+});
+
+const activation=document.querySelector('#activation');
+if (activation) activation.addEventListener('submit', async event => {
+  event.preventDefault();
+  const status=document.querySelector('#activation-message');
+  const button=activation.querySelector('button[type="submit"]');
+  const credentials=Object.fromEntries(new FormData(activation));
+  button.disabled=true;
+  status.textContent='';
+  try {
+    const token=await refreshToken();
+    const response=await fetch(activation.action, {
+      method:'POST',
+      credentials:'same-origin',
+      headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token},
+      body:JSON.stringify(credentials)
+    });
+    if (!response.ok) {
+      const result=await response.json().catch(() => null);
+      status.textContent=result?.error?.message || 'No pudimos activar la cuenta. Intenta nuevamente.';
+      return;
+    }
+    activation.reset();
+    form.elements.namedItem('username').value=credentials.username;
+    status.textContent='Cuenta activada. Ya puedes ingresar con tu nueva contraseña.';
+  } catch {
+    status.textContent='No pudimos conectar con MAIN. Intenta nuevamente.';
+  } finally {
+    button.disabled=false;
+  }
 });
 form.addEventListener('submit',async event=>{
   event.preventDefault();
