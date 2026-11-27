@@ -786,3 +786,27 @@ fieldset.card > legend {
   color: #30364f;
 }
 .confirmation-dialog{width:min(450px,calc(100vw - 28px));max-width:none;border:1px solid color-mix(in srgb,var(--acc) 15%,var(--b));border-radius:22px;padding:24px;background:#fff;color:var(--ink);box-shadow:0 26px 80px #10132645}.confirmation-dialog::backdrop{background:#11152888;backdrop-filter:blur(5px)}.confirmation-heading{display:flex;align-items:center;gap:13px}.confirmation-heading>span{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:15px;background:#fff1e8;color:#a44b2a}.confirmation-heading small{color:#a44b2a;font-size:9px;font-weight:800;letter-spacing:1.3px}.confirmation-dialog h2{margin:4px 0 0;font-size:19px}.confirmation-dialog>p{margin:20px 0 13px;font-size:13px;line-height:1.65;overflow-wrap:anywhere}.confirmation-note{display:flex;align-items:flex-start;gap:7px;padding:10px 11px;border-radius:11px;background:var(--soft);color:var(--muted);font-size:10px;line-height:1.5}.confirmation-note svg{flex:none;color:var(--acc)}.confirmation-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}.confirmation-actions button{margin:0!important;background:#fff!important;font-size:12px!important;font-weight:700}.confirmation-actions .confirm-action{border-color:var(--acc)!important;background:var(--acc)!important;color:#fff!important;box-shadow:0 9px 20px #6954de28}
+
+/* La navegación usa la paleta azul del portal escolar propuesto por Pamela. */
+.admin-shell {
+  background: #eef3fb;
+}
+.admin-shell header.admin-sidebar {
+  background: linear-gradient(165deg, #17263e, #080f20);
+  color: #edf3ff;
+  border-color: #2b3d59;
+}
+.admin-sidebar :is(.admin-brand small, .nav-label) {
+  color: #a6b7d0;
+}
+.admin-sidebar nav :is(.link, a) {
+  color: #edf3ff;
+}
+.admin-sidebar nav :is(.link, a):hover {
+  background: #1b365c;
+  color: #edf3ff;
+}
+.admin-sidebar nav :is(.link, a)[aria-current="page"] {
+  background: #dfeaff;
+  color: #132440;
+}

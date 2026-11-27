@@ -178,3 +178,21 @@
 .call-video{display:grid;grid-template-columns:2fr 1fr;gap:8px}
 .call-video video{width:100%;aspect-ratio:4/3;background:#172722;border-radius:12px;object-fit:contain}
 @media(max-width:640px){.main-call{bottom:calc(78px + env(safe-area-inset-bottom))}.conversation-header .chat-header-actions{flex-wrap:wrap}}
+
+/* Paleta escolar del portal web de Pamela, adaptada a la identidad de MAIN. */
+.campus-editorial {
+  --campus-forest: color-mix(in srgb, var(--campus-color) 28%, #080f20);
+}
+
+@media (min-width: 961px) {
+  .campus-editorial .sidebar {
+    background: linear-gradient(165deg, var(--campus-forest), #080e1b);
+  }
+  .campus-editorial .sidebar .nav-item.active {
+    background: #dfeaff;
+    color: #132440;
+  }
+  .campus-editorial .sidebar .nav-item:not(.active):hover {
+    background: #ffffff18;
+  }
+}

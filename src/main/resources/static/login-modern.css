@@ -7,3 +7,14 @@
 .login-card{display:flex;flex-direction:column;justify-content:center;padding:65px 58px;background:#fff}.login-card .eyebrow{color:#087f68}.login-card h2{font-size:31px;letter-spacing:-.04em}.login-card>p{font-size:13px}.login-card label{margin-top:20px;color:#394d47;font-weight:700}.login-card input:not([type=hidden]){min-height:48px;border-color:#d7e3de;border-radius:13px;background:#f7faf9;transition:border-color .2s,box-shadow .2s}.login-card input:not([type=hidden]):focus{border-color:#087f68;box-shadow:0 0 0 4px #087f6815;outline:0}.login-card button{min-height:50px;border-radius:13px;background:linear-gradient(145deg,#13a47d,#075e54);box-shadow:0 13px 30px #087f6830}.demo-note{border:1px solid #dce9e3;border-radius:14px;background:#f1f8f5;color:#52655f}.demo-note strong{color:#203a33}
 @media(max-width:900px){.login-shell{grid-template-columns:1fr 1fr}.login-story,.login-card{padding:38px}.login-story h1{font-size:36px}.login-story .eyebrow{margin-top:58px}}
 @media(max-width:640px){.login-body{padding:0;background:#fff}.login-shell{display:block;min-height:100vh;border:0;border-radius:0}.login-story{min-height:245px;padding:25px}.login-story .eyebrow{margin-top:34px}.login-story h1{font-size:30px}.login-story>p{font-size:12px}.login-card{padding:30px 25px}.demo-note{margin-top:20px}}
+
+/* Fondo de acceso inspirado en la paleta escolar de la propuesta web. */
+.login-body {
+  background: radial-gradient(circle at 12% 8%, #dfeaff, transparent 36%), #eef3fb;
+}
+.login-story {
+  background: linear-gradient(150deg, #080e1b, #17263e 62%, #1b365c);
+}
+.login-story :is(.eyebrow, small), .login-story > p, .story-card :is(span, p) {
+  color: #dfeaff;
+}
