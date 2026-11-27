@@ -82,7 +82,8 @@ class NavigationUiTest {
             ui.onAllNodesWithText("Cuando tengas actividades pendientes, aparecerán aquí.").fetchSemanticsNodes().isNotEmpty()
         }
         ui.onNodeWithContentDescription("Inicio").assertIsSelected()
-        ui.onNodeWithText("Hola, Sol Demo").assertIsDisplayed()
-        ui.onNodeWithText("Hola, Alex Demo").assertDoesNotExist()
+        ui.onNodeWithContentDescription("Perfil").performClick()
+        ui.onNodeWithText("Sol Demo").assertIsDisplayed()
+        ui.onNodeWithText("Alex Demo").assertDoesNotExist()
     }
 }
