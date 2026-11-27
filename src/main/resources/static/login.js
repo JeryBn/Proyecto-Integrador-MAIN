@@ -43,7 +43,7 @@ if (activation) activation.addEventListener('submit', async event => {
     form.elements.namedItem('username').value=credentials.username;
     status.textContent='Cuenta activada. Ya puedes ingresar con tu nueva contraseña.';
   } catch {
-    status.textContent='No pudimos conectar con Colegia Main. Intenta nuevamente.';
+    status.textContent='No pudimos conectar con COLEGIA MAIN. Intenta nuevamente.';
   } finally {
     button.disabled=false;
   }

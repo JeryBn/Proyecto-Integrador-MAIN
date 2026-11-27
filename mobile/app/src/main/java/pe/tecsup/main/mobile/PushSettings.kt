@@ -16,7 +16,7 @@ import com.google.firebase.messaging.FirebaseMessaging
  var active by remember{mutableStateOf(PushLocal.binding(context)!=null)}
  var feedback by remember{mutableStateOf("")}
  fun enable(){
-  if(!model.preferences.notifications){feedback="Activa primero Avisos en MAIN.";return}
+  if(!model.preferences.notifications){feedback="Activa primero Avisos en COLEGIA MAIN.";return}
   if(FirebaseApp.initializeApp(context)==null){feedback="Falta configurar Firebase para esta versión de la app.";return}
   val account=model.profile?.usuario
   FirebaseMessaging.getInstance().token.addOnCompleteListener{result->
@@ -27,7 +27,7 @@ import com.google.firebase.messaging.FirebaseMessaging
    }
   }
  }
- val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted->if(granted)enable()else feedback="Permiso denegado. Los avisos siguen disponibles dentro de MAIN."}
+ val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted->if(granted)enable()else feedback="Permiso denegado. Los avisos siguen disponibles dentro de COLEGIA MAIN."}
  LaunchedEffect(model.profile?.usuario,model.preferences.notifications){if(model.profile==null||!model.preferences.notifications){PushLocal.clear(context);active=false}}
  Text("Avisos en este teléfono")
  Text("Opcionales para la sesión actual. El proveedor recibe un aviso genérico, sin contenido del chat.",style=MaterialTheme.typography.bodySmall)

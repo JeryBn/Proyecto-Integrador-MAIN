@@ -1,6 +1,6 @@
 export function noticeLabel(notice){
  if(notice.kind==='CONTACT_REQUEST')return 'Solicitud de contacto';
- return notice.kind==='REMINDER'?'Actividad próxima a vencer':notice.kind==='MESSAGE'?'Mensaje aprobado disponible':notice.kind==='INVITATION'?'Invitación a grupo':'Aviso de MAIN';
+ return notice.kind==='REMINDER'?'Actividad próxima a vencer':notice.kind==='MESSAGE'?'Mensaje aprobado disponible':notice.kind==='INVITATION'?'Invitación a grupo':'Aviso de COLEGIA MAIN';
 }
 export function noticeTarget(notice){
  if(notice.kind==='CONTACT_REQUEST')return '#perfil';

@@ -164,7 +164,7 @@ export function CallPanel({username}){
   }
 
   if(!invite&&!state&&!error)return null;
-  return <section className="main-call" aria-label="Llamadas de Colegia Main">
+  return <section className="main-call" aria-label="Llamadas de COLEGIA MAIN">
     {error&&<div role="alert">{error} <button onClick={()=>setError('')}>Cerrar aviso</button></div>}
     {invite&&<><p>{invite.callerName} · {invite.kind==='VIDEO'?'Videollamada':'Llamada de audio'}</p>
       <button className="primary-action" onClick={()=>connect(invite.kind,invite.conversationId,invite)}>Aceptar</button>

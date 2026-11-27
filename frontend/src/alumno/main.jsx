@@ -23,7 +23,7 @@ async function request(url) {
 
 function App() {
   const campus = useResource('/api/campus/brand');
-  const campusName = campus.data?.name || 'Colegia Main';
+  const campusName = campus.data?.name || 'COLEGIA MAIN';
   const campusMark = Array.from(campusName)[0].toUpperCase();
   const campusStyle = {'--campus-brand':campus.data?.color || '#087f68'};
   const previousRoute=useRef(null);

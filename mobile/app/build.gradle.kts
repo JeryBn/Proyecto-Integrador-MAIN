@@ -14,7 +14,7 @@ val deliveryAlias = System.getenv("MAIN_SIGNING_KEY_ALIAS")
 val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
 val deliveryReady = listOf(deliveryStore, deliveryStorePassword, deliveryAlias, deliveryKeyPassword).all { !it.isNullOrBlank() }
 val deliveryOrigin = System.getenv("MAIN_PUBLIC_ORIGIN").orEmpty().trim().trimEnd('/')
-val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "Colegia Main"
+val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "COLEGIA MAIN"
 val campusColor = System.getenv("MAIN_CAMPUS_COLOR")?.takeIf { it.matches(Regex("#[0-9a-fA-F]{6}")) } ?: "#087f68"
 val deliveryUri = runCatching { URI(deliveryOrigin) }.getOrNull()
 val deliveryOriginReady = deliveryUri != null && deliveryUri.scheme == "https" &&

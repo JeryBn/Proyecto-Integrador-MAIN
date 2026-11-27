@@ -26,7 +26,7 @@ function Confirmation({message,onFinish}){
   const dialog=useRef(null);
   useEffect(()=>{dialog.current?.showModal();},[]);
   return <dialog ref={dialog} className="confirmation-dialog" aria-label="Confirmar acción" onCancel={event=>{event.preventDefault();onFinish(false);}}>
-    <div className="confirmation-heading"><span><Icon name="alert" size={23}/></span><div><small>ACCIÓN IMPORTANTE</small><h2>¿Quieres continuar?</h2></div></div><p>{message}</p><div className="confirmation-note"><Icon name="shield" size={15}/> MAIN protege tus cambios y te pedirá confirmación en acciones sensibles.</div><div className="confirmation-actions">
+    <div className="confirmation-heading"><span><Icon name="alert" size={23}/></span><div><small>ACCIÓN IMPORTANTE</small><h2>¿Quieres continuar?</h2></div></div><p>{message}</p><div className="confirmation-note"><Icon name="shield" size={15}/> COLEGIA MAIN protege tus cambios y te pedirá confirmación en acciones sensibles.</div><div className="confirmation-actions">
       <button autoFocus onClick={()=>onFinish(false)}>No, volver</button>
       <button className="confirm-action" onClick={()=>onFinish(true)}>Sí, continuar</button>
     </div>

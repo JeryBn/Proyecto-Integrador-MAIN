@@ -198,7 +198,7 @@ internal fun DirectCallHost(model: MainViewModel) {
             })
     }
     if (error.isNotEmpty() && request == null && invite == null) {
-        AlertDialog(onDismissRequest = { error = "" }, title = { Text("Llamadas de Colegia Main") }, text = { Text(error) },
+        AlertDialog(onDismissRequest = { error = "" }, title = { Text("Llamadas de COLEGIA MAIN") }, text = { Text(error) },
             confirmButton = { TextButton(onClick = { error = "" }) { Text("Cerrar") } })
     }
 }

@@ -115,7 +115,7 @@ internal fun attachmentLabel(kind:String)=when(kind){"IMAGE"->"Ver foto";"VIDEO"
     LinearProgressIndicator(progress={progress},modifier=Modifier.fillMaxWidth(),color=Color.White)
     TextButton(onClick={paused=!paused}){Text(if(paused)"Reproducir" else "Pausar",color=Color.White)}
    }
-   if(bytes!=null&&message.attachmentKind=="FILE")TextButton(onClick={save.launch("MAIN-documento.txt")}){Text("Guardar documento TXT",color=Color.White)}
+   if(bytes!=null&&message.attachmentKind=="FILE")TextButton(onClick={save.launch("COLEGIA MAIN-documento.txt")}){Text("Guardar documento TXT",color=Color.White)}
   }
  }
 }

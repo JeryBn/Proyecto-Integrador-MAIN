@@ -1,4 +1,4 @@
-# Colegia Main
+# COLEGIA MAIN
 
 MAIN reúne el portal académico web, la aplicación Android y la administración institucional. Estudiantes y docentes acceden desde React o Android mediante la API de Spring Boot. El panel React de administración usa Django. Ambos servicios comparten MySQL en el entorno integrado.
 
