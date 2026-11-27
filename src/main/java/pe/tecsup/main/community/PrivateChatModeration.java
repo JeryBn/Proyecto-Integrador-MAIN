@@ -40,6 +40,7 @@ class PrivateChatModeration {
     private final ModerationRetry retries;
     private final ObjectMapper json;
     private final String model;
+    private final URI ollamaChatUri;
     private final AtomicBoolean running = new AtomicBoolean();
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
@@ -47,13 +48,16 @@ class PrivateChatModeration {
             .build();
 
     PrivateChatModeration(CommunicationService messages, MessageAttachments attachments,
-                          StatusService statuses, ModerationRetry retries, ObjectMapper json, @Value("${MAIN_CHAT_MODERATION_MODEL:}") String model) {
+                          StatusService statuses, ModerationRetry retries, ObjectMapper json,
+                          @Value("${MAIN_CHAT_MODERATION_MODEL:}") String model,
+                          @Value("${MAIN_OLLAMA_CHAT_URL:http://127.0.0.1:11434/api/chat}") URI ollamaChatUri) {
         this.messages = messages;
         this.attachments = attachments;
         this.statuses = statuses;
         this.retries = retries;
         this.json = json;
         this.model = model;
+        this.ollamaChatUri = ollamaChatUri;
     }
 
     @Scheduled(fixedDelayString = "${main.chat.moderation.interval-ms:2000}")
@@ -127,7 +131,7 @@ class PrivateChatModeration {
         var payload = Map.of("model", model, "stream", false, "format", schema,
                 "options", Map.of("temperature", 0, "num_ctx", 12288, "num_predict", 50),
                 "messages", List.of(Map.of("role", "system", "content", instructions), submission));
-        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:11434/api/chat"))
+        var request = HttpRequest.newBuilder(ollamaChatUri)
                 .timeout(Duration.ofSeconds(45))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(payload)))

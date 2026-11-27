@@ -11,6 +11,8 @@ on:
       - 'deploy/oci/**'
       - 'deploy/Caddyfile'
       - '.dockerignore'
+      - 'compose.yaml'
+      - '.env.example'
       - 'scripts/Test-ReleaseReadiness.ps1'
       - 'scripts/Test-ReleaseReadinessContract.ps1'
       - 'scripts/Test-OciDeployment.ps1'
@@ -24,6 +26,8 @@ on:
       - 'deploy/oci/**'
       - 'deploy/Caddyfile'
       - '.dockerignore'
+      - 'compose.yaml'
+      - '.env.example'
       - 'scripts/Test-ReleaseReadiness.ps1'
       - 'scripts/Test-ReleaseReadinessContract.ps1'
       - 'scripts/Test-OciDeployment.ps1'
@@ -111,6 +115,45 @@ jobs:
       - name: Probar administración aislada
         working-directory: admin-django
         run: python manage.py test administration --settings=main_admin.test_settings --noinput -v 2
+
+  docker-local:
+    name: Demostración Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - name: Preparar entorno aislado
+        run: |
+          for key in MAIN_LOCAL_DB_PASSWORD MAIN_LOCAL_DJANGO_SECRET MAIN_LOCAL_ADMIN_PASSWORD; do
+            value=$(openssl rand -hex 24)
+            echo "::add-mask::$value"
+            echo "$key=$value" >> "$GITHUB_ENV"
+          done
+      - name: Construir y levantar MAIN
+        run: docker compose up --build --detach --wait --wait-timeout 360
+      - name: Comprobar acceso web, Android y administración
+        run: |
+          curl -fsS http://127.0.0.1:8088/actuator/health
+          curl -fsS http://127.0.0.1:8088/portada.html | grep -F 'MAIN'
+          curl -fsS http://127.0.0.1:8088/login-modern.css > /dev/null
+          curl -fsS http://127.0.0.1:8090/api/admin/health
+          curl -fsS http://127.0.0.1:8090/assets/admin.js > /dev/null
+          cookies=$(mktemp)
+          trap 'rm -f "$cookies"' EXIT
+          token=$(curl -fsS -c "$cookies" http://127.0.0.1:8088/login-token | jq -r .token)
+          curl -fsS -b "$cookies" -c "$cookies" --data-urlencode "_csrf=$token" \
+            --data-urlencode username=alumno --data-urlencode 'password=MainDemo2026!' http://127.0.0.1:8088/login
+          curl -fsS -b "$cookies" http://127.0.0.1:8088/api/actividades | jq -e 'type == "array"'
+          token=$(curl -fsS -c "$cookies" http://127.0.0.1:8090/api/admin/csrf | jq -r .token)
+          curl -fsS -b "$cookies" -c "$cookies" -H "X-CSRFToken: $token" \
+            --data-urlencode username=admin_local --data-urlencode "password=$MAIN_LOCAL_ADMIN_PASSWORD" \
+            http://127.0.0.1:8090/api/admin/login | jq -e '.rol == "ADMIN"'
+      - name: Mostrar estado si falla
+        if: failure()
+        run: docker compose ps --all
+      - name: Retirar entorno sintético
+        if: always()
+        run: docker compose down --volumes --remove-orphans
 
   oracle-cloud:
     name: Despliegue Oracle Cloud

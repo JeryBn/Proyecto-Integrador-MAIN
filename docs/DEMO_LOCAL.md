@@ -1,5 +1,29 @@
 # Demostración local de MAIN
 
+## Arranque con Docker
+
+Con Docker y Compose disponibles, copia `.env.example` a `.env`. Define tres secretos privados distintos. La contraseña del administrador necesita al menos 12 caracteres. El archivo `.env` queda fuera de Git y de las imágenes.
+
+Desde la raíz ejecuta:
+
+```powershell
+ollama pull gemma3:4b
+docker compose up --build --detach --wait
+docker compose ps
+```
+
+Ollama debe estar ejecutándose en la máquina anfitriona. Si el contenedor no puede llegar al proceso, en Windows cierra Ollama y vuelve a iniciarlo con `OLLAMA_HOST=0.0.0.0:11434` en esa sesión. Mantén el puerto limitado a conexiones locales y al entorno de Docker con el firewall. En PowerShell, inicia el servicio con `$env:OLLAMA_HOST = '0.0.0.0:11434'; ollama serve`. La URL de Ollama se puede ajustar con `MAIN_OLLAMA_CHAT_URL`.
+
+- [Portada pública](http://127.0.0.1:8088/portada.html) e [ingreso](http://127.0.0.1:8088/login.html).
+- [Administración](http://127.0.0.1:8090/admin.html) con la cuenta configurada en `.env`.
+- Android de desarrollo, con el emulador o el teléfono conectado por ADB. Ejecuta `adb reverse tcp:8088 tcp:8088` antes de abrir la app. Si Docker usa otro puerto en Windows, ajusta solo el segundo puerto del comando.
+- Si ya tienes una instancia en los puertos predeterminados, libera esos puertos o usa `MAIN_WEB_PORT` y `MAIN_ADMIN_PORT`. El volumen de Docker empieza separado de tu MySQL local y conserva sus datos con `docker compose down`.
+- Para llamadas entre redes, añade el servidor TURN en `MAIN_TURN_URLS` y sus credenciales en `.env`. Para cambiar contraseñas en una base ya creada, actualiza las cuentas dentro del sistema. Las variables de inicialización se aplican al crear la base.
+
+Esta configuración es para desarrollo local. El despliegue con dominio, TLS y cuentas de base de datos separadas está en `deploy/oci`.
+
+## Arranque sin Docker
+
 Usa una copia limpia de `main` y una base de datos nueva para la demostración. En Windows se necesita JDK 21, Maven, Node.js con npm, Python, MySQL 8.4, Ollama, FFmpeg y Android Studio con el SDK 36, ADB y un emulador. La ruta se verificó desde un checkout nuevo en Windows con Python 3.14, una base MySQL vacía y un emulador existente.
 
 ## Compilar

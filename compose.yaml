@@ -1,0 +1,90 @@
+name: main-local
+
+x-django: &django
+  image: main-local-django
+  build:
+    context: .
+    dockerfile: deploy/oci/django.Dockerfile
+  environment:
+    MAIN_DB_HOST: mysql
+    MAIN_DB_NAME: main
+    MAIN_DB_USER: main_local
+    MAIN_DB_PASSWORD: ${MAIN_LOCAL_DB_PASSWORD:?Configura MAIN_LOCAL_DB_PASSWORD en .env}
+    MAIN_DJANGO_SECRET_KEY: ${MAIN_LOCAL_DJANGO_SECRET:?Configura MAIN_LOCAL_DJANGO_SECRET en .env}
+
+services:
+  mysql:
+    image: mysql:8.4.13
+    command: ["--default-time-zone=-05:00", "--character-set-server=utf8mb4"]
+    environment:
+      MYSQL_DATABASE: main
+      MYSQL_USER: main_local
+      MYSQL_PASSWORD: ${MAIN_LOCAL_DB_PASSWORD:?Configura MAIN_LOCAL_DB_PASSWORD en .env}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u main_local main -e 'SELECT 1' >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  spring:
+    build:
+      context: .
+      dockerfile: deploy/oci/spring.Dockerfile
+    entrypoint: ["java", "-jar", "/app/app.jar"]
+    environment:
+      TZ: America/Lima
+      SERVER_ADDRESS: 0.0.0.0
+      SPRING_PROFILES_ACTIVE: mysql
+      MAIN_DB_URL: jdbc:mysql://mysql:3306/main?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Lima&sessionVariables=time_zone=%27-05:00%27
+      MAIN_DB_USER: main_local
+      MAIN_DB_PASSWORD: ${MAIN_LOCAL_DB_PASSWORD:?Configura MAIN_LOCAL_DB_PASSWORD en .env}
+      MAIN_DEMO_ENABLED: ${MAIN_DEMO_ENABLED:-true}
+      MAIN_ADMIN_LEGACY_ENABLED: "false"
+      MAIN_ADMIN_USERNAME: ${MAIN_ADMIN_USERNAME:-admin_local}
+      MAIN_ADMIN_PASSWORD: ${MAIN_LOCAL_ADMIN_PASSWORD:?Configura MAIN_LOCAL_ADMIN_PASSWORD en .env}
+      MAIN_OLLAMA_CHAT_URL: ${MAIN_OLLAMA_CHAT_URL:-http://host.docker.internal:11434/api/chat}
+      MAIN_OLLAMA_MODEL: ${MAIN_OLLAMA_MODEL:-gemma3:4b}
+      MAIN_CHAT_MODERATION_MODEL: ${MAIN_CHAT_MODERATION_MODEL:-gemma3:4b}
+      MAIN_TURN_URLS: ${MAIN_TURN_URLS:-}
+      MAIN_TURN_SECRET: ${MAIN_TURN_SECRET:-}
+      MAIN_TURN_USERNAME: ${MAIN_TURN_USERNAME:-}
+      MAIN_TURN_PASSWORD: ${MAIN_TURN_PASSWORD:-}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:${MAIN_WEB_PORT:-8088}:8088"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8088/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  django-migrate:
+    <<: *django
+    entrypoint: ["python", "manage.py", "migrate", "--noinput"]
+    depends_on:
+      spring:
+        condition: service_healthy
+
+  django:
+    <<: *django
+    entrypoint: ["python", "-m", "waitress", "--listen=0.0.0.0:8090", "--threads=4", "main_admin.wsgi:application"]
+    ports:
+      - "127.0.0.1:${MAIN_ADMIN_PORT:-8090}:8090"
+    depends_on:
+      django-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8090/api/admin/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-data:
