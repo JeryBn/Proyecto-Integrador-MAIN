@@ -45,7 +45,7 @@ class NavigationUiTest {
 
         ui.onNodeWithContentDescription("Mensajes").performClick()
         ui.onNodeWithContentDescription("Nuevo chat").performClick()
-        ui.onNodeWithText("Contactos de MAIN").assertIsDisplayed()
+        ui.onNodeWithText("Contactos de COLEGIA").assertIsDisplayed()
         androidx.test.espresso.Espresso.pressBack()
         ui.onNodeWithContentDescription("Estados").performClick()
         ui.onNodeWithContentDescription("Actualizar estados").assertIsDisplayed()

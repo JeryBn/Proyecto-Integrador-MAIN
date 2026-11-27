@@ -84,15 +84,19 @@ function App() {
     return () => window.removeEventListener('hashchange', change);
   }, []);
 
+  function updateActivity(activity) {
+    setItems(current => current.map(item => item.id === activity.id ? activity : item));
+    setPending(current => activity.completada ? current.filter(item => item.id !== activity.id) : current);
+  }
   const courseRoute=hash.match(/^#cursos(?:\/(\d+)\/asistencia)?$/);
   const match = hash.match(/^#actividad\/(\d+)$/);
   const chatRoute=/^#chats(?:\/[A-Za-z0-9-]+)?$/.test(hash);
   const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
   const pageTitle=match?'Detalle de actividad':chatRoute?'Mensajes':hash==='#estados'?'Comunidad':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':hash==='#cursos'?'Cursos y notas':hash==='#actividades'?'Mis actividades':hash==='#notas'?'Notas y libreta':hash==='#asistencia'?'Asistencia escolar':['#campus','#publicaciones'].includes(hash)?'Campus':hash==='#evaluaciones'?'Evaluación escolar':hash==='#agenda'?'Horarios y Agenda':hash==='#reportes'?'Reportes & BI':profile?.rol==='Familiar'?'Mi familia':profile?.rol==='Docente'?'Mi aula':'Inicio académico';
   const navigation=profile?.rol==='Familiar'
-    ? [['#inicio','Mi familia'],['#notas','Notas y libreta'],['#asistencia','Asistencia'],['#chats','Mensajes'],['#estados','Estados'],['#perfil','Mi cuenta']]
+    ? [['#inicio','Mi familia'],['#chats','Mensajes'],['#estados','Estados'],['#perfil','Mi cuenta']]
     : profile?.rol==='Docente'
-      ? [['#inicio','Mi aula'],['#evaluaciones','Evaluación escolar'],['#cursos','Rendimiento'],['#publicaciones','Campus'],['#chats','Mensajes'],['#estados','Estados'],['#perfil','Mi cuenta']]
+      ? [['#inicio','Mi aula'],['#publicaciones','Campus'],['#chats','Mensajes'],['#estados','Estados'],['#perfil','Mi cuenta']]
       : [['#inicio','Panel General'],['#cursos','Calificaciones'],['#actividades','Aula Virtual'],['#agenda','Horarios y Agenda'],['#chats','Mensajes'],['#estados','Estados'],['#publicaciones','Campus'],['#reportes','Reportes'],['#perfil','Mi cuenta']];
   useEffect(()=>{
     document.title=pageTitle+' · COLEGIA';
@@ -126,7 +130,7 @@ function App() {
         </header>
         {profile&&<CallPanel key={profile.usuario} username={profile.usuario}/>}
         <main className="content" id="contenido-principal" tabIndex={-1} aria-label={pageTitle}>
-          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:profile.rol==='Alumno'&&hash==='#agenda'?<StudentAgenda items={items}/>:profile.rol==='Alumno'&&hash==='#reportes'?<StudentReports/>:['#campus','#publicaciones'].includes(hash)&&profile.rol!=='Familiar'?<CampusFeed profile={profile} campusName="COLEGIA" campusColor="#087f68"/>:courseRoute||profile.rol!=='Alumno' ? <Academic key={courseRoute?.[1]||'courses'} profile={profile} attendanceCourseId={courseRoute?.[1]} /> :match?<ActivityDetail key={match[1]} id={match[1]}/>:hash==='#actividades'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<StudentDashboard profile={profile} items={pending} loading={loading} error={error} onRefresh={load} assistantDraft={assistantDraft} setAssistantDraft={setAssistantDraft}/>}
+          {!profile ? <>{loading?<p role="status">Cargando tu cuenta…</p>:<div role="alert"><p>{error}</p><button onClick={load}>Reintentar acceso</button></div>}</> : chatRoute?<Messages profile={profile} conversationId={conversationId} onOpen={openChat} drafts={chatDrafts} setDrafts={setChatDrafts}/>:hash==='#estados'?<Statuses profile={profile} preferences={preferences} draft={statusDraft} setDraft={setStatusDraft} onChat={openChat}/>:hash==='#ia'?<Assistant draft={assistantDraft} setDraft={setAssistantDraft}/>:hash==='#perfil'?<><button onClick={load}>Actualizar cuenta</button><Profile profile={profile} preferences={preferences} onPreferences={savePreferences} active onChat={openChat}/></>:hash==='#avisos'?<Notifications active onUpdated={notices.reload} onChat={openChat}/>:profile.rol==='Alumno'&&hash==='#agenda'?<StudentAgenda items={items}/>:profile.rol==='Alumno'&&hash==='#reportes'?<StudentReports/>:['#campus','#publicaciones'].includes(hash)&&profile.rol!=='Familiar'?<CampusFeed profile={profile} campusName="COLEGIA" campusColor="#087f68"/>:courseRoute||profile.rol!=='Alumno' ? <Academic key={courseRoute?.[1]||'courses'} profile={profile} attendanceCourseId={courseRoute?.[1]} /> :match?<ActivityDetail key={match[1]} id={match[1]} onSubmissionSaved={updateActivity}/>:hash==='#actividades'?<Activities items={items} loading={loading} error={error} onReload={load}/>:<StudentDashboard profile={profile} items={pending} loading={loading} error={error} onRefresh={load} assistantDraft={assistantDraft} setAssistantDraft={setAssistantDraft}/>}
         </main>
       </div>
     </div>

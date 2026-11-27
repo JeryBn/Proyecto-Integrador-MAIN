@@ -118,6 +118,25 @@ class AdministrationTests(TransactionTestCase):
         self.assertEqual(Audit.objects.filter(action='ACCOUNT_INVITATION_CREATED', subject='alumno').count(), 2)
         self.assertEqual(self.client.post('/api/admin/v1/users/admin_test/invitation', HTTP_X_CSRFTOKEN=token).status_code, 409)
 
+    def test_invitation_reports_missing_mysql_permission(self):
+        from django.db import DatabaseError
+        from django.db.backends.utils import CursorWrapper
+
+        self.assertEqual(self.login().status_code, 200)
+        token = self.token()
+        execute = CursorWrapper.execute
+
+        def deny_invitation_insert(cursor, sql, params=None):
+            if sql.strip().startswith('INSERT INTO account_activation_invitation'):
+                raise DatabaseError(1142, 'Permission denied')
+            return execute(cursor, sql, params)
+
+        with patch.object(CursorWrapper, 'execute', deny_invitation_insert):
+            reply = self.client.post('/api/admin/v1/users/alumno/invitation', HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(reply.status_code, 503)
+        self.assertEqual(reply.json()['error']['code'], 'INVITATION_STORAGE_UNAVAILABLE')
+        self.assertFalse(Audit.objects.filter(action='ACCOUNT_INVITATION_CREATED').exists())
+
     def test_enrollment_import_previews_validates_and_repeats_without_duplicates(self):
         from .moderation import execute, rows
         execute("INSERT INTO alumno VALUES(1,'alumno','Estudiante de prueba')")

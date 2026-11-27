@@ -544,8 +544,7 @@ function App() {
       <header className="admin-sidebar">
         <Brand href="#"/>
         <p className="nav-label">MENÚ PRINCIPAL</p>
-        <nav aria-label="Administración">{[['dashboard','grid','Panel General'],['community','users','Usuarios'],['school','school','Gestión Escolar'],['enrollments','user','Matrículas'],['audit','shield','Auditoría'],['list','school','Actividades']].map(([name,icon,label])=><button className="link" key={name} aria-current={view.name===name?'page':undefined} onClick={()=>setView({name})}><Icon name={icon}/>{label}</button>)}<a className="link" href="/moderation.html">Centro de revisión</a></nav>
-        <details className="admin-more"><summary>Más herramientas</summary><button className="link" onClick={abrirListado}>Actividades</button><button className="link" onClick={abrirFormulario}>Nueva actividad</button><button className="link" onClick={()=>setView({name:'academic'})}>Cursos y vínculos académicos</button><a href="/moderation.html">Revisar contenido</a></details>
+        <nav aria-label="Administración">{[['dashboard','grid','Panel General'],['community','users','Usuarios'],['academic','school','Cursos y matrículas'],['audit','shield','Auditoría'],['list','school','Actividades']].map(([name,icon,label])=><button className="link" key={name} aria-current={view.name===name?'page':undefined} onClick={()=>setView({name})}><Icon name={icon}/>{label}</button>)}<a className="link" href="/moderation.html">Centro de revisión</a></nav>
         <details className="profile-menu admin-profile-menu"><summary className="sidebar-account" aria-label="Opciones de perfil">
           <span className="user-avatar" aria-hidden="true">
             {accountInitials(user.nombre||user.usuario)}
@@ -560,11 +559,10 @@ function App() {
         </button></div></details>
       </header>
       <div className="admin-workspace">
-        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><button type="button" className="assistant-trigger admin-assistant-label" aria-label="Asistente COLEGIA" aria-pressed={view.name==='assistant'} onClick={()=>setView({name:'assistant'})}><Icon name="spark"/><span>Asistente COLEGIA</span></button><span className="admin-notice-indicator" aria-label="Notificaciones"><Icon name="bell"/></span><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
+        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><button type="button" className="assistant-trigger admin-assistant-label" aria-label="Asistente COLEGIA" aria-pressed={view.name==='assistant'} onClick={()=>setView({name:'assistant'})}><Icon name="spark"/><span>Asistente COLEGIA</span></button><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
         <main id="admin-content" tabIndex={-1}>
           {view.name === 'assistant' && <SchoolAssistant onExpire={expire} />}
           {view.name === 'dashboard' && <AdminDashboard api={api} onExpire={expire} onNavigate={(name, focus)=>setView({name, focus})}/>}
-          {['school','enrollments'].includes(view.name) && <AcademicAdmin api={api} onExpire={expire} />}
           {view.name === 'audit' && <AuditView api={api} onExpire={expire}/>}
           {view.name === 'academic' && <AcademicAdmin api={api} onExpire={expire} />}
           {notice && view.name !== 'detail' && <p role="status">{notice}</p>}

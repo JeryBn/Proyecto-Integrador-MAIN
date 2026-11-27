@@ -29,4 +29,6 @@ Los portales reutilizan los módulos de MAIN para chats, estados, asistente, lla
 
 El botón **Asistente COLEGIA** del panel abre el asistente de gestión escolar. Requiere una sesión de administración y usa Gemma a través de Ollama. Recibe el texto de la consulta y no carga expedientes ni datos de cuentas.
 
+Si una instalación local existente devuelve `INVITATION_STORAGE_UNAVAILABLE`, comprueba que Spring haya aplicado la migración V36. Un operador de MySQL debe conceder `SELECT, INSERT, DELETE` sobre `account_activation_invitation` a la cuenta que usa Django, en el esquema y host de esa instalación. Docker configura los permisos al crear la base y el despliegue OCI los incluye en su script de permisos.
+
 Las pantallas de evaluación por competencias, comunicados escolares y autoservicio de recuperación por correo de la rama original requieren sus propias APIs y migraciones. La gestión académica y el acceso de esta integración utilizan los flujos que ya ofrece MAIN.

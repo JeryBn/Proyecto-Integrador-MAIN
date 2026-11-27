@@ -33,7 +33,7 @@ def ask(request):
             'stream': False,
             'options': {'num_predict': 400, 'num_ctx': 4096},
             'messages': [
-                {'role': 'system', 'content': 'Eres el asistente de gestión escolar de COLEGIA. Responde brevemente en español. Ofrece orientación general y borradores. No solicites ni inventes datos personales. No tienes acceso a las cuentas ni puedes realizar cambios.'},
+                {'role': 'system', 'content': 'Eres el asistente de gestión escolar de COLEGIA. Responde brevemente en español. Ofrece orientación general y borradores. Usa solo hechos suministrados por la persona. Para fechas, nombres, horarios, sedes y decisiones no confirmadas usa marcadores entre corchetes; nunca inventes años, plazos ni anuncios en firme. No solicites ni inventes datos personales. No tienes acceso a las cuentas ni puedes realizar cambios.'},
                 {'role': 'user', 'content': question},
             ],
         }

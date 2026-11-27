@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.db import connection
+from django.db import DatabaseError, connection, transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
@@ -27,11 +27,17 @@ def invitation(request, username):
 
     code = secrets.token_urlsafe(24)
     expires = datetime.now(ZoneInfo(settings.TIME_ZONE)).replace(tzinfo=None) + timedelta(minutes=30)
-    with connection.cursor() as cursor:
-        cursor.execute('DELETE FROM account_activation_invitation WHERE username=%s', [username])
-        cursor.execute('''INSERT INTO account_activation_invitation
-            (username, token_hash, credential_version, expires_at)
-            VALUES (%s,%s,%s,%s)''', [username, hashlib.sha256(code.encode()).hexdigest(), fingerprint(user), expires])
+    try:
+        with transaction.atomic(), connection.cursor() as cursor:
+            cursor.execute('DELETE FROM account_activation_invitation WHERE username=%s', [username])
+            cursor.execute('''INSERT INTO account_activation_invitation
+                (username, token_hash, credential_version, expires_at)
+                VALUES (%s,%s,%s,%s)''', [username, hashlib.sha256(code.encode()).hexdigest(), fingerprint(user), expires])
+    except DatabaseError as exc:
+        if not exc.args or exc.args[0] not in (1142, 1143, 1146):
+            raise
+        return error(503, 'INVITATION_STORAGE_UNAVAILABLE',
+                     'Generar invitaciones requiere habilitar el módulo en la base de datos. Contacta a soporte técnico.')
     record(request, 'ACCOUNT_INVITATION_CREATED', username)
     response = JsonResponse({'username': username, 'code': code, 'expiresAt': expires.isoformat()}, status=201)
     response['Cache-Control'] = 'no-store'
