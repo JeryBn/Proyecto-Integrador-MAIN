@@ -184,6 +184,21 @@
   --campus-forest: color-mix(in srgb, var(--campus-color) 28%, #080f20);
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #080e1b;
+  --surface: #111d31;
+  --ink: #edf3ff;
+  --muted: #a6b7d0;
+  --border: #2b3d59;
+  --soft: #152640;
+}
+
+.campus-editorial .institutional-topbar {
+  border-bottom-color: var(--border);
+  background: var(--surface);
+}
+
 @media (min-width: 961px) {
   .campus-editorial .sidebar {
     background: linear-gradient(165deg, var(--campus-forest), #080e1b);

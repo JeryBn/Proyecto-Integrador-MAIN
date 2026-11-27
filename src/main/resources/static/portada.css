@@ -1,0 +1,44 @@
+.school-home {
+  color-scheme: dark;
+  margin: 0;
+  min-height: 100vh;
+  color: #edf3ff;
+  background: radial-gradient(ellipse at 80% 8%, #1b365c, transparent 48%), #080f20;
+  font: 1rem/1.55 system-ui, sans-serif;
+}
+.school-home * { box-sizing: border-box }
+.school-home a { color: #c0d8ff; text-underline-offset: .25em }
+.school-home a:focus-visible { outline: 3px solid #82b4ff; outline-offset: 5px }
+.school-header, .school-content { max-width: 1240px; margin: auto; padding-inline: clamp(18px, 5vw, 72px) }
+.school-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px }
+.school-header a { text-decoration: none; font-weight: 700 }
+.school-brand { display: flex; align-items: center; gap: 12px; font-size: 1.45rem }
+.school-brand span, .school-preview-item span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #1b365c;
+  color: #c0d8ff;
+}
+.school-header .school-primary { padding: 11px 18px; border-radius: 12px; color: #101c32; background: #a6c8ff }
+.school-hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(24px, 7vw, 100px); align-items: center; padding-block: clamp(38px, 8vw, 100px) }
+.school-hero h1 { margin: 0; font-size: clamp(2.7rem, 7vw, 5.5rem); letter-spacing: -.065em; line-height: .98 }
+.school-hero h1 em { display: block; color: #a6c8ff; font-style: normal }
+.school-hero p, .school-spaces p { color: #b7c9e2 }
+.school-hero p { max-width: 43ch; margin: 22px 0 }
+.school-preview, .school-spaces article { background: #111d31; border: 1px solid #2b3d59; border-radius: 20px; padding: clamp(18px, 3vw, 30px) }
+.school-preview { box-shadow: 0 24px 60px #0005 }
+.school-calendar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; margin: 18px 0 }
+.school-calendar span { border-radius: 8px; padding: 4px; color: #b7c9e2 }
+.school-calendar span:nth-child(8) { color: #101c32; background: #a6c8ff; font-weight: 700 }
+.school-preview-item { display: flex; align-items: center; gap: 10px; margin-top: 10px }
+.school-preview-item span { width: 32px; height: 32px }
+.school-spaces { padding-block: 20px 55px }
+.school-spaces > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px }
+.school-spaces h3, .school-spaces p { margin: 0 }
+.school-spaces p { margin-top: 8px }
+@media (max-width: 720px) {
+  .school-hero, .school-spaces > div { grid-template-columns: 1fr }
+}

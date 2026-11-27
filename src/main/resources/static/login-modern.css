@@ -18,3 +18,19 @@
 .login-story :is(.eyebrow, small), .login-story > p, .story-card :is(span, p) {
   color: #dfeaff;
 }
+
+.activation-panel {
+  margin-top: 22px;
+  padding: 13px 15px;
+  background: #f3f7fe;
+  border: 1px solid #d5e2f6;
+  border-radius: 12px;
+}
+.activation-panel summary {
+  cursor: pointer;
+  color: #224674;
+  font-size: .9rem;
+  font-weight: 700;
+}
+.activation-panel p:empty { display: none }
+.activation-panel p { margin: 12px 0 0; font-size: .85rem }
