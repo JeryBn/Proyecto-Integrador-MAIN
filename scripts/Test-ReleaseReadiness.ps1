@@ -210,8 +210,10 @@ if (Test-ConfiguredValue $storeFile -and -not [IO.Path]::IsPathRooted($storeFile
 $environmentSigningReady = ($signingNames | Where-Object { -not (Test-ConfiguredValue $signingValues[$_]) }).Count -eq 0 -and
     (Test-Path -LiteralPath $storeFile -PathType Leaf)
 $privateSigningReady = $false
-$privateSigningConfiguration = Join-Path $env:LOCALAPPDATA 'MAIN-private\android\signing.json'
-if (Test-Path -LiteralPath $privateSigningConfiguration -PathType Leaf) {
+$privateSigningConfiguration = if ($env:LOCALAPPDATA) {
+    Join-Path $env:LOCALAPPDATA 'MAIN-private\android\signing.json'
+}
+if ($privateSigningConfiguration -and (Test-Path -LiteralPath $privateSigningConfiguration -PathType Leaf)) {
     try {
         if ((Get-Item -LiteralPath $privateSigningConfiguration).Length -gt 1MB) { throw 'Configuración privada demasiado grande.' }
         $privateSigning = Get-Content -LiteralPath $privateSigningConfiguration -Raw | ConvertFrom-Json
