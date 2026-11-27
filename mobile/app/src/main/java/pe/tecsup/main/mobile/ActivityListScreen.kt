@@ -39,7 +39,7 @@ internal fun activityDate(value: String): String = try {
     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Column {
-                Text("MAIN", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
+                Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary)
                 Text(model.profile?.nombre.orEmpty(), style = MaterialTheme.typography.bodySmall)
             }

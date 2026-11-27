@@ -9,8 +9,8 @@ buildSync({
 });
 
 const page=(title,name)=>'<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title><link rel="stylesheet" href="/assets/'+name+'.css"></head><body><div id="root"></div><script type="module" src="/assets/'+name+'.js"></script></body></html>';
-const html=page('Mis actividades · MAIN','main');
-const adminHtml=page('Administración · MAIN','admin');
+const html=page('Mis actividades · Colegia Main','main');
+const adminHtml=page('Administración · Colegia Main','admin');
 
 writeFileSync('dist/index.html',html);
 writeFileSync('dist/admin.html',adminHtml);

@@ -14,7 +14,7 @@ val deliveryAlias = System.getenv("MAIN_SIGNING_KEY_ALIAS")
 val deliveryKeyPassword = System.getenv("MAIN_SIGNING_KEY_PASSWORD")
 val deliveryReady = listOf(deliveryStore, deliveryStorePassword, deliveryAlias, deliveryKeyPassword).all { !it.isNullOrBlank() }
 val deliveryOrigin = System.getenv("MAIN_PUBLIC_ORIGIN").orEmpty().trim().trimEnd('/')
-val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "MAIN"
+val campusName = System.getenv("MAIN_CAMPUS_NAME")?.trim()?.takeIf { it.isNotEmpty() } ?: "Colegia Main"
 val campusColor = System.getenv("MAIN_CAMPUS_COLOR")?.takeIf { it.matches(Regex("#[0-9a-fA-F]{6}")) } ?: "#087f68"
 val deliveryUri = runCatching { URI(deliveryOrigin) }.getOrNull()
 val deliveryOriginReady = deliveryUri != null && deliveryUri.scheme == "https" &&
@@ -26,6 +26,7 @@ android {
     namespace = "pe.tecsup.main.mobile"
     compileSdk = 36
     defaultConfig {
+        resValue("string", "app_name", campusName)
         applicationId = "pe.tecsup.main.mobile"
         minSdk = 26
         targetSdk = 36

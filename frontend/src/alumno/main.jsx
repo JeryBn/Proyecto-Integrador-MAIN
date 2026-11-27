@@ -23,7 +23,7 @@ async function request(url) {
 
 function App() {
   const campus = useResource('/api/campus/brand');
-  const campusName = campus.data?.name || 'MAIN';
+  const campusName = campus.data?.name || 'Colegia Main';
   const campusMark = Array.from(campusName)[0].toUpperCase();
   const campusStyle = {'--campus-brand':campus.data?.color || '#087f68'};
   const previousRoute=useRef(null);
@@ -85,14 +85,14 @@ function App() {
   const conversationId=hash.match(/^#chats\/([A-Za-z0-9-]+)$/)?.[1]||null;
   const pageTitle=match?'Detalle de actividad':chatRoute?'Chats':hash==='#campus'?'Campus':hash==='#estados'?'Estados':hash==='#ia'?'Asistente académico':hash==='#perfil'?'Perfil y ajustes':hash==='#avisos'?'Avisos':courseRoute?'Cursos y notas':hash==='#actividades'?'Mis actividades':'Inicio académico';
   useEffect(()=>{
-    document.title=pageTitle+' · MAIN';
+    document.title=pageTitle+' · '+campusName;
     const changed=previousRoute.current!==null&&previousRoute.current!==hash;
     previousRoute.current=hash;
     if(!changed)return;
     window.scrollTo(0,0);
     const frame=requestAnimationFrame(()=>document.getElementById('contenido-principal')?.focus());
     return ()=>cancelAnimationFrame(frame);
-  },[hash,pageTitle]);
+  },[hash,pageTitle,campusName]);
   const navigation=[
     {route:'#inicio',label:'Inicio',icon:'home'},
     {route:'#cursos',label:'Cursos',icon:'book'},
@@ -100,7 +100,7 @@ function App() {
     {route:'#chats',label:'Chats',icon:'message',group:'Comunidad'},
     {route:'#estados',label:'Novedades',icon:'status'},
     ...(profile?.rol==='Alumno'||profile?.rol==='Docente'?[{route:'#campus',label:'Campus',icon:'graduation'}]:[]),
-    {route:'#ia',label:'MAIN IA',icon:'spark',group:'Herramientas'},
+    {route:'#ia',label:'Asistente IA',icon:'spark',group:'Herramientas'},
     {route:'#perfil',label:'Mi cuenta',icon:'user'}
   ];
 
@@ -121,7 +121,7 @@ function App() {
           <div className="topbar-context"><span className="mobile-brand" style={campusStyle}><span className="logo campus-mark">{campusMark}</span>{campusName}</span><span className="breadcrumb"><Icon name={courseRoute?'book':hash==='#actividades'||match?'clipboard':chatRoute?'message':hash==='#estados'?'status':hash==='#ia'?'spark':hash==='#perfil'?'user':'home'} size={17}/>{pageTitle}</span></div>
           <div className="topbar-actions">
             <a className="notice-button icon-notice" href="#avisos" aria-label="Ver avisos"><Icon name="bell" size={19}/>{notices.data?.some(n=>!n.read)&&<b>{notices.data.filter(n=>!n.read).length}{notices.data.length===30?'+':''}</b>}</a>
-            <a className="user-identity" href="#perfil"><span className="avatar small">{profile?.nombre?.slice(0,1)||'M'}</span><span><strong>{profile?.nombre||'Mi cuenta'}</strong><small>{profile?.rol||'MAIN'}</small></span></a>
+            <a className="user-identity" href="#perfil"><span className="avatar small">{profile?.nombre?.slice(0,1)||'M'}</span><span><strong>{profile?.nombre||'Mi cuenta'}</strong><small>{profile?.rol||campusName}</small></span></a>
           <div className="user-area">
             <form onSubmit={logout}>
               <button className="text-button logout-button" type="submit" disabled={signingOut} aria-label="Cerrar sesión"><Icon name="logout" size={18}/><span>{signingOut?'Cerrando…':'Salir'}</span></button>

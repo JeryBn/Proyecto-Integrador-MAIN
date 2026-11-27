@@ -70,7 +70,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
      PersonAvatar(conversation.title)
      Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){
       Text(conversation.title,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.SemiBold)
-      Text(if(conversation.state=="INVITED")"Invitación pendiente" else if(conversation.kind=="GROUP")"Grupo de MAIN" else "Conversación privada",
+      Text(if(conversation.state=="INVITED")"Invitación pendiente" else if(conversation.kind=="GROUP")"Grupo de Colegia Main" else "Conversación privada",
        style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
       if(conversation.state=="INVITED")Row{
        TextButton(onClick={model.respondInvitation(conversation.id,true)},enabled=!model.chatBusy){Text("Aceptar")}
@@ -104,9 +104,9 @@ import pe.tecsup.main.mobile.data.ChatMessage
   SettingsRow(Icons.Outlined.GroupAdd,"Nuevo grupo","Organiza una conversación de equipo",onClick={createGroup=true})
   HorizontalDivider()
   LazyColumn {
-   item{Text("Contactos de MAIN",Modifier.padding(horizontal=20.dp,vertical=12.dp),style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.primary)}
+   item{Text("Contactos de Colegia Main",Modifier.padding(horizontal=20.dp,vertical=12.dp),style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.primary)}
    val visible=model.contacts.filter{(it.name.contains(search,true)||it.username.contains(search,true))&&(filter=="Todos"||filter=="Estudiantes"&&it.role=="ALUMNO"||filter=="Profesores"&&it.role=="DOCENTE")}
-   if(visible.isEmpty()) item{Text("No hay contactos disponibles. La institución debe vincular tus contactos de MAIN.",Modifier.padding(20.dp))}
+   if(visible.isEmpty()) item{Text("No hay contactos disponibles. La institución debe vincular tus contactos de Colegia Main.",Modifier.padding(20.dp))}
    items(visible,key={it.username}){contact->ContactRow(contact){
     if(contact.blocked)model.contactProfile=contact.username
     else if(!model.chatBusy){model.showChatPicker=false;model.startDirect(contact.username)}
@@ -194,7 +194,7 @@ import pe.tecsup.main.mobile.data.ChatMessage
        if(message.reason.isNotBlank())Text(message.reason,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodySmall)
        if(mine&&message.state=="REJECTED")TextButton(onClick={model.editMessage(message)},enabled=!model.chatBusy){Text("Corregir mensaje")}
        if(mine&&message.state=="REJECTED"&&message.attachmentKind!="NONE")Text("Para sustituir el archivo, cancela este envío y adjunta uno nuevo.",style=MaterialTheme.typography.bodySmall)
-       if(message.correctedBeforeDelivery)Text("Editado antes del envío para cumplir las normas de MAIN",style=MaterialTheme.typography.labelSmall)
+       if(message.correctedBeforeDelivery)Text("Editado antes del envío para cumplir las normas de Colegia Main",style=MaterialTheme.typography.labelSmall)
        if(message.editedAfterDelivery)Text("Editado después del envío",style=MaterialTheme.typography.labelSmall)
       }
      }

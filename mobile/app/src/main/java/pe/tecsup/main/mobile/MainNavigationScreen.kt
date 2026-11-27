@@ -229,7 +229,7 @@ private fun PlannedSection(title: String, message: String) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("MAIN", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
+        Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary)
         Text(title, style = MaterialTheme.typography.headlineMedium)
         Card(
