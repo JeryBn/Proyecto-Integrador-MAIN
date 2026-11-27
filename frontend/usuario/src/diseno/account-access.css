@@ -1,0 +1,23 @@
+/* Additional account screens use the ZIP's Academic Modernism tokens. */
+body dialog.colegia-access-dialog{position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:480px;max-height:calc(100dvh - 48px);overflow:auto;box-sizing:border-box;border:1px solid #e5eeff;border-radius:16px;padding:28px;background:#fff;color:#0b1c30;box-shadow:0 24px 96px #0c1b4b30;font:14px/22px Inter,'Segoe UI',sans-serif;}
+body dialog.colegia-access-dialog::backdrop{background:#0c1b4b66;backdrop-filter:blur(4px);}
+.colegia-access-dialog>header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.colegia-access-dialog .access-dialog-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:#e5eeff;color:#0062a0;}
+.colegia-access-dialog .access-dialog-close{display:grid;place-items:center;background:transparent;border:0;width:36px;height:36px;min-height:0;padding:0;color:#45464f;}
+.colegia-access-dialog h2{margin:0 0 8px;font-size:24px;line-height:32px;color:#000420;letter-spacing:-.01em;}
+.colegia-access-dialog>p{font-size:14px;line-height:22px;margin:0 0 20px;color:#45464f;}
+.colegia-access-dialog form{display:grid;gap:16px;margin:0;}
+.colegia-access-dialog form>label{display:grid;gap:6px;margin:0;color:#0b1c30;font-size:14px;line-height:20px;font-weight:600;}
+body .colegia-access-dialog form input:not([type=checkbox]){box-sizing:border-box;width:100%;min-height:44px;margin:0;padding:10px 12px;border:1px solid #c6c5d0;border-radius:8px;background:#eff4ff;color:#0b1c30;font:14px/22px Inter,'Segoe UI',sans-serif;}
+.colegia-access-dialog input:focus-visible{outline:2px solid #0062a0;outline-offset:2px;}
+.colegia-access-dialog form>.access-dialog-check{display:flex;align-items:center;gap:8px;font-weight:400;font-size:12px;}
+.colegia-access-dialog input[type=checkbox]{width:16px;height:16px;accent-color:#0c1b4b;margin:0;}
+.colegia-access-dialog small{color:#767680;font-size:12px;line-height:18px;}
+.colegia-access-dialog .access-dialog-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:8px;padding:12px 16px;min-height:44px;background:#000420;color:white;font:600 14px/20px Inter,'Segoe UI',sans-serif;cursor:pointer;}
+.colegia-access-dialog .access-dialog-primary:disabled{opacity:.6;cursor:wait;}
+.colegia-access-dialog .access-dialog-link{padding:0;border:0;background:transparent;color:#0062a0;font-size:12px;cursor:pointer;}
+.colegia-access-dialog .access-dialog-notice{padding:12px;border-radius:8px;background:#ecfdf5;color:#047857;}
+.colegia-access-dialog .access-dialog-error{padding:12px;border-radius:8px;background:#fff1f2;color:#be123c;}
+.colegia-family-registration{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:16px;padding:16px;border:1px solid #e5eeff;border-radius:12px;font:12px/18px Inter,'Segoe UI',sans-serif;color:#45464f;background:#f8f9ff;}
+.stitch .colegia-family-registration button{display:inline-flex;align-items:center;gap:4px;background:transparent;border:0;padding:0;min-height:32px;color:#0062a0;font:600 14px/20px Inter,'Segoe UI',sans-serif;cursor:pointer;}
+.colegia-family-registration .material-symbols-outlined{font-size:16px;}

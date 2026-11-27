@@ -1,0 +1,7 @@
+import {useEffect,useState} from 'react';
+import {etiquetasDeAuditoria} from '../administracion/gestion-academica/academic-admin.jsx';
+export function AuditView({api,onExpire}){
+ const [offset,setOffset]=useState(0),[rows,setRows]=useState(null),[error,setError]=useState('');
+ useEffect(()=>{let active=true;setRows(null);setError('');api(`/v1/audit?offset=${offset}&limit=20`).then(r=>active&&setRows(r)).catch(e=>{if(!active)return;if(e.status===401)onExpire();else setError(e.message);});return()=>{active=false;};},[offset]);
+ return <section className="model-page"><header><h1>Auditoría</h1><p>Historial de cambios de administración. No muestra contraseñas ni contenido de mensajes.</p></header>{error&&<p role="alert">{error}</p>}<div className="model-card"><div className="school-table"><table><thead><tr><th>Fecha</th><th>Actor</th><th>Acción</th><th>Objeto</th></tr></thead><tbody>{rows?.map(r=><tr key={r.id}><td>{r.occurredAt}</td><td>{r.actor}</td><td>{etiquetasDeAuditoria[r.action]||r.action}</td><td>{r.activityTitle||r.subject}</td></tr>)}</tbody></table></div>{rows===null&&!error&&<p role="status">Cargando historial…</p>}{rows?.length===0&&<p>No hay eventos en esta página.</p>}<div className="audit-pagination"><button disabled={offset===0||rows===null} onClick={()=>setOffset(offset-20)}>Anterior</button><span>Página {offset/20+1}</span><button disabled={!rows||rows.length<20} onClick={()=>setOffset(offset+20)}>Siguiente</button></div></div></section>;
+}

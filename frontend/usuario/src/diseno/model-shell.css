@@ -1,0 +1,187 @@
+/* Shell dimensions and compact assistant from the supplied COLEGIA export. */
+.modernism.app-shell,.modernism.admin-shell{font-size:14px;line-height:22px;background:#f8f9ff;}
+.modernism .sidebar,.modernism .admin-sidebar{width:256px;padding:0 16px 16px;border:0;box-shadow:0 1px 8px #0c1b4b0a;z-index:40;}
+.modernism .sidebar .colegia-brand,.modernism .admin-sidebar .colegia-brand{height:64px;min-height:64px;display:flex;align-items:center;padding:0 8px;margin:0;}
+.modernism .colegia-brand img{height:36px;width:auto;max-width:160px;object-fit:contain;}
+.modernism .workspace-label,.modernism .nav-label{margin:16px 8px 8px;padding:0;font-size:11px;line-height:14px;letter-spacing:.04em;color:#767680;}
+.modernism .primary-menu,.modernism .admin-sidebar nav{gap:4px;}
+.modernism .nav-item,.modernism .admin-sidebar nav .link,.modernism .admin-sidebar nav>a{min-height:40px;padding:8px 16px;gap:8px;font-size:14px;line-height:22px;font-weight:400;border-radius:8px;color:#45464f;}
+.modernism .nav-item.active,.modernism .admin-sidebar nav [aria-current=page]{font-weight:700;color:#0062a0;background:#e5eeff;padding-left:12px;box-shadow:0 1px 3px #0c1b4b0a;}
+.modernism .nav-item svg{height:18px;width:18px;}
+.modernism .topbar,.modernism .admin-topbar{height:64px;min-height:64px;padding:0 24px;gap:16px;border:0;box-shadow:0 1px 8px #0c1b4b0a;background:#ffffffed;backdrop-filter:blur(16px);z-index:30;}
+.modernism .role-strip{padding:4px;gap:0;background:#eff4ff;border-radius:12px;font-size:12px;line-height:16px;}
+.modernism .role-strip>span{padding:4px 16px;border-radius:8px;font-weight:600;}
+.modernism .role-strip>span[aria-current]{background:#000420;color:white;box-shadow:0 1px 3px #0c1b4b0a;}
+.modernism .user-area{gap:16px;}
+.modernism .assistant-trigger{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:white;border:0;border-radius:12px;box-shadow:0 1px 3px #0c1b4b0a;color:#000420;font-size:14px;font-weight:600;}
+.modernism .assistant-trigger svg{height:18px;width:18px;color:#0062a0;}
+.modernism .notice-button{position:relative;display:grid;place-items:center;height:40px;width:40px;padding:0;border:0;background:transparent;border-radius:50%;color:#45464f;}
+.modernism .notice-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:#ba1a1a;border-radius:50%;box-shadow:0 0 0 2px white;}
+.modernism .header-avatar{width:32px;height:32px;font-size:13px;background:#e5eeff;color:#0c1b4b;}
+.modernism .content,.modernism #admin-content{padding:0 32px 48px;margin:0;max-width:none;}
+.modernism .content>.stitch,.modernism #admin-content>.stitch{max-width:1280px;margin-inline:auto;overflow:visible;}
+.modernism #admin-content{padding-top:16px;}
+.modernism .content>:not(.stitch){margin-top:32px;}
+.modernism .profile-menu{position:relative;margin-top:auto;padding-top:24px;}
+.modernism .sidebar-profile{padding:8px;border-radius:12px;gap:8px;background:#eff4ff;box-shadow:0 1px 3px #0c1b4b0a;cursor:pointer;list-style:none;font-size:14px;}
+.modernism .sidebar-profile::-webkit-details-marker{display:none;}
+.modernism .sidebar-profile .modern-avatar{width:36px;height:36px;font-size:14px;flex-shrink:0;}
+.modernism .profile-name{min-width:0;flex:1;}
+.modernism .profile-name strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;line-height:20px;}
+.modernism .profile-name small{font-size:11px;line-height:14px;color:#45464f;}
+.modernism .sidebar-profile>svg{width:18px;color:#767680;}
+.modernism .profile-options{position:absolute;bottom:calc(100% - 20px);left:0;right:0;z-index:60;padding:8px;background:white;box-shadow:0 8px 32px #0c1b4b24;border:1px solid #e5eeff;border-radius:12px;}
+.modernism .profile-options>a,.modernism .profile-options form>button{display:block;width:100%;padding:10px 12px;text-align:left;border:0;background:white;color:#0b1c30;font-weight:400;font-size:14px;border-radius:8px;}
+.modernism .profile-options>a:hover,.modernism .profile-options form>button:hover{background:#eff4ff;}
+.modernism .assistant-card-heading{display:flex;align-items:center;gap:10px;padding:20px 16px;background:#f8f9ff;border-bottom:1px solid #e5eeff;}
+.modernism .assistant-card-heading h2{margin:0;font-size:14px;line-height:20px;font-weight:700;letter-spacing:0;color:#000420;}
+.modernism .assistant-card-heading p{margin:4px 0 0;font-size:11px;line-height:16px;color:#45464f;font-weight:600;}
+.modernism .assistant-card-icon{display:grid;place-items:center;width:36px;height:36px;background:#e5eeff;border-radius:10px;color:#0062a0;}
+.modernism .assistant-conversation{margin:16px;padding:16px;background:#f5f7ff;border-radius:14px;}
+.modernism .assistant-conversation>p{margin:0 0 12px;font-size:12px;line-height:19px;color:#0b1c30;}
+.modernism .stitch-suggestion{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:36px!important;padding:8px!important;font-size:12px!important;line-height:19px;margin-top:4px;box-shadow:0 1px 3px #0c1b4b05;}
+.modernism .stitch-suggestion .material-symbols-outlined{font-size:18px;color:#0062a0;}
+.modernism .assistant-compact{padding:0 16px 14px;}
+.modernism .assistant-compose{display:flex;align-items:center;gap:8px;margin:0;padding:6px;background:#eff4ff;border-radius:12px;}
+.modernism .assistant-compose textarea{padding:8px 10px!important;border:0!important;background:transparent!important;min-height:32px!important;height:32px;max-height:100px;resize:vertical;font-size:12px;line-height:18px;outline-offset:0;box-shadow:none;border-radius:6px;flex:1;}
+.modernism .assistant-compose button{height:32px;min-height:32px;width:32px;min-width:32px;border:0;border-radius:8px;background:#000420!important;color:white;padding:4px;display:grid;place-items:center;}
+.modernism .assistant-compose button .material-symbols-outlined{font-size:18px;}
+.modernism .assistant-privacy{margin:12px 0 0;font-size:11px;line-height:17px;color:#45464f;}
+.modernism .assistant-privacy summary{cursor:pointer;color:#0062a0;}
+.modernism .assistant-privacy p{margin:8px 0;font-size:11px;line-height:17px;}
+.modernism .assistant-feedback{margin-top:12px;font-size:12px;line-height:19px;}
+.modernism .assistant-feedback button{font-size:11px;min-height:30px;padding:4px 8px;margin-top:8px;}
+.modernism .model-page{display:flex;flex-direction:column;gap:24px;}
+.modernism .model-page>header{padding-top:0;}
+.modernism .model-page h1{font-size:24px;line-height:32px;margin:0 0 8px;}
+.modernism .model-page h2{font-size:18px;line-height:26px;margin:0 0 16px;}
+.modernism .model-card{padding:24px;background:white;border-radius:16px;box-shadow:0 1px 3px #0c1b4b0a;}
+.modernism .model-week{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:12px;overflow:auto;}
+.modernism .model-week h3{font-size:13px;margin:0 0 12px;}
+.modernism .model-week article{padding:12px;margin-bottom:8px;border-radius:10px;background:#eff4ff;}
+.modernism .model-week article strong,.modernism .model-week article small{font-size:11px;}
+.modernism .model-week p{margin:5px 0;font-size:13px;}
+.modernism .model-agenda>a{display:flex;gap:24px;align-items:center;padding:16px 0;border-top:1px solid #e5eeff;color:#0b1c30;}
+.modernism .model-agenda>a>time{min-width:175px;color:#0062a0;font-size:12px;}
+.modernism .model-agenda>a>div{flex:1;}
+.modernism .model-agenda p{margin:4px 0 0;font-size:12px;}
+.modernism .model-stat-row{display:flex;gap:20px;}
+.modernism .model-stat-row>.model-card{flex:1;}
+.modernism .model-stat-row strong{display:block;margin-top:12px;font-size:30px;line-height:38px;}
+.modernism .model-grade-row{margin-top:24px;}
+.modernism .model-grade-row>div{display:flex;justify-content:space-between;gap:12px;}
+.modernism .model-grade-row meter{display:block;width:100%;height:20px;accent-color:#0062a0;}
+.modernism .model-text-link{font-weight:600;color:#0062a0;}
+@media(min-width:761px){.modernism .role-strip>span:not([aria-current]){display:block;}}
+@media(max-width:1100px) and (min-width:761px){.modernism .role-strip>span{padding-inline:10px;}.modernism .assistant-trigger span{display:none;}.modernism .user-area{gap:8px;}}
+@media(max-width:760px){
+ .modernism .sidebar,.modernism .admin-sidebar{width:100%;padding:0 16px 12px;}
+ .modernism .sidebar .colegia-brand,.modernism .admin-sidebar .colegia-brand{height:60px;min-height:60px;margin:0;}
+ .modernism .profile-menu{position:absolute;right:16px;top:12px;padding:0;margin:0;z-index:80;}
+ .modernism .sidebar-profile{display:flex;padding:6px;}
+ .modernism .profile-name,.modernism .sidebar-profile>svg{display:none;}
+ .modernism .profile-options{left:auto;right:0;top:48px;bottom:auto;width:210px;}
+ .modernism .sidebar .primary-menu{padding-bottom:0;}
+ .modernism .topbar,.modernism .admin-topbar{min-height:56px;height:56px;padding:0 16px;}
+ .modernism .assistant-trigger{padding:8px;}
+ .modernism .assistant-trigger>span,.modernism .assistant-trigger>.stitch-spark{display:none;}
+ .modernism .user-area{gap:8px;}
+ .modernism .content,.modernism #admin-content{padding:0 16px 32px;}
+ .modernism #admin-content{padding-top:16px;}
+ .modernism .role-strip>span{font-size:12px;}
+ .modernism .model-agenda>a{align-items:flex-start;flex-direction:column;gap:8px;}
+ .modernism .model-stat-row{gap:12px;}
+ .modernism .model-card{padding:20px;}
+}
+
+.modernism .stitch-assistant{display:block!important;gap:0!important;overflow:hidden;border-radius:16px;}
+.modernism .model-timetable{min-height:94px;align-items:center;}
+.modernism .stitch-assistant.model-assistant-card{border:1px solid #e5eeff;border-radius:16px;background:white;box-shadow:0 1px 3px #0c1b4b0a;}
+.modernism .model-class-card{padding:16px;border-radius:12px;background:rgb(239 244 255 / .6);min-height:94px;display:flex;flex-direction:column;justify-content:space-between;}
+.modernism .model-class-time{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:11px;line-height:14px;letter-spacing:.04em;color:#0062a0;}
+.modernism .model-class-time time{font-weight:700;}
+.modernism .model-class-card h3{margin:0;font-size:14px;line-height:20px;font-weight:700;}
+.modernism .model-class-card p{margin:4px 0 0;font-size:12px;line-height:18px;color:#45464f;}
+.modernism .model-class-card.is-current{outline:2px solid #0062a0;outline-offset:0;background:white;}
+.modernism .model-class-card.is-current .model-class-time>span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#0062a0;margin-right:6px;}
+.modernism .model-task-card .stitch-badge{padding:2px 8px;min-height:0;font-size:11px;line-height:14px;letter-spacing:.04em;font-weight:600;}
+.modernism .model-task-card h3{margin:8px 0 16px;font-size:16px;line-height:24px;font-weight:700;}
+.modernism .model-task-card a{display:inline-flex;align-items:center;gap:4px;font-size:14px;line-height:20px;}
+.modernism .model-task-card a .material-symbols-outlined{font-size:16px;}
+.modernism .model-notice-row{padding:16px;border-radius:12px;}
+.modernism .model-notice-row:hover{background:#f8f9ff;}
+.modernism .model-notice-row>span{width:36px;height:36px;padding:0;display:grid;place-items:center;flex-shrink:0;}
+.modernism .model-notice-row>span .material-symbols-outlined{font-size:16px;}
+.modernism .stitch[data-screen=family] .model-achievement{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.modernism .stitch[data-screen=family] .model-achievement.good{background:#ecfdf5;color:#047857;}
+.modernism .stitch[data-screen=family] .model-achievement .material-symbols-outlined{font-size:12px;}
+.modernism.app-shell[data-role=Familiar] .content{padding-inline:24px;}
+.modernism .stitch[data-screen=family] .stitch-child{padding:8px 16px!important;}
+.modernism.app-shell .stitch[data-screen=family] td button.model-achievement{min-height:24px;height:24px;padding:4px 12px!important;margin:0;border:0;border-radius:9999px;background:#d0e4ff;color:#001d34;font-size:11px;line-height:16px;}
+.modernism.app-shell .stitch[data-screen=family] td button.model-achievement.good{background:#ecfdf5;color:#047857;}
+.modernism.app-shell .stitch[data-screen=family] button.bg-secondary{background:#0062a0!important;color:white!important;border:0;min-height:44px;padding:10px 16px;font-size:14px;line-height:20px;}
+.modernism.app-shell .stitch[data-screen=family] tbody td{border-bottom-color:#eff4ff;}
+.modernism .model-assistant-card{position:relative;}
+.modernism .model-assistant-card .assistant-privacy{position:absolute;right:12px;top:16px;margin:0;z-index:3;}
+.modernism .model-assistant-card .assistant-privacy>summary{font-size:0;list-style:none;cursor:pointer;}
+.modernism .model-assistant-card .assistant-privacy>summary::-webkit-details-marker{display:none;}
+.modernism .model-assistant-card .assistant-privacy>summary::before{content:'info';font-family:'Material Symbols Outlined';font-size:14px;line-height:20px;color:#767680;}
+.modernism .model-assistant-card .assistant-privacy[open]{max-width:260px;padding:12px;border-radius:12px;border:1px solid #e5eeff;background:white;box-shadow:0 8px 24px #0c1b4b24;}
+.modernism .stitch-small-avatar{overflow:hidden;flex-shrink:0;}
+.modernism .stitch-small-avatar img{width:100%;height:100%;object-fit:cover;}
+.modernism .sidebar-profile>.material-symbols-outlined{font-size:16px;line-height:20px;color:#767680;}
+.modernism .assistant-trigger>.colegia-icon{font-size:18px;line-height:20px;color:#0062a0;}
+.modernism .notice-button>.colegia-icon{font-size:20px;line-height:24px;}
+.modernism.app-shell[data-role=Docente] .content{padding-inline:24px;}
+.modernism.app-shell .stitch[data-screen=teacher] button.stitch-tab{min-height:24px;height:24px;font-size:12px!important;line-height:16px;padding:4px 12px!important;border:0;}
+.modernism .model-publication-main{display:flex;align-items:flex-start;gap:12px;}
+.modernism .model-publication-copy{flex:1;min-width:0;}
+.modernism .model-publication-meta{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;line-height:14px;}
+.modernism .model-publication-meta .publication-kind{font-size:10px;line-height:12px;padding:1px 5px;border-radius:4px;text-transform:uppercase;}
+.modernism .model-publication-course{padding:1px 5px;border-radius:4px;background:#eff4ff;font-size:10px;line-height:12px;font-weight:600;}
+.modernism .model-publication-copy>p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.modernism .model-publication-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.modernism .model-publication-due{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:#eff4ff;font-size:10px;line-height:14px;font-weight:600;color:#0c1b4b;}
+.modernism .model-publication-due .material-symbols-outlined{font-size:12px;}
+.modernism .model-publication-actions>a{color:#767680;}
+.modernism .model-publication-actions>a .material-symbols-outlined{font-size:16px;}
+@media(max-width:760px){.modernism.app-shell[data-role=Docente] .content{padding-inline:16px;}.modernism .model-publication-main{flex-wrap:wrap;}.modernism .model-publication-actions{margin-left:44px;}.modernism .model-publication-meta{flex-wrap:wrap;}}
+.modernism .assistant-compose button{height:32px!important;min-height:32px!important;padding:4px!important;border:0!important;opacity:1;}
+.modernism .assistant-compose button:disabled{opacity:.5;}
+
+.modernism .admin-more{font-size:12px;margin-top:24px;padding-inline:8px;color:#767680;}
+.modernism .admin-more summary{cursor:pointer;}
+.modernism .admin-more .link,.modernism .admin-more a{display:block;padding:10px 8px;min-height:0;background:transparent;border:0;font-size:12px;text-align:left;}
+.modernism .audit-pagination{display:flex;align-items:center;gap:16px;margin-top:24px;}
+
+.modernism .assistant-compose textarea{resize:none;}
+
+.modernism .assistant-compose textarea{overflow-y:hidden;height:36px;min-height:36px!important;}
+.modernism.app-shell[data-role="Docente"] .content{padding-top:16px;}
+
+/* Measured against the ZIP's original HTML at the same viewport. */
+@media(min-width:761px){.modernism .workspace-label{line-height:24px;}.modernism .nav-item.active{font-size:16px;line-height:24px;padding-left:16px;}}
+.modernism .nav-item .material-symbols-outlined{font-size:16px;line-height:24px;width:16px;height:24px;}
+.modernism .assistant-card-heading{padding:16px;gap:8px;background:rgb(239 244 255 / .5);border-bottom-color:#eff4ff;}
+.modernism .assistant-card-heading p{margin:0;font-size:11px;line-height:24px;}
+.modernism .assistant-card-icon{width:32px;height:32px;border-radius:8px;}
+.modernism .assistant-card-icon .material-symbols-outlined{font-size:16px;}
+.modernism .assistant-conversation{background:rgb(239 244 255 / .7);border-radius:12px;}
+.modernism .assistant-conversation>p{margin-bottom:8px;line-height:19.5px;}
+.modernism .stitch-suggestion{gap:0;font-weight:500;line-height:18px;padding:8px!important;border:0!important;}
+.modernism .stitch-suggestion .material-symbols-outlined{font-size:14px;width:14px;}
+.modernism .assistant-compose{height:44px;}
+.modernism .assistant-compose textarea{margin:0;height:32px!important;min-height:32px!important;padding:6px 8px!important;line-height:20px;}
+
+.modernism.app-shell:is([data-role="Docente"],[data-role="Familiar"]) .assistant-trigger{background:#f2ea1e;border:1px solid #0062a0;box-shadow:0 4px 18px #f2ea1e22;}
+.modernism.app-shell:is([data-role="Docente"],[data-role="Familiar"]) .assistant-trigger svg{color:#000420;}
+.modernism.app-shell[data-role="Docente"] .sidebar .colegia-brand::after{content:"PLATAFORMA\A 360";white-space:pre-line;color:#0062a0;font-size:11px;line-height:12px;letter-spacing:.04em;font-weight:600;margin-left:8px;}
+
+/* Screens without an exported mockup use the same component sizes. */
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) h1{font-size:24px;line-height:32px;letter-spacing:-.01em;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) h2{font-size:20px;line-height:28px;letter-spacing:-.005em;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) h3{font-size:16px;line-height:24px;letter-spacing:normal;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) :is(article,fieldset){border-radius:12px;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) button{font-size:14px;line-height:20px;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) :is(input,select,textarea){font-size:14px;line-height:22px;}
+.modernism :is(.list-panel,.detail-panel,.user-panel,.school-portal,.model-page,.academic) button[type="submit"]{background:#0c1b4b;color:#fff;border-color:#000420;}
