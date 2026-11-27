@@ -7,11 +7,13 @@ from administration import moderation
 from administration import retention
 from administration import appeals
 from administration import review_accounts
+from administration import school_assistant
 
 handler404 = 'administration.views.api_not_found'
 handler500 = 'administration.views.api_server_error'
 
 urlpatterns = [
+    path('api/admin/v1/assistant', school_assistant.ask),
     path('api/admin/v1/users/<str:username>/invitation', account_activation.invitation),
     path('api/admin/health', views.health),
     path('api/admin/reviewer/password', review_accounts.change_password),

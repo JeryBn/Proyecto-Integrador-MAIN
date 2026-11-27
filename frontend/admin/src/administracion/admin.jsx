@@ -1,3 +1,4 @@
+import {SchoolAssistant} from './asistente.jsx';
 import { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './estilos/admin.css';
@@ -559,8 +560,9 @@ function App() {
         </button></div></details>
       </header>
       <div className="admin-workspace">
-        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><span className="assistant-trigger admin-assistant-label" title="Asistente no habilitado en Administración"><Icon name="spark"/><span>Asistente COLEGIA</span></span><span className="admin-notice-indicator" aria-label="Notificaciones"><Icon name="bell"/></span><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
+        <div className="admin-topbar"><RoleStrip role="ADMIN"/><div className="admin-topbar-account"><button type="button" className="assistant-trigger admin-assistant-label" aria-label="Asistente COLEGIA" aria-pressed={view.name==='assistant'} onClick={()=>setView({name:'assistant'})}><Icon name="spark"/><span>Asistente COLEGIA</span></button><span className="admin-notice-indicator" aria-label="Notificaciones"><Icon name="bell"/></span><span className="modern-avatar">{accountInitials(user.nombre||user.usuario)}</span></div></div>
         <main id="admin-content" tabIndex={-1}>
+          {view.name === 'assistant' && <SchoolAssistant onExpire={expire} />}
           {view.name === 'dashboard' && <AdminDashboard api={api} onExpire={expire} onNavigate={(name, focus)=>setView({name, focus})}/>}
           {['school','enrollments'].includes(view.name) && <AcademicAdmin api={api} onExpire={expire} />}
           {view.name === 'audit' && <AuditView api={api} onExpire={expire}/>}

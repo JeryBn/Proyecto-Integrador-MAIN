@@ -62,8 +62,17 @@ function App() {
       setProfile(currentProfile);
       const saved=await userApi.call('/api/v1/preferences');
       setPreferences(saved);
-      if (currentProfile.rol === 'Alumno') setItems(await userApi.call('/api/actividades/pendientes'));
-      else setItems([]);
+      if (currentProfile.rol === 'Alumno') {
+        const [all, upcoming] = await Promise.all([
+          userApi.call('/api/actividades'),
+          userApi.call('/api/actividades/pendientes'),
+        ]);
+        setItems(all);
+        setPending(upcoming);
+      } else {
+        setItems([]);
+        setPending([]);
+      }
     } catch (error) { setError(error.message); }
     finally { setLoading(false); }
   };

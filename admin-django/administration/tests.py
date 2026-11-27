@@ -77,6 +77,30 @@ class AdministrationTests(TransactionTestCase):
     def login(self, username='admin_test', password=PASSWORD):
         return self.client.post('/api/admin/login', {'username':username, 'password':password}, HTTP_X_CSRFTOKEN=self.token())
 
+    def test_school_assistant_requires_admin_csrf_and_sends_only_the_question(self):
+        path = '/api/admin/v1/assistant'
+        payload = {'question': '  Redacta un aviso para la reunión.  '}
+        self.assertEqual(self.client.post(path, payload, content_type='application/json',
+                                         HTTP_X_CSRFTOKEN=self.token()).status_code, 401)
+        self.assertEqual(self.login().status_code, 200)
+        self.assertEqual(self.client.post(path, payload, content_type='application/json').status_code, 403)
+        token = self.token()
+        with patch('administration.school_assistant.build_opener') as opener:
+            provider = opener.return_value.open
+            provider.return_value.__enter__.return_value.read.return_value = (
+                b'{"done":true,"message":{"content":"Comunicado de prueba"}}'
+            )
+            reply = self.client.post(path, payload, content_type='application/json', HTTP_X_CSRFTOKEN=token)
+            self.assertEqual(reply.status_code, 200)
+            self.assertEqual(reply.json()['answer'], 'Comunicado de prueba')
+            upstream = json.loads(provider.call_args.args[0].data)
+            self.assertEqual(upstream['messages'][1], {'role': 'user', 'content': payload['question'].strip()})
+            self.assertNotIn('admin_test', json.dumps(upstream))
+            provider.side_effect = TimeoutError
+            failed = self.client.post(path, payload, content_type='application/json', HTTP_X_CSRFTOKEN=token)
+            self.assertEqual(failed.status_code, 503)
+            self.assertEqual(failed.json()['error']['code'], 'AI_UNAVAILABLE')
+
     def test_only_admin_can_issue_an_invitation_and_reissue_replaces_the_code(self):
         path = '/api/admin/v1/users/alumno/invitation'
         self.assertEqual(self.client.post(path, HTTP_X_CSRFTOKEN=self.token()).status_code, 401)

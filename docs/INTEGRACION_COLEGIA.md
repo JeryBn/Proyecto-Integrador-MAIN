@@ -27,4 +27,6 @@ Si el backend corre en otro puerto, establece `API_PROXY_TARGET` en la terminal 
 
 Los portales reutilizan los módulos de MAIN para chats, estados, asistente, llamadas, contactos, notas y asistencia. El panel reutiliza cuentas, invitaciones, cursos y matrículas. Los portales de desarrollo se prueban antes de cambiar las páginas que sirve el despliegue habitual.
 
+El botón **Asistente COLEGIA** del panel abre el asistente de gestión escolar. Requiere una sesión de administración y usa Gemma a través de Ollama. Recibe el texto de la consulta y no carga expedientes ni datos de cuentas.
+
 Las pantallas de evaluación por competencias, comunicados escolares y autoservicio de recuperación por correo de la rama original requieren sus propias APIs y migraciones. La gestión académica y el acceso de esta integración utilizan los flujos que ya ofrece MAIN.

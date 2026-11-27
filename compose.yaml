@@ -5,7 +5,7 @@ x-django: &django
   build:
     context: .
     dockerfile: deploy/oci/django.Dockerfile
-  environment:
+  environment: &django-env
     MAIN_DB_HOST: mysql
     MAIN_DB_NAME: main
     MAIN_DB_USER: main_local
@@ -74,6 +74,12 @@ services:
 
   django:
     <<: *django
+    environment:
+      <<: *django-env
+      MAIN_OLLAMA_CHAT_URL: ${MAIN_OLLAMA_CHAT_URL:-http://host.docker.internal:11434/api/chat}
+      MAIN_OLLAMA_MODEL: ${MAIN_OLLAMA_MODEL:-gemma3:4b}
+    extra_hosts:
+      - host.docker.internal:host-gateway
     entrypoint: ["python", "-m", "waitress", "--listen=0.0.0.0:8090", "--threads=4", "main_admin.wsgi:application"]
     ports:
       - "127.0.0.1:${MAIN_ADMIN_PORT:-8090}:8090"
