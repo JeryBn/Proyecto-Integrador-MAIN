@@ -86,4 +86,13 @@ class NavigationUiTest {
         ui.onNodeWithText("Sol Demo").assertIsDisplayed()
         ui.onNodeWithText("Alex Demo").assertDoesNotExist()
     }
+
+    @Test fun colegiaHeaderOpensAssistantAndAcademicNavigation() {
+        login()
+        ui.onNodeWithContentDescription("Asistente COLEGIA").performClick()
+        ui.onNodeWithContentDescription("Asistente").assertIsSelected()
+        ui.onNodeWithContentDescription("Menú principal").performClick()
+        ui.onNodeWithText("Aula virtual").performClick()
+        ui.onNodeWithContentDescription("Inicio").assertIsSelected()
+    }
 }

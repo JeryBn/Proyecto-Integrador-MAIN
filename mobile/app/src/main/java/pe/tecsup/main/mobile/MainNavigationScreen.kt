@@ -29,6 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -49,6 +51,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.time.LocalDate
+import java.time.ZoneId
 
 internal enum class MainSection(val label: String, val icon: ImageVector, val navigationLabel: String = label) {
     HOME("Inicio", Icons.Outlined.Home),
@@ -83,11 +87,16 @@ internal fun MainNavigationScreen(model: MainViewModel) {
             else -> model.closeConversation()
         }
     }
+    val showNavigation = model.statusViewer == null && !model.statusComposer &&
+        model.teachingCourse == null && model.selectedId == null &&
+        model.selectedConversation == null && !model.showChatPicker &&
+        model.contactProfile == null && model.settingsPage == "MAIN"
     Scaffold(
         contentWindowInsets=if(model.statusViewer!=null)WindowInsets(0,0,0,0) else ScaffoldDefaults.contentWindowInsets,
         containerColor = MaterialTheme.colorScheme.background,
+        topBar = { if (showNavigation) ColegiaHeader(model) },
         bottomBar = {
-            if (model.statusViewer==null && !model.statusComposer && model.teachingCourse==null && model.selectedId == null && model.selectedConversation == null && !model.showChatPicker && model.contactProfile==null && model.settingsPage=="MAIN") {
+            if (showNavigation) {
                 NavigationBar(
                     modifier = if (largeText) Modifier.fillMaxWidth()
                         .horizontalScroll(rememberScrollState()).width(navigationWidth).heightIn(min = 112.dp)
@@ -99,6 +108,11 @@ internal fun MainNavigationScreen(model: MainViewModel) {
                             modifier = Modifier.semantics { contentDescription = section.label },
                             selected = model.selectedSection == section || section==MainSection.HOME && model.selectedSection==MainSection.ACTIVITIES,
                             onClick = { model.selectSection(section) },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.onSurface
+                            ),
                             icon = { Icon(section.icon, contentDescription = null) },
                             label = { Text(section.navigationLabel,
                                 modifier = if (largeText) Modifier.wrapContentHeight(unbounded = true) else Modifier,
@@ -154,12 +168,21 @@ private fun HomeSection(model: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            CampusBanner("Hoy en mi colegio", subtitle = BuildConfig.CAMPUS_NAME)
+            CampusBanner(
+                title = model.profile?.nombre?.takeIf { it.isNotBlank() }?.let { "¡Hola, ${it.substringBefore(' ')}!" }
+                    ?: "Panel general",
+                subtitle = when (model.profile?.rol) {
+                    "Docente" -> "Mi aula"
+                    "Familiar" -> "Mi familia"
+                    else -> "Panel general"
+                }
+            )
             Text("Tu espacio académico", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if(model.profile?.rol in listOf("Alumno","Docente")){
                 TextButton(onClick={model.selectSection(MainSection.CAMPUS)}) { Text("Abrir campus") }
             }
         }
+        TodaySchedule(model)
         if(model.profile?.rol=="Alumno") {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -179,7 +202,6 @@ private fun HomeSection(model: MainViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Text("Información recibida de tu cuenta en COLEGIA.", style = MaterialTheme.typography.bodySmall)
                 Button(modifier=Modifier.semantics{contentDescription="Actividades"},onClick = { model.selectSection(MainSection.ACTIVITIES) }) {
                     Text("Ver actividades")
                 }
@@ -188,7 +210,8 @@ private fun HomeSection(model: MainViewModel) {
         if (!model.loadingList && model.listError.isBlank() && model.items.isNotEmpty()) {
             Text("Pendientes por fecha límite", style = MaterialTheme.typography.titleLarge)
             model.items.take(3).forEach { activity ->
-                Card(
+                OutlinedCard(
+                    onClick = { model.openDetail(activity.id) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
@@ -215,30 +238,32 @@ private fun HomeSection(model: MainViewModel) {
             TextButton(onClick={showReports.value=true}){Text("Boletines")}
         }
         AgendaContent(model)
-        Text(
-            "Consulta tus cursos y horarios en el asistente académico.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
 @Composable
-private fun PlannedSection(title: String, message: String) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(BuildConfig.CAMPUS_NAME, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary)
-        Text(title, style = MaterialTheme.typography.headlineMedium)
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Módulo en preparación", style = MaterialTheme.typography.titleLarge)
-                Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun TodaySchedule(model: MainViewModel) {
+    val day = LocalDate.now(ZoneId.of("America/Lima")).dayOfWeek.value
+    val sessions = model.agenda.timetable.filter { it.dayOfWeek == day }.sortedBy { it.startsAt }
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Horario de hoy", style = MaterialTheme.typography.titleLarge)
+            if (sessions.isEmpty()) {
+                Text(
+                    when {
+                        model.accountBusy -> "Cargando horario…"
+                        model.accountError.isNotBlank() -> "No pudimos cargar el horario."
+                        else -> "No hay clases registradas para hoy."
+                    },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                sessions.forEach { slot ->
+                    Text(slot.course, style = MaterialTheme.typography.titleMedium)
+                    Text("${slot.startsAt.take(5)}–${slot.endsAt.take(5)} · ${slot.classroom}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }

@@ -6,6 +6,19 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -39,30 +52,36 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable fun MainTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+    // Shared with the COLEGIA portal's light academic palette and dark theme.
     val colors = if (darkTheme) darkColorScheme(
-        primary = Color(0xFF80D5BB), onPrimary = Color(0xFF0B3154),
-        primaryContainer = Color(0xFF145244), onPrimaryContainer = Color(0xFFCCF7E8),
-        secondary = Color(0xFFB7D9CE), onSecondary = Color(0xFF203A33),
-        secondaryContainer = Color(0xFF304D44), onSecondaryContainer = Color(0xFFD3EAE1),
-        tertiary = Color(0xFFF0C77B), onTertiary = Color(0xFF422C00),
-        background = Color(0xFF101820), onBackground = Color(0xFFE2E8EF),
-        surface = Color(0xFF151F28), onSurface = Color(0xFFE2E8EF),
-        surfaceContainer = Color(0xFF192722), surfaceContainerHigh = Color(0xFF23362E), surfaceContainerHighest = Color(0xFF30433A),
-        surfaceTint = Color(0xFF80D5BB),
-        surfaceVariant = Color(0xFF303B45), onSurfaceVariant = Color(0xFFC2CBD4),
+        primary = Color(0xFFB7C4FE), onPrimary = Color(0xFF071747),
+        primaryContainer = Color(0xFF233564), onPrimaryContainer = Color(0xFFDCE1FF),
+        secondary = Color(0xFF9BCBFF), onSecondary = Color(0xFF001D34),
+        secondaryContainer = Color(0xFF1B365C), onSecondaryContainer = Color(0xFFD0E4FF),
+        tertiary = Color(0xFFF2EA1E), onTertiary = Color(0xFF000420),
+        background = Color(0xFF080E1B), onBackground = Color(0xFFEDF3FF),
+        surface = Color(0xFF111D31), onSurface = Color(0xFFEDF3FF),
+        surfaceContainerLow = Color(0xFF121F35), surfaceContainer = Color(0xFF17263E),
+        surfaceContainerHigh = Color(0xFF1B2C48), surfaceContainerHighest = Color(0xFF223553),
+        surfaceTint = Color(0xFFB7C4FE),
+        surfaceVariant = Color(0xFF223553), onSurfaceVariant = Color(0xFFA6B7D0),
+        outline = Color(0xFF8294B3), outlineVariant = Color(0xFF2B3D59),
         errorContainer = Color(0xFF5A2424), onErrorContainer = Color(0xFFFFDAD6)
     ) else lightColorScheme(
-        primary = Color(0xFF087F68), onPrimary = Color.White,
-        primaryContainer = Color(0xFFD9F3E9), onPrimaryContainer = Color(0xFF123D31),
-        secondary = Color(0xFF406D65), onSecondary = Color.White,
-        secondaryContainer = Color(0xFFE0EEE9), onSecondaryContainer = Color(0xFF24483E),
-        tertiary = Color(0xFF805A14), onTertiary = Color.White,
-        background = Color(0xFFF7F9F8), onBackground = Color(0xFF171C22),
-        surface = Color.White, onSurface = Color(0xFF171C22),
-        surfaceContainer = Color(0xFFF1F6F3), surfaceContainerHigh = Color(0xFFEDF3EF), surfaceContainerHighest = Color(0xFFE6EEE9),
-        surfaceTint = Color(0xFF087F68),
-        surfaceVariant = Color(0xFFE8EDF2), onSurfaceVariant = Color(0xFF46515B),
-        errorContainer = Color(0xFFFFDAD6), onErrorContainer = Color(0xFF410002)
+        primary = Color(0xFF0C1B4B), onPrimary = Color.White,
+        primaryContainer = Color(0xFFDCE1FF), onPrimaryContainer = Color(0xFF071747),
+        secondary = Color(0xFF0062A0), onSecondary = Color.White,
+        secondaryContainer = Color(0xFFE4EFFF), onSecondaryContainer = Color(0xFF004A7A),
+        tertiary = Color(0xFF646100), onTertiary = Color.White,
+        tertiaryContainer = ColegiaYellow, onTertiaryContainer = Color(0xFF1E1C00),
+        background = Color(0xFFF8F9FF), onBackground = Color(0xFF0B1C30),
+        surface = Color.White, onSurface = Color(0xFF0B1C30),
+        surfaceContainerLow = Color(0xFFF8F9FF), surfaceContainer = Color(0xFFEFF4FF),
+        surfaceContainerHigh = Color(0xFFE5EEFF), surfaceContainerHighest = Color(0xFFDCE9FF),
+        surfaceTint = Color(0xFF4F5C8F),
+        surfaceVariant = Color(0xFFD3E4FE), onSurfaceVariant = Color(0xFF45464F),
+        outline = Color(0xFF767680), outlineVariant = Color(0xFFC6C5D0),
+        error = Color(0xFFBA1A1A), errorContainer = Color(0xFFFFDAD6), onErrorContainer = Color(0xFF410002)
     )
     MaterialTheme(
         colorScheme = colors,
@@ -103,20 +122,56 @@ class MainActivity : ComponentActivity() {
     var username by rememberSaveable { mutableStateOf("") }
     // Password is deliberately neither saved across process recreation nor persisted.
     var password by remember { mutableStateOf("") }
-    Column(Modifier.fillMaxSize().safeDrawingPadding().imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Spacer(Modifier.height(32.dp))
-        CampusBanner("Iniciar sesión")
-        OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Usuario") },
-            singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(), singleLine = true,
-            enabled = !model.busy, modifier = Modifier.fillMaxWidth())
-        if (model.message.isNotBlank()) Text(model.message, color = MaterialTheme.colorScheme.error)
-        Button(onClick = { focus.clearFocus(); keyboard?.hide(); model.login(BuildConfig.SERVER_ORIGIN, username, password); password = "" },
-            enabled = !model.busy && username.isNotBlank() && password.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
-            Text(if (model.busy) "Conectando…" else "Ingresar")
+    var passwordVisible by remember { mutableStateOf(false) }
+    val canSubmit = !model.busy && username.isNotBlank() && password.isNotEmpty()
+    fun submit() {
+        if (!canSubmit) return
+        focus.clearFocus()
+        keyboard?.hide()
+        model.login(BuildConfig.SERVER_ORIGIN, username, password)
+        password = ""
+        passwordVisible = false
+    }
+
+    Column(
+        Modifier.fillMaxSize().safeDrawingPadding().imePadding()
+            .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ColegiaWordmark()
+        OutlinedCard(Modifier.widthIn(max = 480.dp).fillMaxWidth()) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("Iniciar sesión", style = MaterialTheme.typography.headlineMedium)
+                Text("Comunidad escolar", color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.SemiBold)
+                OutlinedTextField(
+                    value = username, onValueChange = { username = it }, label = { Text("Usuario") },
+                    singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focus.moveFocus(FocusDirection.Down) })
+                )
+                OutlinedTextField(
+                    value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    singleLine = true, enabled = !model.busy, modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { submit() }),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }, enabled = !model.busy) {
+                            Icon(if (passwordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña")
+                        }
+                    }
+                )
+                if (model.message.isNotBlank()) Text(model.message,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    color = MaterialTheme.colorScheme.error)
+                Button(onClick = ::submit, enabled = canSubmit, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (model.busy) "Conectando…" else "Ingresar")
+                }
+                if (model.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
         }
-        if (model.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
     }
 }
