@@ -1,6 +1,6 @@
 # Integración de COLEGIA
 
-Esta rama reúne la implementación de MAIN con los portales React de `origin/web/frontend-backend`. Ambos portales y Android consumen el mismo Spring y la misma base de datos. El panel utiliza el Django vigente. La web que ya sirve Spring en 8088 sigue disponible.
+La rama `main` reúne los flujos de COLEGIA y los portales React adaptados de `origin/web/frontend-backend`. Ambos portales y Android comparten la base de datos. El portal escolar y Android consumen Spring, y el panel usa Django. El modo básico de Spring sigue sirviendo la web en 8088.
 
 ## Probar el diseño
 

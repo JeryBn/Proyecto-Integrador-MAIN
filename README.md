@@ -1,6 +1,6 @@
 # COLEGIA
 
-MAIN reúne el portal académico web, la aplicación Android y la administración institucional. Estudiantes y docentes acceden desde React o Android mediante la API de Spring Boot. El panel React de administración usa Django. Ambos servicios comparten MySQL en el entorno integrado.
+COLEGIA reúne el portal académico web, la aplicación Android y la administración institucional. Estudiantes y docentes acceden desde React o Android mediante la API de Spring Boot. El panel React de administración usa Django. Ambos servicios comparten MySQL en el entorno integrado.
 
 ## Funciones
 
@@ -12,7 +12,19 @@ MAIN reúne el portal académico web, la aplicación Android y la administració
 
 ## Ejecutar desde el código de `main`
 
-Para preparar la sustentación con MySQL, Django, Gemma y Android, sigue la [guía de demostración desde una copia limpia](docs/DEMO_LOCAL.md).
+La rama `main` incluye la nueva interfaz de COLEGIA. Para iniciarla con Docker, configura el archivo `.env` y sigue la [guía de arranque](docs/INTEGRACION_COLEGIA.md).
+
+```powershell
+docker compose up --build --detach --wait
+```
+
+- [Portal escolar](http://127.0.0.1:5173/) y [portada](http://127.0.0.1:5173/bienvenida.html).
+- [Panel de administración](http://127.0.0.1:5174/).
+- Android usa el servidor local en el puerto `8088`.
+
+La misma guía explica cómo levantar la interfaz sin Docker. La [guía de demostración](docs/DEMO_LOCAL.md) describe además la configuración de MySQL, Gemma y Android.
+
+### Ejecutar el servidor Spring en modo básico
 
 Con JDK 21, Maven y Node.js instalados, ejecuta desde la raíz del repositorio:
 
